@@ -39,3 +39,6 @@ out/
 
 ### Secret Config ###
 application.yml
+
+### docker volunm ###
+mysql_data/

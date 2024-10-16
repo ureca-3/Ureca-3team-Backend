@@ -47,4 +47,10 @@ public class User extends BaseTimeEntity {
 //    @OneToMany(mappedBy = "child",cascade = CascadeType.ALL)
 //    List<Child> childList  =new ArrayList<>();
 
+    //== 테스트 ==//
+    public String test(){
+        System.out.println("ㅎㅎ");
+        return "user";
+    }
+
 }
