@@ -20,7 +20,7 @@ public class Child extends BaseTimeEntity {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    @Column(name = " child_id")
+    @Column(name = "child_id")
     private Long id;
 
     @Column(nullable = false)
@@ -36,8 +36,8 @@ public class Child extends BaseTimeEntity {
     private String profileUrl;
 
     @OneToOne
-    @JoinColumn(name = "childMBTI_id")
-    private ChildMbti childMBTI;
+    @JoinColumn(name = "childMbti_id")
+    private ChildMbti childMbti;
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "user_id")
