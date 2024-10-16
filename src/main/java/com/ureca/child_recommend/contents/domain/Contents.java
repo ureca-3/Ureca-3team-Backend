@@ -39,14 +39,14 @@ public class Contents extends BaseTimeEntity {
     private LocalDate publicationYear;
 
     @Column
-    private String contentsMBTIResult;
+    private String contentsMbtiResult;
 
     @Enumerated(EnumType.STRING)
     private ContentsStatus status;
 
     @OneToOne
-    @JoinColumn(name = "contentsMBTI_id")
-    private ContentsMbtiScore contentsMBTI;
+    @JoinColumn(name = "contentsMbti_id")
+    private ContentsMbtiScore contentsMbti;
 
 //    @OneToMany(mappedBy = "contents",cascade = CascadeType.ALL)
 //    List<FeedBack> feedBackList = new ArrayList<>();

@@ -17,7 +17,7 @@ public class ChildMbti extends BaseTimeEntity {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    @Column(name = " childMBTI_id")
+    @Column(name = "childMbti_id")
     private Long id;
 
     @Column
