@@ -1,6 +1,6 @@
 package com.ureca.child_recommend.user.domain;
 
-import com.ureca.child_recommend.child.domain.Child;
+import com.ureca.child_recommend.config.oauth.dto.OauthInfo;
 import com.ureca.child_recommend.global.entity.BaseTimeEntity;
 import com.ureca.child_recommend.user.domain.Enum.UserRole;
 import com.ureca.child_recommend.user.domain.Enum.UserStatus;
@@ -23,20 +23,8 @@ public class User extends BaseTimeEntity {
     @Column(name = "user_id")
     private Long id;
 
-    @Column
-    private String nickname;
-
-    @Column
-    private String profileUrl;
-
-    @Column
-    private String email;
-
-    @Column
-    private String gender;
-
-    @Column
-    private Integer age;
+    @Embedded
+    private OauthInfo oauthInfo;
 
     @Enumerated(EnumType.STRING)
     private UserStatus status;
@@ -52,5 +40,16 @@ public class User extends BaseTimeEntity {
         System.out.println("ㅎㅎ");
         return "user";
     }
+
+    private User(OauthInfo oauthInfo){
+        this.oauthInfo = oauthInfo;
+        this.status = UserStatus.ACTIVE;
+        this.role = UserRole.USER;
+    }
+
+    public static User create(OauthInfo oauthInfo){
+        return new User(oauthInfo);
+    }
+
 
 }
