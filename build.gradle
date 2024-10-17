@@ -29,18 +29,18 @@ dependencies {
 	implementation 'org.springframework.boot:spring-boot-starter-web'
 
 	//security
-//	implementation 'org.springframework.boot:spring-boot-starter-security'
+	implementation 'org.springframework.boot:spring-boot-starter-security'
 
 	//oauth2.0
-//	implementation 'org.springframework.boot:spring-boot-starter-oauth2-client'
-//	implementation 'com.auth0:java-jwt:4.4.0'
+	implementation 'org.springframework.boot:spring-boot-starter-oauth2-client'
+	implementation 'com.auth0:java-jwt:4.4.0'
 
 
 	compileOnly 'org.projectlombok:lombok'
 	annotationProcessor 'org.projectlombok:lombok'
 
 	//openclient
-//	implementation 'org.springframework.cloud:spring-cloud-starter-openfeign:4.1.1'
+	implementation 'org.springframework.cloud:spring-cloud-starter-openfeign:4.1.1'
 
 	//db
 	runtimeOnly 'com.mysql:mysql-connector-j'
@@ -48,6 +48,10 @@ dependencies {
 	//test
 	testImplementation 'org.springframework.boot:spring-boot-starter-test'
 	testRuntimeOnly 'org.junit.platform:junit-platform-launcher'
+
+	//redis
+	implementation 'org.springframework.boot:spring-boot-starter-data-redis'
+
 }
 
 tasks.named('test') {
