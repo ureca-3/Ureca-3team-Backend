@@ -22,10 +22,9 @@ public class UserRedirectController {
         String authUrl = "https://kauth.kakao.com/oauth/authorize?" +
                 "client_id=" + oauthConfig.getKakaoClientId() +
                 "&redirect_uri=" + oauthConfig.getKakaoRedirectUri() +
-                "&response_type=code" +
-                "&scope=openid account_email,age_range,gender"; // 추가 동의 항목 포함
+                "&response_type=code" ;
+//                "&scope=openid,account_email,age_range,gender";
 
-        log.info("Redirecting to Kakao OAuth2 URL: {}", authUrl);
         response.sendRedirect(authUrl);
     }
 }

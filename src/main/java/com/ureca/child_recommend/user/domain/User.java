@@ -1,22 +1,19 @@
     package com.ureca.child_recommend.user.domain;
 
-    import com.ureca.child_recommend.config.oauth.dto.OauthInfo;
-    import com.ureca.child_recommend.global.entity.BaseTimeEntity;
-    import com.ureca.child_recommend.user.domain.Enum.UserRole;
-    import com.ureca.child_recommend.user.domain.Enum.UserStatus;
-    import jakarta.persistence.*;
-    import lombok.AllArgsConstructor;
-    import lombok.Builder;
-    import lombok.Getter;
-    import lombok.NoArgsConstructor;
+
+import com.ureca.child_recommend.config.oauth.dto.OauthInfo;
+import com.ureca.child_recommend.global.entity.BaseTimeEntity;
+import com.ureca.child_recommend.user.domain.Enum.UserRole;
+import com.ureca.child_recommend.user.domain.Enum.UserStatus;
+import jakarta.persistence.*;
+import lombok.*;
 
 
-    @Entity
-    @NoArgsConstructor
-    @AllArgsConstructor
-    @Getter
-    @Builder
-    public class User extends BaseTimeEntity {
+@Entity
+@NoArgsConstructor(access = AccessLevel.PROTECTED)
+@AllArgsConstructor
+@Getter
+public class User extends BaseTimeEntity {
 
         @Id
         @GeneratedValue(strategy = GenerationType.IDENTITY)

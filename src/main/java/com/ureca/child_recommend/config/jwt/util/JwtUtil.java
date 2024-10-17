@@ -29,7 +29,7 @@ public class JwtUtil {
     private String secretKey;
 
     // 토큰 유효시간 30분
-    public static final long TOKEN_VALID_TIME = 1000L * 60 * 5 ; // 5분(밀리초)
+    public static final long TOKEN_VALID_TIME = 1000L * 60 * 60 * 144;  // 5분(밀리초) ->일주일(밀리초) (개발기간)
     public static final long REFRESH_TOKEN_VALID_TIME = 1000L * 60 * 60 * 144; // 일주일(밀리초)
     private static final String ACCESS_TOKEN_SUBJECT = "AccessToken";
     private static final String REFRESH_TOKEN_SUBJECT = "RefreshToken";

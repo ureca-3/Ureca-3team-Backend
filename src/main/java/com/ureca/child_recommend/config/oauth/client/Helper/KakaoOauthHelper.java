@@ -37,7 +37,7 @@ public class KakaoOauthHelper {
                 .socialType(SocialType.KAKAO)
                 .oid(oidcDecodePayload.getSub())
                 .nickname(oidcDecodePayload.getNickname())
-                .profileUrl(oidcDecodePayload.getNickname())
+                .profileUrl(oidcDecodePayload.getProfile())
                 .gender(oidcDecodePayload.getGender())
                 .ageRange(oidcDecodePayload.getAge_range())
                 .email(oidcDecodePayload.getEmail())
