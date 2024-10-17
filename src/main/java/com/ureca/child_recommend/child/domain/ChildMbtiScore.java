@@ -24,13 +24,13 @@ public class ChildMbtiScore extends BaseTimeEntity {
     private Long id;
 
     @Column
-    private Integer ieScore;
+    private Integer eiScore;
 
     @Column
     private Integer snScore;
 
     @Column
-    private Integer ftScore;
+    private Integer tfScore;
 
     @Column
     private Integer jpScore;
@@ -45,4 +45,7 @@ public class ChildMbtiScore extends BaseTimeEntity {
     @JoinColumn(name = "child_id")
     private Child child;
 
+    public void updateStatus(ChildMbtiScoreStatus childMbtiScoreStatus) {
+        this.status = childMbtiScoreStatus;
+    }
 }
