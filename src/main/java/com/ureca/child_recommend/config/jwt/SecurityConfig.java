@@ -30,15 +30,11 @@ public class SecurityConfig{
                 .cors(AbstractHttpConfigurer::disable) // CORS 삭젯
                 .formLogin(AbstractHttpConfigurer::disable)
                 .authorizeHttpRequests(authorize -> authorize
-                        .requestMatchers("/api/v1/auth/login/kakao").permitAll()
                         .requestMatchers("/api/v1/auth/kakao").permitAll()
                         .requestMatchers("/api/v1/auth/kakao-login").permitAll()
-                        .requestMatchers("/api/v1/auth/google-login").permitAll()
-                        .requestMatchers("/api/v1/auth/google").permitAll()
-                        .requestMatchers("/api/v1/auth/kakao").permitAll()
                         .requestMatchers("/api/v1/auth/**").hasAnyRole("USER")
 
-                        .requestMatchers("**").permitAll()
+                        .requestMatchers("*/api/v1/*").hasAnyRole("USER")
                         .anyRequest().authenticated())
 
                 .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
