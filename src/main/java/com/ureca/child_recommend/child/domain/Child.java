@@ -43,5 +43,21 @@ public class Child extends BaseTimeEntity {
     @JoinColumn(name = "user_id")
     private User user;
 
+    public static Child createChildProfile(String name, String gender, LocalDate birthday, String profileUrl, User user) {
+        return Child.builder()
+                .name(name)
+                .gender(gender)
+                .birthday(birthday)
+                .profileUrl(profileUrl)
+                .user(user)
+                .build();
+    }
+
+    public void updateChildInfo(String name, String gender, LocalDate birthday, String profileUrl) {
+        this.name = name;
+        this.gender = gender;
+        this.birthday = birthday;
+        this.profileUrl = profileUrl;
+    }
 
 }

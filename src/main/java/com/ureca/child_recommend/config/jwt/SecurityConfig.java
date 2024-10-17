@@ -34,7 +34,7 @@ public class SecurityConfig{
                         .requestMatchers("/api/v1/auth/kakao-login").permitAll()
                         .requestMatchers("/api/v1/auth/**").hasAnyRole("USER")
 
-                        .requestMatchers("*/api/v1/*").hasAnyRole("USER")
+                        .requestMatchers("/**").permitAll()
                         .anyRequest().authenticated())
 
                 .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))

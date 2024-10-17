@@ -50,5 +50,23 @@ public class UserController {
         return SuccessResponse.success("로그아웃 성공");
     }
 
+    @PatchMapping("/user/nickname")
+    public SuccessResponse<String> updateNickname(@RequestParam Long userId, @RequestBody String newNickname) {
+        userService.updateNickname(userId, newNickname);
+        return SuccessResponse.success("닉네임 수정 성공");
+    }
 
+    // 전화번호 수정
+    @PatchMapping("/user/phone")
+    public SuccessResponse<String> updatePhone(@RequestParam Long userId, @RequestBody String newPhone) {
+        userService.updatePhone(userId, newPhone);
+        return SuccessResponse.success("전화번호 수정 성공");
+    }
+
+    // 프로필 삭제
+    @DeleteMapping("/user")
+    public SuccessResponse<String> deleteUser(@RequestParam Long userId) {
+        userService.deleteUser(userId);
+        return SuccessResponse.success("프로필 삭제 성공");
+    }
 }

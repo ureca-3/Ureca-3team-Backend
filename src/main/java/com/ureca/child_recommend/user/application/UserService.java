@@ -92,5 +92,23 @@ public class UserService {
         }
         return refreshToken;
     }
+
+    public void updateNickname(Long userId, String newNickname) {
+        User user = userRepository.findById(userId)
+                .orElseThrow(() -> new IllegalArgumentException("해당 유저가 존재하지 않습니다."));
+        user.updateNickname(newNickname);
+        userRepository.save(user);
+    }
+
+    public void updatePhone(Long userId, String newPhone) {
+        User user = userRepository.findById(userId)
+                .orElseThrow(() -> new IllegalArgumentException("해당 유저가 존재하지 않습니다."));
+        user.updatePhone(newPhone);
+        userRepository.save(user);
+    }
+
+    public void deleteUser(Long userId) {
+        userRepository.deleteById(userId);
+    }
 }
 
