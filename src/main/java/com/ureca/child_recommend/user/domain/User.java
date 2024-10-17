@@ -5,17 +5,13 @@ import com.ureca.child_recommend.global.entity.BaseTimeEntity;
 import com.ureca.child_recommend.user.domain.Enum.UserRole;
 import com.ureca.child_recommend.user.domain.Enum.UserStatus;
 import jakarta.persistence.*;
-import lombok.AllArgsConstructor;
-import lombok.Builder;
-import lombok.Getter;
-import lombok.NoArgsConstructor;
+import lombok.*;
 
 
 @Entity
-@NoArgsConstructor
+@NoArgsConstructor(access = AccessLevel.PROTECTED)
 @AllArgsConstructor
 @Getter
-@Builder
 public class User extends BaseTimeEntity {
 
     @Id

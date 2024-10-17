@@ -74,9 +74,9 @@ public class JwtOIDCUtil {
                 decodedJWT.getIssuer(),
                 decodedJWT.getAudience().get(0),
                 decodedJWT.getSubject(),
-                decodedJWT.getClaim("profile_nickname").asString(),
-                decodedJWT.getClaim("profile_image").asString(),
-                decodedJWT.getClaim("account_email").asString(),
+                decodedJWT.getClaim("nickname").asString(),
+                decodedJWT.getClaim("picture").asString(),
+                decodedJWT.getClaim("email").asString(),
                 decodedJWT.getClaim("gender").asString(), // age_range 추가
                 decodedJWT.getClaim("age_range").asString());    // gender 추가
     }
