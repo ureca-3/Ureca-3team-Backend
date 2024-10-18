@@ -86,8 +86,8 @@ public class ContentsService {
                     .build();
 
             // 📢 알림 발행: Redis 채널에 메시지 전송
-            String message = String.format("새로운 컨텐츠가 등록되었습니다: %s by %s",
-                    contents.getTitle(), contents.getAuthor());
+            String message = String.format("New Contents: %s",
+                    contents.getTitle());
             redisTemplate.convertAndSend(bookChannel.getTopic(), message);
 
             return contentsRepository.save(contents).getId();

@@ -1,5 +1,6 @@
 package com.ureca.child_recommend.notice.presentation;
 
+import com.ureca.child_recommend.notice.application.SseEmitterManager;
 import org.springframework.http.MediaType;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RestController;
@@ -9,12 +10,12 @@ import java.util.concurrent.CopyOnWriteArrayList;
 
 @RestController
 public class SseController {
-
+/*  // 리팩토링
     private final CopyOnWriteArrayList<SseEmitter> emitters = new CopyOnWriteArrayList<>();
 
     @GetMapping("/sse/notifications")
     public SseEmitter subscribe() {
-        SseEmitter emitter = new SseEmitter();
+        SseEmitter emitter = new SseEmitter(3600 * 1000L); // 1시간
         emitters.add(emitter);
 
         // 클라이언트 연결 종료 시 제거
@@ -32,6 +33,22 @@ public class SseController {
                 emitters.remove(emitter);
             }
         }
+    }*/
+
+    private final SseEmitterManager sseEmitterManager;
+
+    public SseController(SseEmitterManager sseEmitterManager) {
+        this.sseEmitterManager = sseEmitterManager;
     }
+
+    @GetMapping("/sse/notifications")
+    public SseEmitter subscribe(){
+        return sseEmitterManager.createEmitter();
+    }
+
+    public void sendSseEvent(String notification){
+        sseEmitterManager.sendEvent(notification);
+    }
+
 
 }
