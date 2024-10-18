@@ -1,3 +1,4 @@
+/*
 package com.ureca.child_recommend.contents.presentation.dto;
 
 import lombok.Builder;
@@ -25,3 +26,4 @@ public class BookDto {
     }
 
 }
+*/

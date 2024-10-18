@@ -1,3 +1,4 @@
+/*
 package com.ureca.child_recommend.notice.presentation;
 
 import com.ureca.child_recommend.contents.domain.Contents;
@@ -16,6 +17,7 @@ import org.springframework.web.bind.annotation.RestController;
 public class BookController {
 
     private final BookService bookService;
+*/
 /*  // 리팩토링
     public BookController(BookService bookService) {
         this.bookService = bookService;
@@ -31,7 +33,8 @@ public class BookController {
 
         return BookDto.Response.RegisterBookResponse.of("책이 등록되었습니다.");
     }
-*/
+*//*
+
     @PostMapping("/test")
     public SuccessResponse<BookDto.Response.RegisterBookResponse> registerNewBook(
             @RequestBody BookDto.Request.RegisterBookRequest request){
@@ -51,3 +54,4 @@ public class BookController {
         return SuccessResponse.success(response);
     }
 }
+*/
