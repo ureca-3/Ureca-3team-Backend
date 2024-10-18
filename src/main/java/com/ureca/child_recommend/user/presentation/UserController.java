@@ -52,22 +52,22 @@ public class UserController {
     }
 
     @PatchMapping("/user/nickname")
-    public SuccessResponse<String> updateNickname(@AuthenticationPrincipal Long userid, @RequestBody Long userId , @RequestBody String newNickname) {
-        userService.updateNickname(userid, userId, newNickname);
-        return SuccessResponse.success("닉네임 수정 성공");
+    public SuccessResponse<String> updateNickname(@AuthenticationPrincipal Long userId , @RequestBody String newNickname) {
+        userService.updateNickname(userId, newNickname);
+        return SuccessResponse.successWithoutResult(null);
     }
 
     // 전화번호 수정
     @PatchMapping("/user/phone")
-    public SuccessResponse<String> updatePhone(@AuthenticationPrincipal Long userid, @RequestBody Long userId , @RequestBody String newPhone) {
-        userService.updatePhone(userid,userId, newPhone);
-        return SuccessResponse.success("전화번호 수정 성공");
+    public SuccessResponse<String> updatePhone(@AuthenticationPrincipal Long userId , @RequestBody String newPhone) {
+        userService.updatePhone(userId, newPhone);
+        return SuccessResponse.successWithoutResult(null);
     }
 
-    // 프로필 삭제
-    @DeleteMapping("/user")
-    public SuccessResponse<String> deleteUser(@AuthenticationPrincipal Long userid, @RequestBody Long userId) {
-        userService.deleteUser(userid, userId);
-        return SuccessResponse.success("프로필 삭제 성공");
+    // 유저 정지
+    @PatchMapping("/user")
+    public SuccessResponse<String> deleteUser(@AuthenticationPrincipal Long userId) {
+        userService.deleteUser(userId);
+        return SuccessResponse.successWithoutResult(null);
     }
 }

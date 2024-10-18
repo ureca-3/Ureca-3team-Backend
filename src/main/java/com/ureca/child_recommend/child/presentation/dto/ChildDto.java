@@ -1,6 +1,8 @@
 package com.ureca.child_recommend.child.presentation.dto;
 
 import com.ureca.child_recommend.child.domain.Child;
+import lombok.AccessLevel;
+import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Getter;
 
@@ -17,12 +19,14 @@ public class ChildDto {
         private LocalDate birthday;
         private String profileUrl;
 
+
         // 기본 생성자는 Lombok이 제공
     }
 
     // 응답 DTO
     @Getter
     @Builder
+    @AllArgsConstructor(access = AccessLevel.PUBLIC) // public 생성자 추가
     public static class Response {
         private String name;
         private String gender;
@@ -36,6 +40,7 @@ public class ChildDto {
                     .gender(child.getGender())
                     .birthday(child.getBirthday())
                     .profileUrl(child.getProfileUrl())
+                    .userId(child.getUser().getId()) // user의 ID 설정
                     .build();
         }
 
