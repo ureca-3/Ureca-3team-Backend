@@ -7,6 +7,8 @@ import com.ureca.child_recommend.contents.infrastructure.ContentsMbtiRepository;
 import com.ureca.child_recommend.contents.infrastructure.ContentsRepository;
 import com.ureca.child_recommend.contents.presentation.dto.ContentsDto;
 import lombok.RequiredArgsConstructor;
+import org.springframework.data.redis.core.RedisTemplate;
+import org.springframework.data.redis.listener.ChannelTopic;
 import org.springframework.stereotype.Service;
 
 import java.util.regex.Matcher;
@@ -18,6 +20,8 @@ public class ContentsService {
     private final ContentsRepository contentsRepository;
     private final ContentsMbtiRepository mbtiRepository;
     private final ContentsMbtiService mbtiService;
+    private final ChannelTopic bookChannel;
+    private final RedisTemplate<String, Object> redisTemplate;
 
     // 저장, 기본 데이터 입력 후 GPT 활용하여 mbti 데이터 저장
     public Long saveContents(ContentsDto.Request request) {
@@ -80,6 +84,11 @@ public class ContentsService {
                     .status(ContentsStatus.ACTIVE)
                     .contentsMbti(mbtiScore)
                     .build();
+
+            // 📢 알림 발행: Redis 채널에 메시지 전송
+            String message = String.format("새로운 컨텐츠가 등록되었습니다: %s by %s",
+                    contents.getTitle(), contents.getAuthor());
+            redisTemplate.convertAndSend(bookChannel.getTopic(), message);
 
             return contentsRepository.save(contents).getId();
         }
