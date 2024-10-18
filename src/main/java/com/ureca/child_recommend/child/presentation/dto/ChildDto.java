@@ -28,6 +28,7 @@ public class ChildDto {
         private String gender;
         private LocalDate birthday;
         private String profileUrl;
+        private Long userId;
 
         public static Response fromEntity(Child child) {
             return Response.builder()
@@ -36,6 +37,10 @@ public class ChildDto {
                     .birthday(child.getBirthday())
                     .profileUrl(child.getProfileUrl())
                     .build();
+        }
+
+        public Long getUserId() {
+            return userId; // 부모의 userId 반환
         }
     }
 }

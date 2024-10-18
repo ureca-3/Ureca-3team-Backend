@@ -1,8 +1,7 @@
 package com.ureca.child_recommend.child.application;
-
-import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
+import org.springframework.beans.factory.annotation.Value;
 
 import java.io.File;
 import java.io.IOException;
@@ -15,20 +14,25 @@ import java.util.UUID;
 public class FileService {
 
     @Value("${file.upload-dir}")
-    private String uploadDir; // 이미지 저장 경로
+    private String uploadDir;
+
 
     public String storeFile(MultipartFile file) throws IOException {
-        // 파일 이름 생성 (중복 방지)
+        // 저장 디렉토리 경로가 없으면 생성
+        Path uploadPath = Paths.get(uploadDir);
+        if (!Files.exists(uploadPath)) {
+            Files.createDirectories(uploadPath);
+        }
+
+        // 파일 이름 생성 (UUID 사용)
         String originalFilename = file.getOriginalFilename();
-        String uniqueFileName = UUID.randomUUID() + "_" + originalFilename;
+        String fileName = UUID.randomUUID().toString() + "_" + originalFilename;
+        Path filePath = uploadPath.resolve(fileName);
 
-        // 파일 저장 경로
-        Path filePath = Paths.get(uploadDir + File.separator + uniqueFileName);
-        Files.createDirectories(filePath.getParent()); // 디렉토리 생성
-        Files.write(filePath, file.getBytes()); // 파일 저장
+        // 파일 저장
+        file.transferTo(filePath.toFile());
 
-        // 파일 URL 생성 (상대 경로 또는 절대 경로에 맞게 수정)
-        return "/uploads/" + uniqueFileName; // URL 반환
+        // 저장된 파일의 URL 반환 (URL 형식으로 만들어줌)
+        return "/profile/" + fileName;
     }
 }
-

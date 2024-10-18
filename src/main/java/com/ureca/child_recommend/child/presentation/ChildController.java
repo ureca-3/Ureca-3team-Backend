@@ -19,43 +19,48 @@ public class ChildController {
     private final ChildService childService;
     private final FileService fileService;
 
-    // 자녀 프로필 생성 API
-    @PostMapping("/child")
-    public ResponseEntity<String> createChildProfile(@RequestParam Long userId,
-                                                     @RequestParam MultipartFile file,
-                                                     @RequestBody ChildDto.Request childRequest) {
+    @PostMapping("/profile")
+    public ResponseEntity<String> uploadProfile(@RequestParam MultipartFile file) {
         try {
-            String profileUrl = fileService.storeFile(file); // 파일 저장 및 URL 생성
-            childService.createChildProfile(userId, childRequest, profileUrl); // 자녀 프로필 생성
-            return ResponseEntity.status(HttpStatus.CREATED).body("Child profile created successfully."); // 성공 메시지 반환
+            // 파일 저장 및 URL 반환
+            String fileUrl = fileService.storeFile(file);
+            return ResponseEntity.status(HttpStatus.CREATED).body(fileUrl);
         } catch (IOException e) {
-            // IOException 처리
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("Failed to upload file: " + e.getMessage());
         }
     }
 
-    // IOException을 처리하는 메서드 (필요 시 추가)
-    @ExceptionHandler(IOException.class)
-    public ResponseEntity<String> handleIOException(IOException e) {
-        return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("File error: " + e.getMessage());
+    // 자녀 프로필 생성 API
+    @PostMapping("/child")
+    public ResponseEntity<String> createChildProfile(@AuthenticationPrincipal Long userId,
+                                                     @RequestBody ChildDto.Request childRequest) {
+
+            childService.createChildProfile(userId, childRequest); // 자녀 프로필 생성
+            return ResponseEntity.status(HttpStatus.CREATED).body("Child profile created successfully."); // 성공 메시지 반환
     }
 
     @GetMapping("/child/{child_id}")
-    public ResponseEntity<ChildDto.Response> getChildById(@PathVariable("child_id") Long childId) {
-        ChildDto.Response childDto = childService.getChildById(childId);
+    public ResponseEntity<ChildDto.Response> getChildById(@AuthenticationPrincipal Long userId, @PathVariable("child_id") Long childId) {
+        ChildDto.Response childDto = childService.getChildById(userId, childId);
         return ResponseEntity.ok(childDto);
     }
 
     @PatchMapping("/child/{child_id}")
-    public ResponseEntity<ChildDto.Response> updateChild(@PathVariable("child_id") Long childId,
+    public ResponseEntity<ChildDto.Response> updateChild(@AuthenticationPrincipal Long userId,
+                                                         @PathVariable("child_id") Long childId,
                                                          @RequestBody ChildDto.Request childRequest) {
-        ChildDto.Response updatedChild = childService.updateChild(childId, childRequest);
+        // 수정 처리
+        ChildDto.Response updatedChild = childService.updateChild(userId, childId, childRequest);
         return ResponseEntity.ok(updatedChild);
     }
 
     @DeleteMapping("/child/{child_id}")
-    public ResponseEntity<Void> deleteChild(@PathVariable("child_id") Long childId) {
-        childService.deleteChild(childId);
+    public ResponseEntity<Void> deleteChild(@AuthenticationPrincipal Long userId,
+                                            @PathVariable("child_id") Long childId) {
+
+        // 삭제 처리
+        childService.deleteChild(userId, childId);
         return ResponseEntity.noContent().build();
     }
+
 }

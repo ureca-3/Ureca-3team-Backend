@@ -5,6 +5,7 @@ import com.ureca.child_recommend.user.application.UserService;
 import com.ureca.child_recommend.user.dto.UserDto;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
 
 
@@ -51,22 +52,22 @@ public class UserController {
     }
 
     @PatchMapping("/user/nickname")
-    public SuccessResponse<String> updateNickname(@RequestParam Long userId, @RequestBody String newNickname) {
-        userService.updateNickname(userId, newNickname);
+    public SuccessResponse<String> updateNickname(@AuthenticationPrincipal Long userid, @RequestBody Long userId , @RequestBody String newNickname) {
+        userService.updateNickname(userid, userId, newNickname);
         return SuccessResponse.success("닉네임 수정 성공");
     }
 
     // 전화번호 수정
     @PatchMapping("/user/phone")
-    public SuccessResponse<String> updatePhone(@RequestParam Long userId, @RequestBody String newPhone) {
-        userService.updatePhone(userId, newPhone);
+    public SuccessResponse<String> updatePhone(@AuthenticationPrincipal Long userid, @RequestBody Long userId , @RequestBody String newPhone) {
+        userService.updatePhone(userid,userId, newPhone);
         return SuccessResponse.success("전화번호 수정 성공");
     }
 
     // 프로필 삭제
     @DeleteMapping("/user")
-    public SuccessResponse<String> deleteUser(@RequestParam Long userId) {
-        userService.deleteUser(userId);
+    public SuccessResponse<String> deleteUser(@AuthenticationPrincipal Long userid, @RequestBody Long userId) {
+        userService.deleteUser(userid, userId);
         return SuccessResponse.success("프로필 삭제 성공");
     }
 }

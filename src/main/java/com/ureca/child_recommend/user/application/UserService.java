@@ -5,6 +5,7 @@ import com.ureca.child_recommend.config.oauth.dto.OauthInfo;
 import com.ureca.child_recommend.config.oauth.client.Helper.KakaoOauthHelper;
 import com.ureca.child_recommend.config.redis.util.RedisUtil;
 import com.ureca.child_recommend.global.exception.BusinessException;
+import com.ureca.child_recommend.user.domain.Enum.UserRole;
 import com.ureca.child_recommend.user.domain.User;
 import com.ureca.child_recommend.user.dto.UserDto;
 import com.ureca.child_recommend.user.infrastructure.UserRepository;
@@ -81,7 +82,7 @@ public class UserService {
         redisUtil.setData(LOGOUT+resolveToken, LOGOUT, jwtUtil.getExpiration(resolveToken));// 블랙리스트 처리
     }
 
-
+//
     //토큰 얻어오기
     protected String getOrGenerateRefreshToken(User user){
         String refreshToken = redisUtil.getData(RT + user.getId());
@@ -93,22 +94,30 @@ public class UserService {
         return refreshToken;
     }
 
-    public void updateNickname(Long userId, String newNickname) {
+    public void updateNickname(Long userid, Long userId, String newNickname) {
         User user = userRepository.findById(userId)
                 .orElseThrow(() -> new IllegalArgumentException("해당 유저가 존재하지 않습니다."));
-        user.updateNickname(newNickname);
+
+        User User = userRepository.findById(userid)
+                .orElseThrow(() -> new IllegalArgumentException("본인 정보가 존재하지 않습니다."));
+
+        if(userid.equals(userId) || User.getRole() == UserRole.GUEST) {user.updateNickname(newNickname);}
         userRepository.save(user);
     }
 
-    public void updatePhone(Long userId, String newPhone) {
+    public void updatePhone(Long userid, Long userId,  String newPhone) {//본인id, 업데이트하고자하는id,수정값
         User user = userRepository.findById(userId)
                 .orElseThrow(() -> new IllegalArgumentException("해당 유저가 존재하지 않습니다."));
-        user.updatePhone(newPhone);
+        User User = userRepository.findById(userid)
+                .orElseThrow(() -> new IllegalArgumentException("본인 계정 정보가 존재하지 않습니다."));
+        if(userid.equals(userId) || User.getRole() == UserRole.GUEST) {user.updatePhone(newPhone);}
         userRepository.save(user);
     }
 
-    public void deleteUser(Long userId) {
-        userRepository.deleteById(userId);
+    public void deleteUser(Long userid, Long userId) {
+        User User = userRepository.findById(userid)
+                .orElseThrow(() -> new IllegalArgumentException("본인 계정 정보가 존재하지 않습니다."));
+        if(userid.equals(userId) || User.getRole() == UserRole.GUEST) {userRepository.deleteById(userId);}
     }
 }
 
