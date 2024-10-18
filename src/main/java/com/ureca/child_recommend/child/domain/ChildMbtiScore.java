@@ -2,6 +2,7 @@ package com.ureca.child_recommend.child.domain;
 
 
 import com.ureca.child_recommend.child.domain.Enum.ChildMbtiScoreStatus;
+import com.ureca.child_recommend.child.domain.Enum.ChildMbtiStatus;
 import com.ureca.child_recommend.global.entity.BaseTimeEntity;
 import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
@@ -45,7 +46,20 @@ public class ChildMbtiScore extends BaseTimeEntity {
     @JoinColumn(name = "child_id")
     private Child child;
 
+
     public void updateStatus(ChildMbtiScoreStatus childMbtiScoreStatus) {
         this.status = childMbtiScoreStatus;
+    }
+
+    public static ChildMbtiScore enrollToMbtiScore(int m, int b, int t, int i, Child child) {
+        return ChildMbtiScore.builder()
+                .eiScore(m)
+                .snScore(b)
+                .tfScore(t)
+                .jpScore(i)
+                .assessmentDate(LocalDate.now())
+                .status(ChildMbtiScoreStatus.ACTIVE)
+                .child(child)
+                .build();
     }
 }

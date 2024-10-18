@@ -27,8 +27,14 @@ public enum CommonErrorCode implements ErrorCode{
 
     TEST_NOT_FOUND(HttpStatus.UNAUTHORIZED,"4444","테스트 아이디가 없습니다."),
 
-    ;
+    // child error (4201~
+    CHILD_NOT_FOUND(HttpStatus.NOT_FOUND,"4201","해당 자녀를 찾을 수 없습니다."),
 
+
+    // mbti 진단 error (4301~
+    ASSESSMENT_NOT_FOUND(HttpStatus.NOT_FOUND,"4301","해당 진단 내역을 찾을 수 없습니다."),
+
+    ;
 
 
 

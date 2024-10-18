@@ -34,4 +34,13 @@ public class ChildMbti extends BaseTimeEntity {
     public void updateStatus(ChildMbtiStatus childMbtiStatus) {
         this.status = childMbtiStatus;
     }
+
+    public static ChildMbti enrollToMbti(String result,Child child){
+        return ChildMbti.builder()
+                .mbtiResult(result)
+                .status(ChildMbtiStatus.ACTIVE)
+                .child(child)
+                .build();
+    }
+
 }

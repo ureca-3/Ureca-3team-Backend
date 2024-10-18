@@ -12,10 +12,9 @@ import org.springframework.stereotype.Service;
 @RequiredArgsConstructor
 public class ChildService {
 
-    @Autowired
-    ChildRepository childRepository;
+    private final ChildRepository childRepository;
 
     public Child getChildById(Long childId) {
-        return childRepository.findById(childId).orElseThrow(()->new BusinessException(CommonErrorCode.USER_NOT_FOUND));
+        return childRepository.findById(childId).orElseThrow(()->new BusinessException(CommonErrorCode.CHILD_NOT_FOUND));
     }
 }

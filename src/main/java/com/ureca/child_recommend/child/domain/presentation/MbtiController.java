@@ -1,44 +1,35 @@
 package com.ureca.child_recommend.child.domain.presentation;
 
-import com.ureca.child_recommend.child.domain.Child;
-import com.ureca.child_recommend.child.domain.application.ChildService;
 import com.ureca.child_recommend.child.domain.application.MbtiService;
 import com.ureca.child_recommend.child.domain.presentation.dto.MbtiDto;
+import com.ureca.child_recommend.global.response.SuccessResponse;
 import lombok.RequiredArgsConstructor;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.http.HttpStatus;
-import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
-
-import java.util.Optional;
 
 @RestController
 @RequiredArgsConstructor
-@RequestMapping("/mbti")
+@RequestMapping("/api/v1/mbti")
 public class MbtiController {
 
-    @Autowired
-    MbtiService mbtiService;
-    @Autowired
-    ChildService childService;
+    private final MbtiService mbtiService;
 
     // 진단하기
-    @PostMapping("/assessment/{childId}")
-    public ResponseEntity<String> assessmentMbti(@RequestBody MbtiDto mbtiDto, @PathVariable("childId") Long childId) {
-
-        Child child = childService.getChildById(childId);
+    @PostMapping("/assessment/{child_id}")
+    public SuccessResponse<MbtiDto.Response.assessmentMbtiDto> assessmentMbti(@RequestBody MbtiDto.Request.assessmentMbtiDto dto, @PathVariable("child_id") Long child_id) {
         // MBTI 계산 및 저장
-        mbtiService.saveMbtiResult(mbtiDto, child);
-
-        return ResponseEntity.ok("MBTI Result: " + mbtiDto.getResult());
+        MbtiDto.Response.assessmentMbtiDto resultDto = mbtiService.saveMbtiResult(dto, child_id);
+        return SuccessResponse.success(resultDto);
     }
 
     // 진단 삭제
     @DeleteMapping("/assessment/{childMbtiScore_id}")
-    public ResponseEntity<String> deleteAssessmentMbti(@PathVariable("childMbtiScore_id") Long childMbtiScore_id) {
+    public SuccessResponse<Long> deleteAssessmentMbti(@PathVariable("childMbtiScore_id") Long childMbtiScore_id) {
         mbtiService.deleteMbti(childMbtiScore_id);
-        return ResponseEntity.ok("삭제 성공. childMbtiScore_id : " + childMbtiScore_id);
-
+        return SuccessResponse.success(childMbtiScore_id);
     }
 
 }
+
+
+
+
