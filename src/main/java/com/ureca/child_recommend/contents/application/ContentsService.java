@@ -89,9 +89,7 @@ public class ContentsService {
         Contents findContents = contentsRepository.findById(contentsId).orElseThrow(()
                 -> new BusinessException(CommonErrorCode.CONTENTS_NOT_FOUND));
 
-        findContents.updateContents(request.getTitle(), request.getPosterUrl(), request.getDescription(),
-                request.getAuthor(), request.getPublisher(), request.getPublicationYear(), ContentsStatus.ACTIVE);
-
+        findContents.updateContents(request);
         return ContentsDto.Response.contentsData(findContents);
     }
 
@@ -100,8 +98,7 @@ public class ContentsService {
         Contents findContents = contentsRepository.findById(contentsId).orElseThrow(()
                 -> new BusinessException(CommonErrorCode.CONTENTS_NOT_FOUND));
 
-        findContents.updateContents(findContents.getTitle(), findContents.getPosterUrl(), findContents.getDescription(),
-                findContents.getAuthor(), findContents.getPublisher(), findContents.getPublicationYear(), ContentsStatus.NONACTIVE);
+        findContents.updateStatus(ContentsStatus.NONACTIVE);
         return ContentsDto.Response.contentsData(findContents);
     }
 

@@ -28,7 +28,7 @@ public class ContentsController {
     }
     
     // 특정 contents 수정
-    @PutMapping("/update/{contentsId}")
+    @PatchMapping("/update/{contentsId}")
     public SuccessResponse<ContentsDto.Response> updatecontent(@AuthenticationPrincipal Long userId, @PathVariable("contentsId") Long contentsId,
                                   @RequestBody ContentsDto.Request request) {
         ContentsDto.Response content = contentsService.updateContents(contentsId, request);
@@ -36,7 +36,7 @@ public class ContentsController {
     }
 
     // 특정 contents 삭제
-    @PutMapping("/delete/{contentsId}")
+    @PatchMapping("/delete/{contentsId}")
     public SuccessResponse<ContentsDto.Response> deleteContents(@AuthenticationPrincipal Long userId, @PathVariable("contentsId") Long contentsId) {
         return SuccessResponse.success(contentsService.deleteContents(contentsId));
     }

@@ -69,14 +69,31 @@ public class Contents extends BaseTimeEntity {
                 .build();
     }
 
-    public void updateContents(String title, String posterUrl, String description, String author,
-                               String publisher, LocalDate publicationYear, ContentsStatus status) {
-        this.title = title;
-        this.posterUrl = posterUrl;
-        this.description = description;
-        this.author = author;
-        this.publisher = publisher;
-        this.publicationYear = publicationYear;
+    public void updateContents(ContentsDto.Request request) {
+        if (request.getTitle() != null) {
+            this.title = request.getTitle();
+        }
+        if (request.getPosterUrl() != null) {
+            this.posterUrl = request.getPosterUrl();
+        }
+        if (request.getDescription() != null) {
+            this.description = request.getDescription();
+        }
+        if (request.getAuthor() != null) {
+            this.author = request.getAuthor();
+        }
+        if (request.getPublisher() != null) {
+            this.publisher = request.getPublisher();
+        }
+        if (request.getPublicationYear() != null) {
+            this.publicationYear = request.getPublicationYear();
+        }
+        if (request.getStatus() != null) {
+            this.status = request.getStatus();
+        }
+    }
+
+    public void updateStatus(ContentsStatus status) {
         this.status = status;
     }
 }
