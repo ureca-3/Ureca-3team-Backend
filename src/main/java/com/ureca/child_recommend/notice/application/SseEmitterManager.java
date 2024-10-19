@@ -31,12 +31,25 @@ public class SseEmitterManager {
         return emitter;
     }
 
-    public void sendEvent(String notification){
+    // 새 콘텐츠 등록 시 알림 전송
+    public void sendContentNotification(String notification){
         for(SseEmitter emitter : emitters){
             try{
                 emitter.send(notification, MediaType.TEXT_EVENT_STREAM);
             } catch (Exception e){
-                emitters.remove(emitter);
+                emitters.remove(emitter); // 실패 시 emitter 제거
+            }
+        }
+    }
+
+    // 유저의 자녀 MBTI가 변경 시 알림 전송
+    public void sendMbtiChangeNotification(Long userId, String childName){
+        String notification = childName + "의 MBTI가 변경되었습니다.";
+        for(SseEmitter emitter : emitters){
+            try{
+                emitter.send(notification, MediaType.TEXT_EVENT_STREAM);
+            } catch (Exception e){
+                emitters.remove(emitter); // 실패 시 emitter 제거
             }
         }
     }

@@ -1,12 +1,9 @@
 package com.ureca.child_recommend.notice.presentation;
 
 import com.ureca.child_recommend.notice.application.SseEmitterManager;
-import org.springframework.http.MediaType;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.servlet.mvc.method.annotation.SseEmitter;
-
-import java.util.concurrent.CopyOnWriteArrayList;
 
 @RestController
 public class SseController {
@@ -47,7 +44,7 @@ public class SseController {
     }
 
     public void sendSseEvent(String notification){
-        sseEmitterManager.sendEvent(notification);
+        sseEmitterManager.sendContentNotification(notification);
     }
 
 
