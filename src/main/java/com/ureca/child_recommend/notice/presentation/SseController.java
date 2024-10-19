@@ -10,7 +10,7 @@ import java.util.concurrent.CopyOnWriteArrayList;
 
 @RestController
 public class SseController {
-/*  // 리팩토링
+/*  // 리팩토링 -> SseEmitterManager로 이동 / 기능 분할
     private final CopyOnWriteArrayList<SseEmitter> emitters = new CopyOnWriteArrayList<>();
 
     @GetMapping("/sse/notifications")
