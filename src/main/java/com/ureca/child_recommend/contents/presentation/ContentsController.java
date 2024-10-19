@@ -1,7 +1,6 @@
 package com.ureca.child_recommend.contents.presentation;
 
 import com.ureca.child_recommend.contents.application.ContentsService;
-import com.ureca.child_recommend.contents.domain.Contents;
 import com.ureca.child_recommend.contents.presentation.dto.ContentsDto;
 import com.ureca.child_recommend.global.response.SuccessResponse;
 import lombok.RequiredArgsConstructor;
@@ -15,29 +14,30 @@ public class ContentsController {
     private final ContentsService contentsService;
 
     // contents 저장
-    @GetMapping("/save")
-    public Long saveContents(@AuthenticationPrincipal Long userId, @RequestBody ContentsDto.Request request) {
-        return contentsService.saveContents(request);
+    @PostMapping("/save")
+    public SuccessResponse<String> saveContents(@AuthenticationPrincipal Long userId, @RequestBody ContentsDto.Request request) {
+        contentsService.saveContents(request);
+        return SuccessResponse.successWithoutResult("콘텐츠 저장을 완료했습니다.");
     }
 
     // 특정 contents 읽기
     @GetMapping("/read")
-    public Contents readContent(@AuthenticationPrincipal Long userId, @RequestParam("contentsId") Long contentsId) {
-        Contents content = contentsService.readContents(contentsId);
-        return content;
+    public SuccessResponse<ContentsDto.Response> readContent(@AuthenticationPrincipal Long userId, @RequestParam("contentsId") Long contentsId) {
+        ContentsDto.Response content = contentsService.readContents(contentsId);
+        return SuccessResponse.success(content);
     }
     
     // 특정 contents 수정
     @PutMapping("/update")
-    public Contents updatecontent(@AuthenticationPrincipal Long userId, @RequestParam("contentsId") Long contentsId,
+    public SuccessResponse<ContentsDto.Response> updatecontent(@AuthenticationPrincipal Long userId, @RequestParam("contentsId") Long contentsId,
                                   @RequestBody ContentsDto.Request request) {
-        Contents content = contentsService.updateContents(contentsId, request);
-        return content;
+        ContentsDto.Response content = contentsService.updateContents(contentsId, request);
+        return SuccessResponse.success(content);
     }
 
     // 특정 contents 삭제
     @PutMapping("/delete")
-    public SuccessResponse<ContentsDto.Response> deleteContents(@AuthenticationPrincipal Long userId, @RequestParam("contentsId") Long contentsId){
+    public SuccessResponse<ContentsDto.Response> deleteContents(@AuthenticationPrincipal Long userId, @RequestParam("contentsId") Long contentsId) {
         return SuccessResponse.success(contentsService.deleteContents(contentsId));
     }
 }

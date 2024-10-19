@@ -15,6 +15,7 @@ public class ContentsDto {
     public static class Response {
         private Long id;
         private String title;
+        private String posterUrl;
         private String description;
         private String author;
         private String publisher;
@@ -27,6 +28,7 @@ public class ContentsDto {
             return Response.builder()
                     .id(contents.getId())
                     .title(contents.getTitle())
+                    .posterUrl(contents.getPosterUrl())
                     .description(contents.getDescription())
                     .author(contents.getAuthor())
                     .publisher(contents.getPublisher())
@@ -41,6 +43,7 @@ public class ContentsDto {
     @Getter @NoArgsConstructor
     public static class Request {
         private String title;
+        private String posterUrl;
         private String description;
         private String author;
         private String publisher;

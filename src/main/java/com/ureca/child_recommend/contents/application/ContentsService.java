@@ -6,22 +6,31 @@ import com.ureca.child_recommend.contents.domain.Enum.ContentsStatus;
 import com.ureca.child_recommend.contents.infrastructure.ContentsMbtiRepository;
 import com.ureca.child_recommend.contents.infrastructure.ContentsRepository;
 import com.ureca.child_recommend.contents.presentation.dto.ContentsDto;
+import com.ureca.child_recommend.global.exception.BusinessException;
+import com.ureca.child_recommend.global.exception.errorcode.CommonErrorCode;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 @Service
 @RequiredArgsConstructor
+@Transactional(readOnly = true)
 public class ContentsService {
     private final ContentsRepository contentsRepository;
     private final ContentsMbtiRepository mbtiRepository;
     private final ContentsMbtiService mbtiService;
 
-    // 저장, 기본 데이터 입력 후 GPT 활용하여 mbti 데이터 저장
-    public Long saveContents(ContentsDto.Request request) {
+    public Contents saveContent(ContentsDto.Request contentsRequest, ContentsMbtiScore mbtiRequest, String mbtiResult) {
+        Contents content = Contents.saveContents(contentsRequest, mbtiRequest, mbtiResult);
+        return contentsRepository.save(content);
+    }
 
+    // 저장, 기본 데이터 입력 후 GPT 활용하여 mbti 데이터 저장
+    @Transactional
+    public void saveContents(ContentsDto.Request request) {
         // 줄거리 데이터 활용
         String summary = request.getDescription();
 
@@ -30,6 +39,8 @@ public class ContentsService {
                 "S: {}%\n" +
                 "T: {}%\n" +
                 "J: {}%\n 형식으로 알려줘" );
+
+        System.out.println(mbtiInfo);
 
         // 결과 mbti 파싱
         Pattern pattern = Pattern.compile("(\\d+)%");
@@ -52,12 +63,7 @@ public class ContentsService {
             index++;
         }
 
-        ContentsMbtiScore mbtiScore = ContentsMbtiScore.builder()
-                .eiScore(eiPercentage)
-                .snScore(snPercentage)
-                .tfScore(tfPercentage)
-                .jpScore(jpPercentage)
-                .build();
+        ContentsMbtiScore mbtiScore = ContentsMbtiScore.saveContentsMbti(eiPercentage, snPercentage, tfPercentage, jpPercentage);
 
         mbtiRepository.save(mbtiScore);
 
@@ -68,66 +74,32 @@ public class ContentsService {
         if (tfPercentage > 50) mbtiRes.append("T"); else mbtiRes.append("F");
         if (jpPercentage > 50) mbtiRes.append("J"); else mbtiRes.append("P");
 
-        // 제목과 작가 확인
-        if (contentsRepository.findByTitleAndAuthor(request.getTitle(), request.getAuthor()) == null) {
-            Contents contents = Contents.builder()
-                    .title(request.getTitle())
-                    .description(request.getDescription())
-                    .author(request.getAuthor())
-                    .publisher(request.getPublisher())
-                    .publicationYear(request.getPublicationYear())
-                    .contentsMbtiResult(mbtiRes.toString())
-                    .status(ContentsStatus.ACTIVE)
-                    .contentsMbti(mbtiScore)
-                    .build();
-
-            return contentsRepository.save(contents).getId();
-        }
-        else {
-            return contentsRepository.findByTitleAndAuthor(request.getTitle(), request.getAuthor()).getId();
-        }
+        // 제목과 작가 확인 시 없으면 생성
+        contentsRepository.findByTitleAndAuthor(request.getTitle(), request.getAuthor()).orElseGet(() -> saveContent(request, mbtiScore, mbtiRes.toString()));
     }
 
-    public Contents readContents(Long contentsId) {
-        Contents findContents = contentsRepository.findById(contentsId).get();
-
-        return findContents;
+    public ContentsDto.Response readContents(Long contentsId) {
+        Contents findContents = contentsRepository.findById(contentsId).orElseThrow(() -> new BusinessException(CommonErrorCode.CONTENTS_NOT_FOUND));
+        return ContentsDto.Response.contentsData(findContents);
     }
 
-    public Contents updateContents(Long contentsId, ContentsDto.Request request) {
-        Contents findContents = contentsRepository.findById(contentsId).get();
-        Contents updateContent = Contents.builder()
-                .id(contentsId)
-                .title(request.getTitle())
-                .description(request.getDescription())
-                .author(request.getAuthor())
-                .publisher(request.getPublisher())
-                .publicationYear(request.getPublicationYear())
-                .contentsMbtiResult(findContents.getContentsMbtiResult())
-                .status(ContentsStatus.ACTIVE)
-                .contentsMbti(findContents.getContentsMbti())
-                .build();
+    @Transactional
+    public ContentsDto.Response updateContents(Long contentsId, ContentsDto.Request request) {
+        Contents findContents = contentsRepository.findById(contentsId).orElseThrow(()-> new BusinessException(CommonErrorCode.CONTENTS_NOT_FOUND));
 
-        contentsRepository.save(updateContent);
-        return updateContent;
+        findContents.updateContents(request.getTitle(), request.getPosterUrl(), request.getDescription(),
+                request.getAuthor(), request.getPublisher(), request.getPublicationYear(), ContentsStatus.ACTIVE);
+
+        return ContentsDto.Response.contentsData(findContents);
     }
 
+    @Transactional
     public ContentsDto.Response deleteContents(Long contentsId) {
-        Contents findContents = contentsRepository.findById(contentsId).get();
-        Contents deleteContent = Contents.builder()
-                .id(contentsId)
-                .title(findContents.getTitle())
-                .description(findContents.getDescription())
-                .author(findContents.getAuthor())
-                .publisher(findContents.getPublisher())
-                .publicationYear(findContents.getPublicationYear())
-                .contentsMbtiResult(findContents.getContentsMbtiResult())
-                .status(ContentsStatus.NONACTIVE)
-                .contentsMbti(findContents.getContentsMbti())
-                .build();
+        Contents findContents = contentsRepository.findById(contentsId).orElseThrow(()-> new BusinessException(CommonErrorCode.CONTENTS_NOT_FOUND));
 
-        contentsRepository.save(deleteContent);
-        return ContentsDto.Response.contentsData(deleteContent);
+        findContents.updateContents(findContents.getTitle(), findContents.getPosterUrl(), findContents.getDescription(),
+                findContents.getAuthor(), findContents.getPublisher(), findContents.getPublicationYear(), ContentsStatus.NONACTIVE);
+        return ContentsDto.Response.contentsData(findContents);
     }
 
 }
