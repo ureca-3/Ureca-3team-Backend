@@ -9,11 +9,11 @@ public class MbtiDto {
         @Builder
         @Getter
         public static class assessmentMbtiDto{
-            private String result;
+            private String mbti;
 
-            public static assessmentMbtiDto of(String result){
+            public static assessmentMbtiDto of(String mbti){
                 return assessmentMbtiDto.builder()
-                        .result(result)
+                        .mbti(mbti)
                         .build();
             }
         }

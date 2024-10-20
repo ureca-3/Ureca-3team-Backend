@@ -8,7 +8,7 @@ import org.springframework.web.bind.annotation.*;
 
 @RestController
 @RequiredArgsConstructor
-@RequestMapping("/api/v1/mbti")
+@RequestMapping("/api/v1")
 public class MbtiController {
 
     private final MbtiService mbtiService;
@@ -22,7 +22,7 @@ public class MbtiController {
     }
 
     // 진단 삭제
-    @DeleteMapping("/assessment/{childMbtiScore_id}")
+    @PatchMapping("/assessment/{childMbtiScore_id}")
     public SuccessResponse<Long> deleteAssessmentMbti(@PathVariable("childMbtiScore_id") Long childMbtiScore_id) {
         mbtiService.deleteMbti(childMbtiScore_id);
         return SuccessResponse.success(childMbtiScore_id);
