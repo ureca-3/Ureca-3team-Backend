@@ -66,10 +66,5 @@ public class RedisConfig {
         return redisTemplate.opsForZSet();
     }
 
-    // TTL 설정
-    @PostConstruct
-    public void setLikeRankingTtl(){
-        redisTemplate().expire("content:likes", 1, TimeUnit.HOURS);
-    }
 
 }
