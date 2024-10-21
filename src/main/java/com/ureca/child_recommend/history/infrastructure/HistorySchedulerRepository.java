@@ -1,4 +1,4 @@
-package com.ureca.child_recommend.history.domain.infrastructure;
+package com.ureca.child_recommend.history.infrastructure;
 
 import com.ureca.child_recommend.history.domain.History;
 import org.springframework.data.jpa.repository.JpaRepository;

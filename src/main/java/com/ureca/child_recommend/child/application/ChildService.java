@@ -1,11 +1,10 @@
-package com.ureca.child_recommend.child.domain.application;
+package com.ureca.child_recommend.child.application;
 
 import com.ureca.child_recommend.child.domain.Child;
-import com.ureca.child_recommend.child.domain.infrastructure.ChildRepository;
+import com.ureca.child_recommend.child.infrastructure.ChildRepository;
 import com.ureca.child_recommend.global.exception.BusinessException;
 import com.ureca.child_recommend.global.exception.errorcode.CommonErrorCode;
 import lombok.RequiredArgsConstructor;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 @Service

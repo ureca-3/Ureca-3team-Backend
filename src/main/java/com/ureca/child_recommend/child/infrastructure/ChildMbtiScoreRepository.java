@@ -1,4 +1,4 @@
-package com.ureca.child_recommend.child.domain.infrastructure;
+package com.ureca.child_recommend.child.infrastructure;
 
 import com.ureca.child_recommend.child.domain.ChildMbtiScore;
 import com.ureca.child_recommend.child.domain.Enum.ChildMbtiScoreStatus;

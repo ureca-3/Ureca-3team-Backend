@@ -1,7 +1,7 @@
-package com.ureca.child_recommend.child.domain.presentation;
+package com.ureca.child_recommend.child.presentation;
 
-import com.ureca.child_recommend.child.domain.application.MbtiService;
-import com.ureca.child_recommend.child.domain.presentation.dto.MbtiDto;
+import com.ureca.child_recommend.child.application.MbtiService;
+import com.ureca.child_recommend.child.presentation.dto.MbtiDto;
 import com.ureca.child_recommend.global.response.SuccessResponse;
 import lombok.RequiredArgsConstructor;
 import org.springframework.web.bind.annotation.*;

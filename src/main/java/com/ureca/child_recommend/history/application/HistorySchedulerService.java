@@ -1,10 +1,10 @@
-package com.ureca.child_recommend.history.domain.application;
+package com.ureca.child_recommend.history.application;
 
 import com.ureca.child_recommend.child.domain.ChildMbtiScore;
 import com.ureca.child_recommend.child.domain.Enum.ChildMbtiScoreStatus;
-import com.ureca.child_recommend.child.domain.infrastructure.ChildMbtiScoreRepository;
+import com.ureca.child_recommend.child.infrastructure.ChildMbtiScoreRepository;
 import com.ureca.child_recommend.history.domain.History;
-import com.ureca.child_recommend.history.domain.infrastructure.HistorySchedulerRepository;
+import com.ureca.child_recommend.history.infrastructure.HistorySchedulerRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Service;
