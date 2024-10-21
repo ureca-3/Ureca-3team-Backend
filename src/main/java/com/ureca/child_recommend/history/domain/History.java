@@ -22,13 +22,13 @@ public class History extends BaseTimeEntity {
     private Long id;
 
     @Column
-    private Integer ieScore;
+    private Integer eiScore;
 
     @Column
     private Integer snScore;
 
     @Column
-    private Integer ftScore;
+    private Integer tfScore;
 
     @Column
     private Integer jpScore;

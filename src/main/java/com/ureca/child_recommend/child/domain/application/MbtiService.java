@@ -26,27 +26,6 @@ public class MbtiService {
 
     private final ChildMbtiScoreRepository childMbtiScoreRepository;
 
-    public String calculateMbti(MbtiDto.Request.assessmentMbtiDto dto){
-        String e_i;
-        String s_n;
-        String t_f;
-        String j_p;
-
-        if(dto.getM() > 50) e_i = "E"; else e_i = "I";
-        if(dto.getB() > 50) s_n = "S"; else s_n = "N";
-        if(dto.getT() > 50) t_f = "T"; else t_f = "F";
-        if(dto.getI() > 50) j_p = "J"; else j_p = "P";
-
-        String result = new StringBuilder()
-                .append(e_i)
-                .append(s_n)
-                .append(t_f)
-                .append(j_p)
-                .toString();
-
-        return result;
-    }
-
     @Transactional
     public MbtiDto.Response.assessmentMbtiDto saveMbtiResult(MbtiDto.Request.assessmentMbtiDto dto, Long child_id) {
 
@@ -83,4 +62,24 @@ public class MbtiService {
 
     }
 
+    public String calculateMbti(MbtiDto.Request.assessmentMbtiDto dto){
+        String e_i;
+        String s_n;
+        String t_f;
+        String j_p;
+
+        if(dto.getM() > 50) e_i = "E"; else e_i = "I";
+        if(dto.getB() > 50) s_n = "S"; else s_n = "N";
+        if(dto.getT() > 50) t_f = "T"; else t_f = "F";
+        if(dto.getI() > 50) j_p = "J"; else j_p = "P";
+
+        String result = new StringBuilder()
+                .append(e_i)
+                .append(s_n)
+                .append(t_f)
+                .append(j_p)
+                .toString();
+
+        return result;
+    }
 }
