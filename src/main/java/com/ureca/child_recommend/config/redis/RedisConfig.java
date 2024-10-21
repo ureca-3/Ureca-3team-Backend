@@ -1,15 +1,19 @@
 package com.ureca.child_recommend.config.redis;
 
 import com.ureca.child_recommend.notice.application.UserSubscriber;
+import jakarta.annotation.PostConstruct;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.data.redis.connection.RedisConnectionFactory;
 import org.springframework.data.redis.connection.lettuce.LettuceConnectionFactory;
 import org.springframework.data.redis.core.RedisTemplate;
+import org.springframework.data.redis.core.ZSetOperations;
 import org.springframework.data.redis.listener.ChannelTopic;
 import org.springframework.data.redis.listener.RedisMessageListenerContainer;
 import org.springframework.data.redis.serializer.StringRedisSerializer;
+
+import java.util.concurrent.TimeUnit;
 
 @Configuration
 public class RedisConfig {
@@ -56,6 +60,16 @@ public class RedisConfig {
         return container;
     }
 
+    // ZSet Operations (좋아요 순위 작업용)
+    @Bean
+    public ZSetOperations<String, Object> zSetOperations(RedisTemplate<String, Object> redisTemplate) {
+        return redisTemplate.opsForZSet();
+    }
 
+    // TTL 설정
+    @PostConstruct
+    public void setLikeRankingTtl(){
+        redisTemplate().expire("content:likes", 1, TimeUnit.HOURS);
+    }
 
 }
