@@ -2,10 +2,12 @@ package com.ureca.child_recommend.notice.presentation;
 
 import com.ureca.child_recommend.notice.application.SseEmitterManager;
 import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.servlet.mvc.method.annotation.SseEmitter;
 
 @RestController
+@RequestMapping("/api/v1/notifications")
 public class SseController {
 /*  // 리팩토링 -> SseEmitterManager로 이동 / 기능 분할
     private final CopyOnWriteArrayList<SseEmitter> emitters = new CopyOnWriteArrayList<>();
@@ -38,7 +40,7 @@ public class SseController {
         this.sseEmitterManager = sseEmitterManager;
     }
 
-    @GetMapping("/sse/notifications")
+    @GetMapping("/newbook")
     public SseEmitter subscribe(){
         return sseEmitterManager.createEmitter();
     }
