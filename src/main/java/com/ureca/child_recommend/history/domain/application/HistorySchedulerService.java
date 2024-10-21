@@ -19,7 +19,7 @@ public class HistorySchedulerService {
     private final HistorySchedulerRepository historySchedulerRepository;
     private final ChildMbtiScoreRepository childMbtiScoreRepository;
 
-    // history 테이블의 마지막 데이터와 child_mbti_score 테이블의 전 날 데이터와 비교
+    // history 테이블의 가장 최신 데이터와 child_mbti_score 테이블의 전날 데이터와 비교
     // mbti score에 하나라도 변화가 있으면 insert
 //    @Scheduled(cron = "0 */1 * * * ?") // 테스트용 매분마다 실행
     @Scheduled(cron = "0 0 0 * * ?")    // 매일 자정에 실행
