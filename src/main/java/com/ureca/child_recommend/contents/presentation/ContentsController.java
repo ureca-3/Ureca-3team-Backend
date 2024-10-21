@@ -16,7 +16,7 @@ public class ContentsController {
     // contents 저장
     @PostMapping("/save")
     public SuccessResponse<String> saveContents(@AuthenticationPrincipal Long userId, @RequestBody ContentsDto.Request request) {
-        contentsService.saveContents(request);
+        contentsService.saveContents(userId, request);
         return SuccessResponse.successWithoutResult("콘텐츠 저장을 완료했습니다.");
     }
 

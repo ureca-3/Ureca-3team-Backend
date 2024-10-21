@@ -1,17 +1,21 @@
 package com.ureca.child_recommend.contents.application;
 
+import com.ureca.child_recommend.config.gpt.GptWebClient;
 import com.ureca.child_recommend.contents.domain.Contents;
 import com.ureca.child_recommend.contents.domain.ContentsMbtiScore;
 import com.ureca.child_recommend.contents.domain.Enum.ContentsStatus;
 import com.ureca.child_recommend.contents.infrastructure.ContentsMbtiRepository;
 import com.ureca.child_recommend.contents.infrastructure.ContentsRepository;
 import com.ureca.child_recommend.contents.presentation.dto.ContentsDto;
+import com.ureca.child_recommend.contents.presentation.dto.GptDto;
 import com.ureca.child_recommend.global.exception.BusinessException;
 import com.ureca.child_recommend.global.exception.errorcode.CommonErrorCode;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.util.HashMap;
+import java.util.Map;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -21,27 +25,65 @@ import java.util.regex.Pattern;
 public class ContentsService {
     private final ContentsRepository contentsRepository;
     private final ContentsMbtiRepository mbtiRepository;
-    private final ContentsMbtiService mbtiService;
 
-    public Contents saveContent(ContentsDto.Request contentsRequest, ContentsMbtiScore mbtiScore, String mbtiResult) {
+    private static final String USER = "user";
+    private static final String ASSISTNAT = "assistant";
+    private static final String SYSTEM = "system";
+
+    private final GptWebClient gptWebClient;
+    private final Map<Long, GptDto.Request> memberChatMap = new HashMap<>();
+
+    // 대화내용 삭제
+    public void removeChat(Long userId) {
+        if (!memberChatMap.containsKey(userId)) {
+            throw new BusinessException(CommonErrorCode.GPT_SERVER_ERROR);
+        }
+        memberChatMap.remove(userId);
+    }
+
+    // 메시지 추가
+    private void addChatMessages(GptDto.Request request, String role, String message) {
+        request.addMessage(role, message);
+    }
+
+    public Contents saveContent(Long userId, ContentsDto.Request contentsRequest, ContentsMbtiScore mbtiScore, String mbtiResult) {
         Contents content = Contents.saveContents(contentsRequest, mbtiScore, mbtiResult);
         mbtiRepository.save(mbtiScore);
-        return contentsRepository.save(content);
+        contentsRepository.save(content);
+        removeChat(userId);
+        return content;
     }
 
     // 저장, 기본 데이터 입력 후 GPT 활용하여 mbti 데이터 저장
     @Transactional
-    public void saveContents(ContentsDto.Request request) {
-        // 줄거리 데이터 활용
+    public void saveContents(Long userId, ContentsDto.Request request) {
+        GptDto.Request gptRequest;
+        if (memberChatMap.get(userId) == null) {
+            gptRequest = gptWebClient.of(500);
+            addChatMessages(gptRequest, SYSTEM, "너는 책 줄거리를 기반으로 MBTI 비율을 알려주는 ai야. " +
+                    "줄거리를 기반으로 MBTI 성향을 전체 100%인 E와 I의 비율 합 중 E의 비율, 전체 100%인 S와 N의 비율 합 중 S의 비율, 전체 100%인 T와 F의 비율 합 중 T의 비율, 전체 100%인 J와 P의 비율 합 중 J의 비율을 구해줘.");
+        } else {
+            gptRequest = memberChatMap.get(userId);
+        }
+
         String summary = request.getDescription();
 
-        String mbtiInfo = mbtiService.chatWithGpt("'" + summary + "'" +
-                "의 줄거리인 콘텐츠의 MBTI의 비율을 E: {}%\n" +
+//        System.out.println(summary);
+
+        addChatMessages(gptRequest, USER, "'" + summary + "'" +
+                "의 줄거리인 콘텐츠의 MBTI의 비율을 전체 100% 중 " +
+                "E: {}%\n" +
                 "S: {}%\n" +
                 "T: {}%\n" +
                 "J: {}%\n 형식으로 알려줘" );
 
-//        System.out.println(mbtiInfo);
+        GptDto.Response gptResponse = gptWebClient.assistantRes(gptRequest);
+
+        String content = gptResponse.getChoices().get(0).getMessage().getContent();
+        addChatMessages(gptRequest, ASSISTNAT, content);
+        memberChatMap.put(userId, gptRequest);
+
+        String mbtiInfo = gptRequest.getMessages().get(2).content;
 
         // 결과 mbti 파싱
         Pattern pattern = Pattern.compile("(\\d+)%");
@@ -75,7 +117,7 @@ public class ContentsService {
 
         // 제목과 작가 확인 시 없으면 생성
         contentsRepository.findByTitleAndAuthor(request.getTitle(), request.getAuthor()).orElseGet(()
-                -> saveContent(request, mbtiScore, mbtiRes.toString()));
+                -> saveContent(userId, request, mbtiScore, mbtiRes.toString()));
     }
 
     public ContentsDto.Response readContents(Long contentsId) {

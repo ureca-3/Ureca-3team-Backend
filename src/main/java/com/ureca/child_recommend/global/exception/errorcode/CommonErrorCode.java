@@ -30,6 +30,9 @@ public enum CommonErrorCode implements ErrorCode{
     // contents error (4401 ~
     CONTENTS_NOT_FOUND(HttpStatus.NOT_FOUND, "4401", "해당 콘텐츠를 찾을 수 없습니다."),
 
+    // gpt error (4501 ~
+    GPT_SERVER_ERROR(HttpStatus.BAD_REQUEST, "4501", "GPT를 연결할 수 없습니다."),
+
     ;
 
     private final HttpStatus httpStatus;

@@ -8,9 +8,7 @@ import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
-
 import java.time.LocalDate;
-
 
 @Entity
 @AllArgsConstructor
@@ -69,7 +67,7 @@ public class Contents extends BaseTimeEntity {
                 .build();
     }
 
-    public void updateContents(ContentsDto.Request request) {
+    public void  updateContents(ContentsDto.Request request) {
         if (request.getTitle() != null) {
             this.title = request.getTitle();
         }
