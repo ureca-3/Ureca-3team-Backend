@@ -13,7 +13,7 @@ public enum CommonErrorCode implements ErrorCode{
     INTERNAL_SERVER_ERROR(HttpStatus.INTERNAL_SERVER_ERROR, "5000", "알수없는 에러 관리자에게 문의"),
 
     // 인증/인가 처리 (41xx)
-    JWT_EMPTY(HttpStatus.NO_CONTENT,"4100","JWT 토큰을 넣어주세요."),
+    JWT_EMPTY(HttpStatus.UNAUTHORIZED,"4100","JWT 토큰을 넣어주세요."),
     JWT_INVALID(HttpStatus.BAD_REQUEST,"4101","다시 로그인 해주세요.(토큰이 유효하지 않습니다.)"),
     JWT_EXPIRED(HttpStatus.UNAUTHORIZED,"4102","토큰이 만료되었습니다."),
     JWT_BAD(HttpStatus.BAD_REQUEST,"4103","JWT 토큰이 잘못되었습니다."),
