@@ -35,10 +35,6 @@ public class Child extends BaseTimeEntity {
     @Column(nullable = false)
     private String profileUrl;
 
-    @OneToOne
-    @JoinColumn(name = "childMbti_id")
-    private ChildMbti childMbti;
-
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "user_id")
     private User user;
