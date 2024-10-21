@@ -8,7 +8,9 @@ import org.springframework.data.jpa.repository.Modifying;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 
+import java.time.LocalDate;
 import java.time.LocalDateTime;
+import java.util.List;
 import java.util.Optional;
 
 public interface ChildMbtiScoreRepository extends JpaRepository<ChildMbtiScore, Long> {
@@ -18,4 +20,6 @@ public interface ChildMbtiScoreRepository extends JpaRepository<ChildMbtiScore, 
     @Transactional
     @Query(value = "DELETE FROM child_mbti_score cms WHERE cms.update_at <= :thresholdDateTime AND cms.status = :childMbtiScoreStatus", nativeQuery = true)
     void deleteByUpdateAtAndStatus(LocalDateTime thresholdDateTime, ChildMbtiScoreStatus childMbtiScoreStatus);
+
+    List<ChildMbtiScore> findByAssessmentDateAndStatus(LocalDate yesterday, ChildMbtiScoreStatus childMbtiScoreStatus);
 }
