@@ -52,6 +52,12 @@ dependencies {
 	//redis
 	implementation 'org.springframework.boot:spring-boot-starter-data-redis'
 
+	implementation 'org.hibernate.validator:hibernate-validator:6.2.0.Final' // 원하는 버전으로 변경 가능
+	implementation 'jakarta.el:jakarta.el-api:3.0.0' // Hibernate Validator에 필요한 EL API
+
+	implementation 'org.springframework.cloud:spring-cloud-starter-aws:2.2.6.RELEASE'
+	// AWS SDK S3 의존성 추가
+	implementation 'com.amazonaws:aws-java-sdk-s3:1.12.503'
 }
 
 tasks.named('test') {

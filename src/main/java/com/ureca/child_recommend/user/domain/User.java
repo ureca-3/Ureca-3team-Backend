@@ -30,12 +30,6 @@ public class User extends BaseTimeEntity {
         @Column(length = 20)
         private UserRole role;
 
-        @Column(length = 50)
-        private String nickname;  // 닉네임 추가
-
-        @Column(length = 15)
-        private String phone;  // 전화번호 추가
-
     //    @OneToMany(mappedBy = "child",cascade = CascadeType.ALL)
     //    List<Child> childList  =new ArrayList<>();
 
@@ -56,13 +50,25 @@ public class User extends BaseTimeEntity {
         }
 
         public void updateNickname(String nickname) {
-            this.nickname = nickname;
+            this.oauthInfo.setNickname(nickname);
         }
 
-        public void updatePhone(String phone) {
-            this.phone = phone;
-        }
+//        public void updatePhone(String phone) {
+//            this.phone = phone;
+//        }
 
     public void updateStatus(UserStatus status) {this.status = status;}
+
+    public void setEmail(String email) {
+        this.oauthInfo.setEmail(email);
+    }
+
+    public void setGender(String gender) {
+        this.oauthInfo.setGender(gender);
+    }
+
+    public void setAgeRange(String ageRange) {
+        this.oauthInfo.setAgeRange(ageRange);
+    }
 
     }

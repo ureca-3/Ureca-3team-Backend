@@ -12,8 +12,12 @@ import com.ureca.child_recommend.user.domain.User;
 import com.ureca.child_recommend.user.dto.UserDto;
 import com.ureca.child_recommend.user.infrastructure.UserRepository;
 import lombok.RequiredArgsConstructor;
+import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+
+import java.util.List;
+import java.util.concurrent.TimeUnit;
 
 import static com.ureca.child_recommend.global.exception.errorcode.CommonErrorCode.JWT_REFRESHTOKEN_NOT_MATCH;
 import static com.ureca.child_recommend.global.exception.errorcode.CommonErrorCode.REFRESH_TOKEN_NOT_FOUND;
@@ -30,6 +34,10 @@ public class UserService {
     private static final String RT = "RT:";
     private static final String LOGOUT = "LOGOUT:";
     private static final String ROLE_USER = "ROLE_USER";
+
+    private final RedisTemplate<String, Object> redisTemplate;
+
+    private static final String RECENT_CONTENTS_KEY_PREFIX = "recentContents:";
 
     public String kakaoCode(String code){
 //        System.out.println(code);
@@ -103,18 +111,45 @@ public class UserService {
         user.updateNickname(newNickname);
     }
 
-    @Transactional
-    public void updatePhone(Long userId,  String newPhone) {
-        User user = userRepository.findById(userId)
-                .orElseThrow(() -> new BusinessException(CommonErrorCode.USER_NOT_FOUND));
-        user.updatePhone(newPhone);
-    }
 
     @Transactional
     public void deleteUser(Long userId) {
         User user = userRepository.findById(userId)
                 .orElseThrow(() -> new BusinessException(CommonErrorCode.USER_NOT_FOUND));
         user.updateStatus(UserStatus.NONACTIVE);
+    }
+
+    // Redis에 최근 본 컨텐츠 ID 저장 (일주일간 유지)
+    public void saveRecentContent(Long userId, Long contentId) {
+        String key = RECENT_CONTENTS_KEY_PREFIX + userId;
+        redisTemplate.opsForList().leftPush(key, contentId);
+        redisTemplate.expire(key, 7, TimeUnit.DAYS);  // TTL 설정 (1주일)
+    }
+
+    // Redis에서 최근 본 컨텐츠 ID 목록 조회
+    public List<Object> getRecentContents(Long userId) {
+        String key = RECENT_CONTENTS_KEY_PREFIX + userId;
+        return redisTemplate.opsForList().range(key, 0, -1);  // 전체 목록 조회
+    }
+
+    @Transactional
+    public void updateUserProfile(UserDto.Request userRequest) {
+        // 현재 사용자 정보를 가져옵니다. (예를 들어, SecurityContextHolder를 사용하여 현재 사용자 ID를 가져올 수 있습니다)
+        Long currentUserId = getCurrentUserId(); // 현재 사용자 ID를 가져오는 로직 구현 필요
+        User user = userRepository.findById(currentUserId)
+                .orElseThrow(() -> new RuntimeException("User not found")); // 예외 처리
+
+        // 닉네임, 이메일, 프로필 URL 업데이트
+        user.updateNickname(userRequest.getNickname());
+        user.setEmail(userRequest.getEmail()); // User 클래스에 setEmail() 메서드 추가 필요
+        user.setGender(userRequest.getGender()); // User 클래스에 setProfileUrl() 메서드 추가 필요
+        user.setAgeRange(userRequest.getAgeRange());
+    }
+
+    private Long getCurrentUserId() {
+        // 현재 사용자의 ID를 가져오는 로직 구현
+        // 예를 들어, SecurityContextHolder.getContext().getAuthentication() 사용
+        return 1L; // 예시 값
     }
 }
 

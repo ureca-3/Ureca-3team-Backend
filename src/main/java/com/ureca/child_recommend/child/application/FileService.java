@@ -1,4 +1,7 @@
 package com.ureca.child_recommend.child.application;
+import com.amazonaws.services.s3.AmazonS3Client;
+import com.amazonaws.services.s3.model.ObjectMetadata;
+import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
 import org.springframework.beans.factory.annotation.Value;
@@ -11,28 +14,22 @@ import java.nio.file.Paths;
 import java.util.UUID;
 
 @Service
+@RequiredArgsConstructor
 public class FileService {
+    private final AmazonS3Client amazonS3Client;
 
-    @Value("${file.upload-dir}")
-    private String uploadDir;
+    @Value("${cloud.aws.s3.bucket}")
+    private String bucket;
 
+    public String uploadFile(MultipartFile file) throws IOException {
+        String fileName = file.getOriginalFilename();
+        String fileUrl = "https://" + bucket + "/test/" + fileName;
 
-    public String storeFile(MultipartFile file) throws IOException {
-        // 저장 디렉토리 경로가 없으면 생성
-        Path uploadPath = Paths.get(uploadDir);
-        if (!Files.exists(uploadPath)) {
-            Files.createDirectories(uploadPath);
-        }
+        ObjectMetadata metadata = new ObjectMetadata();
+        metadata.setContentType(file.getContentType());
+        metadata.setContentLength(file.getSize());
 
-        // 파일 이름 생성 (UUID 사용)
-        String originalFilename = file.getOriginalFilename();
-        String fileName = UUID.randomUUID().toString() + "_" + originalFilename;
-        Path filePath = uploadPath.resolve(fileName);
-
-        // 파일 저장
-        file.transferTo(filePath.toFile());
-
-        // 저장된 파일의 URL 반환 (URL 형식으로 만들어줌)
-        return "/profile/" + fileName;
+        amazonS3Client.putObject(bucket, fileName, file.getInputStream(), metadata);
+        return fileUrl;
     }
 }

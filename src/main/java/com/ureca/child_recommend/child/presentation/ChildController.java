@@ -2,7 +2,9 @@ package com.ureca.child_recommend.child.presentation;
 
 import com.ureca.child_recommend.child.application.ChildService;
 import com.ureca.child_recommend.child.application.FileService;
+import com.ureca.child_recommend.child.domain.ChildMbtiScore;
 import com.ureca.child_recommend.child.presentation.dto.ChildDto;
+import com.ureca.child_recommend.global.exception.errorcode.CommonErrorCode;
 import com.ureca.child_recommend.global.response.SuccessResponse;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
@@ -22,13 +24,13 @@ public class ChildController {
     private final FileService fileService;
 
     @PostMapping("/profile")
-    public ResponseEntity<String> uploadProfile(@RequestParam MultipartFile file) {
+    public SuccessResponse<String> uploadFile(@RequestParam("file") MultipartFile file) {
         try {
-            // 파일 저장 및 URL 반환
-            String fileUrl = fileService.storeFile(file);
-            return ResponseEntity.status(HttpStatus.CREATED).body(fileUrl);
+            String fileUrl = fileService.uploadFile(file);
+            return SuccessResponse.success(fileUrl);
         } catch (IOException e) {
-            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("Failed to upload file: " + e.getMessage());
+            e.printStackTrace();
+            return SuccessResponse.success(CommonErrorCode.USER_NOT_FOUND.getMessage());
         }
     }
 
@@ -62,11 +64,18 @@ public class ChildController {
     }
 
 
-    @DeleteMapping("/child/{child_id}")
+    @PatchMapping("/child/{child_id}")
     public SuccessResponse<String> deleteChild(@PathVariable("child_id") Long childId) {
         // 삭제 처리
         childService.deleteChild(childId);
         return SuccessResponse.successWithoutResult(null);
+    }
+
+    // 자녀 MBTI 조회 API
+    @GetMapping("/child/mbti/{child_id}")
+    public SuccessResponse<ChildMbtiScore> getChildMbti(@PathVariable("child_id") Long childId) {
+        ChildMbtiScore mbtiResult = childService.getChildMbti(childId); // 자녀의 MBTI 조회
+        return SuccessResponse.success(mbtiResult); // 성공 시 MBTI 결과 반환
     }
 
 }

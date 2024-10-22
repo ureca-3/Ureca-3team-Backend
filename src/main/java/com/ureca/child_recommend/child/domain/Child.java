@@ -1,6 +1,7 @@
 package com.ureca.child_recommend.child.domain;
 
 
+import com.ureca.child_recommend.child.domain.Enum.ChildStatus;
 import com.ureca.child_recommend.global.entity.BaseTimeEntity;
 import com.ureca.child_recommend.user.domain.User;
 import jakarta.persistence.*;
@@ -33,7 +34,13 @@ public class Child extends BaseTimeEntity {
     private LocalDate birthday;
 
     @Column(nullable = false)
+    private Integer age;
+
+    @Column(nullable = false)
     private String profileUrl;
+
+    @Column(nullable = false)
+    private ChildStatus status;
 
     @OneToOne
     @JoinColumn(name = "childMbti_id")
@@ -59,5 +66,10 @@ public class Child extends BaseTimeEntity {
         this.birthday = birthday;
         this.profileUrl = profileUrl;
     }
+
+    public static void updateChildStatus(Child child) {
+        child.status = ChildStatus.NONACTIVE;
+    }
+
 
 }

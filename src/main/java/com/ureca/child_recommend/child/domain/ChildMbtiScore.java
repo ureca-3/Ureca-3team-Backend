@@ -39,7 +39,7 @@ public class ChildMbtiScore extends BaseTimeEntity {
     private LocalDate assessmentDate;
 
     @Enumerated(EnumType.STRING)
-    private ChildMbtiScoreStatus status;
+    private ChildMbtiScoreStatus status; //ACTIVE,NONACTIVE,DELETE
 
     @ManyToOne
     @JoinColumn(name = "child_id")

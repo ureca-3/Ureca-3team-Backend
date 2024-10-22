@@ -1,12 +1,17 @@
 package com.ureca.child_recommend.user.presentation;
 
+import com.ureca.child_recommend.contents.domain.Contents;
 import com.ureca.child_recommend.global.response.SuccessResponse;
+import com.ureca.child_recommend.relation.application.FeedBackService;
 import com.ureca.child_recommend.user.application.UserService;
+import jakarta.validation.Valid;
 import com.ureca.child_recommend.user.dto.UserDto;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
+
+import java.util.List;
 
 
 @RestController
@@ -16,6 +21,7 @@ import org.springframework.web.bind.annotation.*;
 public class UserController {
 
     private final UserService userService;
+    private final FeedBackService feedBackService;
 
     /**
      * 24.10.17 작성자 : 정주현
@@ -51,23 +57,24 @@ public class UserController {
         return SuccessResponse.success("로그아웃 성공");
     }
 
-    @PatchMapping("/user/nickname")
-    public SuccessResponse<String> updateNickname(@AuthenticationPrincipal Long userId , @RequestBody String newNickname) {
-        userService.updateNickname(userId, newNickname);
-        return SuccessResponse.successWithoutResult(null);
-    }
-
-    // 전화번호 수정
-    @PatchMapping("/user/phone")
-    public SuccessResponse<String> updatePhone(@AuthenticationPrincipal Long userId , @RequestBody String newPhone) {
-        userService.updatePhone(userId, newPhone);
-        return SuccessResponse.successWithoutResult(null);
-    }
-
-    // 유저 정지
     @PatchMapping("/user")
-    public SuccessResponse<String> deleteUser(@AuthenticationPrincipal Long userId) {
-        userService.deleteUser(userId);
-        return SuccessResponse.successWithoutResult(null);
+    public SuccessResponse<String> updateUserProfile(@RequestBody @Valid UserDto.Request userRequest) {
+        userService.updateUserProfile(userRequest);
+        return SuccessResponse.successWithoutResult(null); // 수정 완료 후 204 No Content 응답
+    }
+
+
+
+    // 좋아요한 컨텐츠 조회
+    @GetMapping("/user/feedback")
+    public SuccessResponse<List<String>> getLikedContents(@RequestBody Long childId) {
+        List<String> likedContents = feedBackService.getLikedContents(childId);
+        return SuccessResponse.success(likedContents);
+    }
+
+    @GetMapping("/user/recentcontents")
+    public SuccessResponse<List<Contents>> getRecentContents(@AuthenticationPrincipal Long userId) {
+        List<Contents> recentContents = feedBackService.getRecentContents(userId);
+        return SuccessResponse.success(recentContents);
     }
 }

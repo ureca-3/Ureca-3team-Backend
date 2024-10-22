@@ -1,6 +1,9 @@
 package com.ureca.child_recommend.child.application;
 
 import com.ureca.child_recommend.child.domain.Child;
+import com.ureca.child_recommend.child.domain.ChildMbti;
+import com.ureca.child_recommend.child.domain.ChildMbtiScore;
+import com.ureca.child_recommend.child.infrastructure.ChildMbtiScoreRepository;
 import com.ureca.child_recommend.child.infrastructure.ChildRepository;
 import com.ureca.child_recommend.child.presentation.dto.ChildDto;
 import com.ureca.child_recommend.global.exception.BusinessException;
@@ -24,7 +27,7 @@ import java.util.stream.Collectors;
 public class ChildService {
 
     private final ChildRepository childRepository;
-    private final ChildService childService;
+    private final ChildMbtiScoreRepository childMbtiScoreRepository;
     private final UserRepository userRepository;
 
     public ChildDto.Response findChildById(Long childId) {
@@ -91,7 +94,18 @@ public class ChildService {
     public void deleteChild(Long childId) {
         Child child = childRepository.findById(childId)
                 .orElseThrow(() -> new BusinessException(CommonErrorCode.USER_NOT_FOUND));
-        childRepository.delete(child);
+        Child.updateChildStatus(child);
+    }
+
+    public ChildMbtiScore getChildMbti(Long childId) {
+        Child child = childRepository.findById(childId)
+                .orElseThrow(() -> new BusinessException(CommonErrorCode.USER_NOT_FOUND));
+
+        // ChildMbtiScore를 조회
+        ChildMbtiScore childMbtiScore = childMbtiScoreRepository.findByChild(child)
+                .orElseThrow(() -> new BusinessException(CommonErrorCode.USER_NOT_FOUND));
+
+        return childMbtiScore; // 또는 필요한 값을 반환
     }
 
 }
