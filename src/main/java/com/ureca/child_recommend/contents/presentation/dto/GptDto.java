@@ -31,7 +31,7 @@ public class GptDto {
             this.model = model;
             this.messages = new ArrayList<>();
             this.maxTokens = maxTokens;
-            this.temperature = 0.5f;
+            this.temperature = 0.8f;
         }
         public void addMessage(String role, String message) {
             this.messages.add(new Message(role, message));

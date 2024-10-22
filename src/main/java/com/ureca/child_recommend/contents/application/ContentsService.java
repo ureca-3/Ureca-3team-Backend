@@ -66,7 +66,7 @@ public class ContentsService {
             gptRequest = memberChatMap.get(userId);
         }
 
-        String summary = request.getDescription();
+        String summary = request.getDescription(); 
 
 //        System.out.println(summary);
 
@@ -83,11 +83,11 @@ public class ContentsService {
         addChatMessages(gptRequest, ASSISTNAT, content);
         memberChatMap.put(userId, gptRequest);
 
-        String mbtiInfo = gptRequest.getMessages().get(2).content;
+        String mbtiInfo = gptRequest.getMessages().get(2).content; // 질문에 대한 gpt 대답 데이터
 
         // 결과 mbti 파싱
-        Pattern pattern = Pattern.compile("(\\d+)%");
-        Matcher matcher = pattern.matcher(mbtiInfo);
+        Pattern pattern = Pattern.compile("(\\d+)%"); // {}% 형식의 pattern 파악
+        Matcher matcher = pattern.matcher(mbtiInfo); // 패턴에 매칭할 문자열을 입력해 Matcher 생성
 
         int eiPercentage = 0;
         int snPercentage = 0;
@@ -96,7 +96,7 @@ public class ContentsService {
 
         int index = 0;
         while (matcher.find()) {
-            int value = Integer.parseInt(matcher.group(1));
+            int value = Integer.parseInt(matcher.group(1)); // 매칭되는 문자열 중 1번째 그룹의 문자열 반환
             switch (index) {
                 case 0 -> eiPercentage = value;
                 case 1 -> snPercentage = value;
@@ -127,7 +127,7 @@ public class ContentsService {
     }
 
     @Transactional
-    public ContentsDto.Response updateContents(Long contentsId, ContentsDto.Request request) {
+    public ContentsDto.Response updateContents(Long contentsId, ContentsDto.Request request) { // 수정된 데이터가 존재하면 반영
         Contents findContents = contentsRepository.findById(contentsId).orElseThrow(()
                 -> new BusinessException(CommonErrorCode.CONTENTS_NOT_FOUND));
 

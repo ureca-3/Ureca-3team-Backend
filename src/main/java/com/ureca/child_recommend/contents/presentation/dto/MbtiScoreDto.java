@@ -32,9 +32,5 @@ public class MbtiScoreDto {
         private Integer tfScore;
         private Integer jpScore;
 
-        @Getter @NoArgsConstructor
-        public static class dataId {
-            private Long id;
-        }
     }
 }

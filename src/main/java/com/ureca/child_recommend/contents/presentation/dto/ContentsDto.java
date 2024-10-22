@@ -52,9 +52,5 @@ public class ContentsDto {
         private ContentsStatus status;
         private ContentsMbtiScore contentsMbti;
 
-        @Getter @NoArgsConstructor
-        public static class dataId {
-            private Long id;
-        }
     }
 }
