@@ -33,6 +33,9 @@ public class Child extends BaseTimeEntity {
     private LocalDate birthday;
 
     @Column(nullable = false)
+    private Integer age;
+
+    @Column
     private String profileUrl;
 
     @ManyToOne(fetch = FetchType.LAZY)

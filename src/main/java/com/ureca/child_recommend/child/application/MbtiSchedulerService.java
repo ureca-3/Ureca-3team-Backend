@@ -1,7 +1,7 @@
-package com.ureca.child_recommend.child.domain.application;
+package com.ureca.child_recommend.child.application;
 
 import com.ureca.child_recommend.child.domain.Enum.ChildMbtiScoreStatus;
-import com.ureca.child_recommend.child.domain.infrastructure.ChildMbtiScoreRepository;
+import com.ureca.child_recommend.child.infrastructure.ChildMbtiScoreRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Service;

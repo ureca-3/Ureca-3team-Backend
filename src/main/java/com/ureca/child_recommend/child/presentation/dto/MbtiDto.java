@@ -1,4 +1,4 @@
-package com.ureca.child_recommend.child.domain.presentation.dto;
+package com.ureca.child_recommend.child.presentation.dto;
 
 import lombok.Builder;
 import lombok.Getter;

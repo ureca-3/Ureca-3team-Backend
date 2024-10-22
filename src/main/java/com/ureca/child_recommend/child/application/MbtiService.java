@@ -1,13 +1,13 @@
-package com.ureca.child_recommend.child.domain.application;
+package com.ureca.child_recommend.child.application;
 
 import com.ureca.child_recommend.child.domain.Child;
 import com.ureca.child_recommend.child.domain.ChildMbti;
 import com.ureca.child_recommend.child.domain.ChildMbtiScore;
 import com.ureca.child_recommend.child.domain.Enum.ChildMbtiScoreStatus;
 import com.ureca.child_recommend.child.domain.Enum.ChildMbtiStatus;
-import com.ureca.child_recommend.child.domain.infrastructure.ChildMbtiRepository;
-import com.ureca.child_recommend.child.domain.infrastructure.ChildMbtiScoreRepository;
-import com.ureca.child_recommend.child.domain.presentation.dto.MbtiDto;
+import com.ureca.child_recommend.child.infrastructure.ChildMbtiRepository;
+import com.ureca.child_recommend.child.infrastructure.ChildMbtiScoreRepository;
+import com.ureca.child_recommend.child.presentation.dto.MbtiDto;
 import com.ureca.child_recommend.global.exception.BusinessException;
 import com.ureca.child_recommend.global.exception.errorcode.CommonErrorCode;
 import lombok.RequiredArgsConstructor;
