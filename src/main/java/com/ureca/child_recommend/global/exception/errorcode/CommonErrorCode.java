@@ -27,6 +27,8 @@ public enum CommonErrorCode implements ErrorCode{
 
     TEST_NOT_FOUND(HttpStatus.UNAUTHORIZED,"4444","테스트 아이디가 없습니다."),
 
+    // 추가할 NO_CONTENT 관련 에러 코드
+    NO_CONTENT_AVAILABLE(HttpStatus.NO_CONTENT, "2040", "요청한 리소스가 없습니다."),
     ;
 
 
