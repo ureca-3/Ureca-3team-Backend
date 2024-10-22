@@ -23,6 +23,6 @@ public class ChildMbti extends BaseTimeEntity {
     @Column
     private String mbtiResult;
 
-    @Column
+    @Enumerated(EnumType.STRING)
     private ChildMbtiStatus status;
 }
