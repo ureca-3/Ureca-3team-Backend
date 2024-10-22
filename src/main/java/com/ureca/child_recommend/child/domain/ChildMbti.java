@@ -7,6 +7,7 @@ import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
+import org.hibernate.mapping.ToOne;
 
 @Entity
 @AllArgsConstructor
@@ -23,6 +24,23 @@ public class ChildMbti extends BaseTimeEntity {
     @Column
     private String mbtiResult;
 
-    @Column
+    @Enumerated(EnumType.STRING)
     private ChildMbtiStatus status;
+
+    @ManyToOne
+    @JoinColumn(name = "child_id")
+    private Child child;
+
+    public void updateStatus(ChildMbtiStatus childMbtiStatus) {
+        this.status = childMbtiStatus;
+    }
+
+    public static ChildMbti enrollToMbti(String result,Child child){
+        return ChildMbti.builder()
+                .mbtiResult(result)
+                .status(ChildMbtiStatus.ACTIVE)
+                .child(child)
+                .build();
+    }
+
 }

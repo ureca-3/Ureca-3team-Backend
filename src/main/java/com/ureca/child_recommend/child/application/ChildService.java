@@ -107,5 +107,4 @@ public class ChildService {
 
         return childMbtiScore; // 또는 필요한 값을 반환
     }
-
 }
