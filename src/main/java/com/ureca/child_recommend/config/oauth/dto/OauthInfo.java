@@ -52,5 +52,7 @@ public class OauthInfo {
 
     public void setAgeRange(String ageRange) {this.ageRange = ageRange; }
 
+    public void setProfileUrl(String profileUrl) {this.profileUrl = profileUrl; }
+
 
 }

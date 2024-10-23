@@ -1,5 +1,6 @@
 package com.ureca.child_recommend.user.application;
 
+import com.ureca.child_recommend.child.application.FileService;
 import com.ureca.child_recommend.config.jwt.util.JwtUtil;
 import com.ureca.child_recommend.config.oauth.dto.OauthInfo;
 import com.ureca.child_recommend.config.oauth.client.Helper.KakaoOauthHelper;
@@ -15,7 +16,9 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.web.multipart.MultipartFile;
 
+import java.io.IOException;
 import java.util.List;
 import java.util.concurrent.TimeUnit;
 
@@ -31,6 +34,7 @@ public class UserService {
     private final KakaoOauthHelper kakaoOauthHelper;
     private final JwtUtil jwtUtil;
     private final RedisUtil redisUtil;
+    private final FileService fileService;
     private static final String RT = "RT:";
     private static final String LOGOUT = "LOGOUT:";
     private static final String ROLE_USER = "ROLE_USER";
@@ -92,7 +96,6 @@ public class UserService {
         redisUtil.setData(LOGOUT+resolveToken, LOGOUT, jwtUtil.getExpiration(resolveToken));// 블랙리스트 처리
     }
 
-//
     //토큰 얻어오기
     protected String getOrGenerateRefreshToken(User user){
         String refreshToken = redisUtil.getData(RT + user.getId());
@@ -104,20 +107,6 @@ public class UserService {
         return refreshToken;
     }
 
-    @Transactional
-    public void updateNickname(Long userId, String newNickname) {
-        User user = userRepository.findById(userId)
-                .orElseThrow(() -> new BusinessException(CommonErrorCode.USER_NOT_FOUND));
-        user.updateNickname(newNickname);
-    }
-
-
-    @Transactional
-    public void deleteUser(Long userId) {
-        User user = userRepository.findById(userId)
-                .orElseThrow(() -> new BusinessException(CommonErrorCode.USER_NOT_FOUND));
-        user.updateStatus(UserStatus.NONACTIVE);
-    }
 
     // Redis에 최근 본 컨텐츠 ID 저장 (일주일간 유지)
     public void saveRecentContent(Long userId, Long contentId) {
@@ -133,23 +122,26 @@ public class UserService {
     }
 
     @Transactional
-    public void updateUserProfile(UserDto.Request userRequest) {
+    public void updateUser(UserDto.Request userRequest) {
         // 현재 사용자 정보를 가져옵니다. (예를 들어, SecurityContextHolder를 사용하여 현재 사용자 ID를 가져올 수 있습니다)
         Long currentUserId = getCurrentUserId(); // 현재 사용자 ID를 가져오는 로직 구현 필요
         User user = userRepository.findById(currentUserId)
-                .orElseThrow(() -> new RuntimeException("User not found")); // 예외 처리
+                .orElseThrow(() -> new BusinessException(CommonErrorCode.USER_NOT_FOUND));
 
         // 닉네임, 이메일, 프로필 URL 업데이트
-        user.updateNickname(userRequest.getNickname());
-        user.setEmail(userRequest.getEmail()); // User 클래스에 setEmail() 메서드 추가 필요
-        user.setGender(userRequest.getGender()); // User 클래스에 setProfileUrl() 메서드 추가 필요
-        user.setAgeRange(userRequest.getAgeRange());
+        user.updateUserInfo(userRequest.getNickname(), userRequest.getEmail(), userRequest.getGender(), userRequest.getAgeRange());
     }
 
     private Long getCurrentUserId() {
         // 현재 사용자의 ID를 가져오는 로직 구현
         // 예를 들어, SecurityContextHolder.getContext().getAuthentication() 사용
         return 1L; // 예시 값
+    }
+
+    public void updateUserProfile(Long userId, String profileUrl) throws IOException{
+        User user = userRepository.findById(userId)
+                .orElseThrow(() -> new BusinessException(CommonErrorCode.USER_NOT_FOUND));
+        user.setProfileUrl(profileUrl); // 유저 사진 업데이트
     }
 }
 

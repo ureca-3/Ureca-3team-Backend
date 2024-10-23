@@ -10,7 +10,9 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.multipart.MultipartFile;
 
+import java.io.IOException;
 import java.util.List;
 
 
@@ -58,11 +60,16 @@ public class UserController {
     }
 
     @PatchMapping("/user")
-    public SuccessResponse<String> updateUserProfile(@RequestBody @Valid UserDto.Request userRequest) {
-        userService.updateUserProfile(userRequest);
+    public SuccessResponse<String> updateUser(@RequestBody @Valid UserDto.Request userRequest) {
+        userService.updateUser(userRequest);
         return SuccessResponse.successWithoutResult(null); // 수정 완료 후 204 No Content 응답
     }
 
+    @PatchMapping("/user/picture")
+    public SuccessResponse<String> updateUserProfile(@AuthenticationPrincipal Long userId,@RequestBody String profileUrl) throws IOException {
+        userService.updateUserProfile(userId, profileUrl);
+        return SuccessResponse.successWithoutResult(null); // 수정 완료 후 204 No Content 응답
+    }
 
 
     // 좋아요한 컨텐츠 조회
@@ -72,6 +79,7 @@ public class UserController {
         return SuccessResponse.success(likedContents);
     }
 
+    // 최근 감상한 컨텐츠 조회
     @GetMapping("/user/recentcontents")
     public SuccessResponse<List<Contents>> getRecentContents(@AuthenticationPrincipal Long userId) {
         List<Contents> recentContents = feedBackService.getRecentContents(userId);

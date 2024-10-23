@@ -29,6 +29,7 @@ public enum CommonErrorCode implements ErrorCode{
 
     // child error (4201~
     CHILD_NOT_FOUND(HttpStatus.NOT_FOUND,"4201","해당 자녀를 찾을 수 없습니다."),
+    CHILDMBTI_NOT_FOUND(HttpStatus.NOT_FOUND,"4202","해당 자녀MBTI 정보를 찾을 수 없습니다."),
 
 
     // mbti 진단 error (4301~

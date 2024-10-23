@@ -3,6 +3,8 @@ package com.ureca.child_recommend.child.application;
 import com.ureca.child_recommend.child.domain.Child;
 import com.ureca.child_recommend.child.domain.ChildMbti;
 import com.ureca.child_recommend.child.domain.ChildMbtiScore;
+import com.ureca.child_recommend.child.domain.Enum.ChildMbtiScoreStatus;
+import com.ureca.child_recommend.child.domain.Enum.ChildStatus;
 import com.ureca.child_recommend.child.infrastructure.ChildMbtiScoreRepository;
 import com.ureca.child_recommend.child.infrastructure.ChildRepository;
 import com.ureca.child_recommend.child.presentation.dto.ChildDto;
@@ -17,7 +19,10 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.multipart.MultipartFile;
 
+import java.io.IOException;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -29,11 +34,12 @@ public class ChildService {
     private final ChildRepository childRepository;
     private final ChildMbtiScoreRepository childMbtiScoreRepository;
     private final UserRepository userRepository;
+    private final FileService fileService;
 
     public ChildDto.Response findChildById(Long childId) {
         // childId로 Child를 찾아서 없으면 예외 던지기
         Child child = childRepository.findById(childId)
-                .orElseThrow(() -> new BusinessException(CommonErrorCode.USER_NOT_FOUND));
+                .orElseThrow(() -> new BusinessException(CommonErrorCode.CHILD_NOT_FOUND));
 
         // Child를 ChildDto.Response로 변환하여 반환
         return ChildDto.Response.fromEntity(child);
@@ -51,6 +57,7 @@ public class ChildService {
                 childRequest.getGender(),
                 childRequest.getBirthday(),
                 childRequest.getProfileUrl(),
+                childRequest.getAge(),
                 user
         );
 
@@ -59,8 +66,8 @@ public class ChildService {
     }
 
     // 자녀 조회
-    public List<ChildDto.Response> getAllChildren() {
-        List<Child> children = childRepository.findAll();  // 전체 조회
+    public List<ChildDto.Response> getAllChildren(Long userId) {
+        List<Child> children = childRepository.findByUserIdAndStatus(userId, ChildStatus.NONACTIVE); // 조건에 맞는 조회
         return children.stream()
                 .map(ChildDto.Response::fromEntity) // fromEntity 메서드로 변환
                 .collect(Collectors.toList());
@@ -69,10 +76,8 @@ public class ChildService {
 
 
     // 자녀 상세 조회
-    public ChildDto.Response getChildById(Long childId) {
-        Child child = childRepository.findById(childId)
-                .orElseThrow(() -> new BusinessException(CommonErrorCode.USER_NOT_FOUND));
-        return ChildDto.Response.fromEntity(child);
+    public Child getChildById(Long childId) {
+        return childRepository.findById(childId).orElseThrow(()->new BusinessException(CommonErrorCode.CHILD_NOT_FOUND));
     }
 
 
@@ -80,30 +85,39 @@ public class ChildService {
     @Transactional
     public ChildDto.Response updateChild(Long childId, ChildDto.Request childRequest) {
         Child child = childRepository.findById(childId)
-                .orElseThrow(() -> new BusinessException(CommonErrorCode.USER_NOT_FOUND));
+                .orElseThrow(() -> new BusinessException(CommonErrorCode.CHILD_NOT_FOUND));
 
         // 요청 DTO에서 정보를 가져와 업데이트
        child.updateChildInfo(childRequest.getName(),
-                childRequest.getGender(), childRequest.getBirthday(), childRequest.getProfileUrl());
+                childRequest.getGender(), childRequest.getBirthday(), childRequest.getProfileUrl(), childRequest.getAge());
 
         return ChildDto.Response.fromEntity(child); // 업데이트된 정보를 Response DTO로 변환하여 반환
     }
 
 
     // 자녀 삭제
+    @Transactional
     public void deleteChild(Long childId) {
         Child child = childRepository.findById(childId)
-                .orElseThrow(() -> new BusinessException(CommonErrorCode.USER_NOT_FOUND));
+                .orElseThrow(() -> new BusinessException(CommonErrorCode.CHILD_NOT_FOUND));
         Child.updateChildStatus(child);
     }
 
-    public ChildMbtiScore getChildMbti(Long childId) {
+    // 자녀 사진 변경
+    public void updateChildProfile(Long childId, String profileUrl) throws IOException {
         Child child = childRepository.findById(childId)
                 .orElseThrow(() -> new BusinessException(CommonErrorCode.USER_NOT_FOUND));
+        child.setProfileUrl(profileUrl);
+    }
+
+    // 자녀 MBTI SCORE 조회
+    public ChildMbtiScore getChildMbti(Long childId) {
+        Child child = childRepository.findById(childId)
+                .orElseThrow(() -> new BusinessException(CommonErrorCode.CHILD_NOT_FOUND));
 
         // ChildMbtiScore를 조회
-        ChildMbtiScore childMbtiScore = childMbtiScoreRepository.findByChild(child)
-                .orElseThrow(() -> new BusinessException(CommonErrorCode.USER_NOT_FOUND));
+        ChildMbtiScore childMbtiScore = childMbtiScoreRepository.findByChildIdAndStatus(childId, ChildMbtiScoreStatus.ACTIVE)
+                .orElseThrow(() -> new BusinessException(CommonErrorCode.CHILDMBTI_NOT_FOUND));
 
         return childMbtiScore; // 또는 필요한 값을 반환
     }

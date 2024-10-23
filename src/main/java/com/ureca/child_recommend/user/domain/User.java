@@ -49,26 +49,20 @@ public class User extends BaseTimeEntity {
             return new User(oauthInfo);
         }
 
-        public void updateNickname(String nickname) {
-            this.oauthInfo.setNickname(nickname);
-        }
-
 //        public void updatePhone(String phone) {
 //            this.phone = phone;
 //        }
 
     public void updateStatus(UserStatus status) {this.status = status;}
 
-    public void setEmail(String email) {
-        this.oauthInfo.setEmail(email);
+    public void updateUserInfo (String nickname, String email, String gender, String ageRange){
+        if (nickname != null) {this.oauthInfo.setNickname(nickname);}
+        if (email != null) {this.oauthInfo.setEmail(email);}
+        if (gender != null) {this.oauthInfo.setGender(gender);}
+        if (ageRange != null) {this.oauthInfo.setAgeRange(ageRange);}
     }
 
-    public void setGender(String gender) {
-        this.oauthInfo.setGender(gender);
-    }
 
-    public void setAgeRange(String ageRange) {
-        this.oauthInfo.setAgeRange(ageRange);
-    }
+    public void setProfileUrl(String profileUrl) {this.oauthInfo.setProfileUrl(profileUrl);}
 
     }

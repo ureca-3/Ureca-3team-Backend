@@ -35,7 +35,7 @@ public class FeedBackService {
     }
 
     public List<Contents> getRecentContents(Long userId) {
-        List<Object> recentContentIds = userService.getRecentContents(userId);
+            List<Object> recentContentIds = userService.getRecentContents(userId);
 
         // 컨텐츠 ID로 실제 컨텐츠 정보 조회
         return recentContentIds.stream()

@@ -13,6 +13,7 @@ import java.util.concurrent.TimeUnit;
 public class RedisUtil {
     private final RedisTemplate<String, Object> redisTemplate;
 
+
     public void setData(String key, String value, Long exprTime) {
         redisTemplate.opsForValue().set(key, value, exprTime, TimeUnit.MILLISECONDS);
     }

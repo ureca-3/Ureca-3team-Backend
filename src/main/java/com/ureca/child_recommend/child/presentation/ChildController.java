@@ -2,6 +2,7 @@ package com.ureca.child_recommend.child.presentation;
 
 import com.ureca.child_recommend.child.application.ChildService;
 import com.ureca.child_recommend.child.application.FileService;
+import com.ureca.child_recommend.child.domain.Child;
 import com.ureca.child_recommend.child.domain.ChildMbtiScore;
 import com.ureca.child_recommend.child.presentation.dto.ChildDto;
 import com.ureca.child_recommend.global.exception.errorcode.CommonErrorCode;
@@ -23,15 +24,11 @@ public class ChildController {
     private final ChildService childService;
     private final FileService fileService;
 
-    @PostMapping("/profile")
-    public SuccessResponse<String> uploadFile(@RequestParam("file") MultipartFile file) {
-        try {
+    //공통 사진 저장 API(URL 반환)
+    @PostMapping("/picture")
+    public SuccessResponse<String> uploadFile(@RequestParam("file") MultipartFile file) throws IOException {
             String fileUrl = fileService.uploadFile(file);
             return SuccessResponse.success(fileUrl);
-        } catch (IOException e) {
-            e.printStackTrace();
-            return SuccessResponse.success(CommonErrorCode.USER_NOT_FOUND.getMessage());
-        }
     }
 
     // 자녀 프로필 생성 API
@@ -43,18 +40,23 @@ public class ChildController {
             return SuccessResponse.successWithoutResult(null); // 성공 메시지 반환
     }
 
-    @GetMapping("/child") // 전체 조회
-    public SuccessResponse<List<ChildDto.Response>> getAllChildren() {
-        List<ChildDto.Response> childList = childService.getAllChildren();
+    // 내 자녀 조회 API
+    @GetMapping("/child")
+    public SuccessResponse<List<ChildDto.Response>> getAllChildren(@AuthenticationPrincipal Long userId) {
+        List<ChildDto.Response> childList = childService.getAllChildren(userId);
         return SuccessResponse.success(childList);
     }
 
+
+
     @GetMapping("/child/{child_id}")//상세조회
     public SuccessResponse<ChildDto.Response> getChildById(@PathVariable("child_id") Long childId) {
-        ChildDto.Response childDto = childService.getChildById( childId);
+        Child child = childService.getChildById(childId);
+        ChildDto.Response childDto = ChildDto.Response.fromEntity(child);
         return SuccessResponse.success(childDto);
     }
 
+    // 자녀 프로필 수정
     @PatchMapping("/child/{child_id}")
     public SuccessResponse<ChildDto.Response> updateChild( @PathVariable("child_id") Long childId,
                                                          @RequestBody ChildDto.Request childRequest) {
@@ -63,14 +65,20 @@ public class ChildController {
         return SuccessResponse.success(updatedChild);
     }
 
-
-    @PatchMapping("/child/{child_id}")
+    // 자녀 프로필 status수정(논리적 삭제)
+    @PatchMapping("/child/status/{child_id}")
     public SuccessResponse<String> deleteChild(@PathVariable("child_id") Long childId) {
-        // 삭제 처리
         childService.deleteChild(childId);
         return SuccessResponse.successWithoutResult(null);
     }
 
+    //  프로필 사진 수정 처리
+    @PatchMapping("/child/picture/{child_id}")
+    public SuccessResponse<String> deleteChild(@PathVariable("child_id") Long childId, @RequestBody String profileUrl) throws IOException {
+        childService.updateChildProfile(childId, profileUrl);
+        return SuccessResponse.successWithoutResult(null);
+    }
+//
     // 자녀 MBTI 조회 API
     @GetMapping("/child/mbti/{child_id}")
     public SuccessResponse<ChildMbtiScore> getChildMbti(@PathVariable("child_id") Long childId) {
