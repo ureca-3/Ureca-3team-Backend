@@ -1,16 +1,26 @@
 package com.ureca.child_recommend.user.application;
 
+import com.ureca.child_recommend.child.application.FileService;
 import com.ureca.child_recommend.config.jwt.util.JwtUtil;
 import com.ureca.child_recommend.config.oauth.dto.OauthInfo;
 import com.ureca.child_recommend.config.oauth.client.Helper.KakaoOauthHelper;
 import com.ureca.child_recommend.config.redis.util.RedisUtil;
 import com.ureca.child_recommend.global.exception.BusinessException;
+import com.ureca.child_recommend.global.exception.errorcode.CommonErrorCode;
+import com.ureca.child_recommend.user.domain.Enum.UserRole;
+import com.ureca.child_recommend.user.domain.Enum.UserStatus;
 import com.ureca.child_recommend.user.domain.User;
 import com.ureca.child_recommend.user.dto.UserDto;
 import com.ureca.child_recommend.user.infrastructure.UserRepository;
 import lombok.RequiredArgsConstructor;
+import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.web.multipart.MultipartFile;
+
+import java.io.IOException;
+import java.util.List;
+import java.util.concurrent.TimeUnit;
 
 import static com.ureca.child_recommend.global.exception.errorcode.CommonErrorCode.JWT_REFRESHTOKEN_NOT_MATCH;
 import static com.ureca.child_recommend.global.exception.errorcode.CommonErrorCode.REFRESH_TOKEN_NOT_FOUND;
@@ -24,9 +34,14 @@ public class UserService {
     private final KakaoOauthHelper kakaoOauthHelper;
     private final JwtUtil jwtUtil;
     private final RedisUtil redisUtil;
+    private final FileService fileService;
     private static final String RT = "RT:";
     private static final String LOGOUT = "LOGOUT:";
     private static final String ROLE_USER = "ROLE_USER";
+
+    private final RedisTemplate<String, Object> redisTemplate;
+
+    private static final String RECENT_CONTENTS_KEY_PREFIX = "recentContents:";
 
     public String kakaoCode(String code){
 //        System.out.println(code);
@@ -81,7 +96,6 @@ public class UserService {
         redisUtil.setData(LOGOUT+resolveToken, LOGOUT, jwtUtil.getExpiration(resolveToken));// 블랙리스트 처리
     }
 
-
     //토큰 얻어오기
     protected String getOrGenerateRefreshToken(User user){
         String refreshToken = redisUtil.getData(RT + user.getId());
@@ -92,5 +106,41 @@ public class UserService {
         }
         return refreshToken;
     }
-}
 
+
+    // Redis에 최근 본 컨텐츠 ID 저장 (일주일간 유지)
+    public void saveRecentContent(Long childId, Long contentId) {
+        String key = RECENT_CONTENTS_KEY_PREFIX + childId;
+        redisTemplate.opsForList().leftPush(key, contentId);
+        redisTemplate.expire(key, 7, TimeUnit.DAYS);  // TTL 설정 (1주일)
+    }
+
+    // Redis에서 최근 본 컨텐츠 ID 목록 조회
+    public List<Object> getRecentContents(Long childId) {
+        String key = RECENT_CONTENTS_KEY_PREFIX + childId;
+        return redisTemplate.opsForList().range(key, 0, -1);  // 전체 목록 조회
+    }
+
+    @Transactional
+    public void updateUser(UserDto.Request userRequest) {
+        // 현재 사용자 정보를 가져옵니다. (예를 들어, SecurityContextHolder를 사용하여 현재 사용자 ID를 가져올 수 있습니다)
+        Long currentUserId = getCurrentUserId(); // 현재 사용자 ID를 가져오는 로직 구현 필요
+        User user = userRepository.findById(currentUserId)
+                .orElseThrow(() -> new BusinessException(CommonErrorCode.USER_NOT_FOUND));
+
+        // 닉네임, 이메일, 프로필 URL 업데이트
+        user.updateUserInfo(userRequest.getNickname(), userRequest.getEmail(), userRequest.getGender(), userRequest.getAgeRange());
+    }
+
+    private Long getCurrentUserId() {
+        // 현재 사용자의 ID를 가져오는 로직 구현
+        // 예를 들어, SecurityContextHolder.getContext().getAuthentication() 사용
+        return 1L; // 예시 값
+    }
+
+    public void updateUserProfile(Long userId, String profileUrl) throws IOException{
+        User user = userRepository.findById(userId)
+                .orElseThrow(() -> new BusinessException(CommonErrorCode.USER_NOT_FOUND));
+        user.setProfileUrl(profileUrl); // 유저 사진 업데이트
+    }
+}

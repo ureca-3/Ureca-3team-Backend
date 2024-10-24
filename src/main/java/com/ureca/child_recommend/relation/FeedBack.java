@@ -22,7 +22,7 @@ public class FeedBack extends BaseTimeEntity {
     private Long id;
 
     @Enumerated(EnumType.STRING)
-    private FeedBackType type;
+    private FeedBackType type; // LIKE, DISLIKE
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "child_id")

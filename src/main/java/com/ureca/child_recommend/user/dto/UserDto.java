@@ -34,4 +34,14 @@ public class UserDto {
             }
         }
     }
+
+    @Builder
+    @Getter
+    public static class Request{
+        private String nickname;
+        private String email;
+        private String gender;
+        private String ageRange;
+
+    }
 }

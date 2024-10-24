@@ -21,4 +21,7 @@ public class SuccessResponse<T> extends ApiResponse{
     public static <T> SuccessResponse<T> successWithoutResult(T data){
         return new SuccessResponse<>(null);
     }
+
+
 }
+
