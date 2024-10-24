@@ -7,5 +7,7 @@ import lombok.Getter;
 @AllArgsConstructor
 public class ContentLikeDto {
     private String title;
+    private Long contentId;
+    private String posterUrl;
     private Double likes;
 }
