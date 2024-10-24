@@ -1,3 +1,4 @@
+/*
 package com.ureca.child_recommend.ranking.application;
 
 
@@ -17,7 +18,7 @@ import java.util.Set;
 
 @Service
 @RequiredArgsConstructor
-public class RankingService {
+public class YesterdayRankingService {
 
     private final ZSetOperations<String, Object> zSetOperations;
     private final RedisTemplate<String, Object> redisTemplate;
@@ -36,7 +37,6 @@ public class RankingService {
         contentsRepository.findById(contentId)
                 .orElseThrow(() -> new BusinessException(CommonErrorCode.NO_CONTENT_AVAILABLE)); // 콘텐츠가 없으면 예외 처리
 
-
     // 자녀가 이미 '좋아요'를 눌렀는지 확인
         Boolean hasLiked = zSetOperations.getOperations().hasKey(childLikedKey);
 
@@ -50,8 +50,10 @@ public class RankingService {
             redisTemplate.opsForValue().set(childLikedKey, "true"); // 자녀의 좋아요 상태 저장
 //            redisTemplate.opsForValue().set(childLikedKey, Boolean.toString(true)); // 자녀의 좋아요 상태 저장 refactor
         }
+*/
 /*    // 키의 TTL 설정 : 1시간 유지
-     zSetOperations.getOperations().expire(REDIS_KEY, Duration.ofHours(1)); */
+     zSetOperations.getOperations().expire(REDIS_KEY, Duration.ofHours(1)); *//*
+
     }
 
     @Scheduled(cron = "0 0 0 * * ?") // 매일 자정 00:00:00에 실행
@@ -112,3 +114,4 @@ public class RankingService {
 
 
 }
+*/
