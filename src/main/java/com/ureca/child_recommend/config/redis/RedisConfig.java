@@ -1,7 +1,6 @@
 package com.ureca.child_recommend.config.redis;
 
 import com.ureca.child_recommend.notice.application.UserSubscriber;
-import jakarta.annotation.PostConstruct;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -12,8 +11,8 @@ import org.springframework.data.redis.core.ZSetOperations;
 import org.springframework.data.redis.listener.ChannelTopic;
 import org.springframework.data.redis.listener.RedisMessageListenerContainer;
 import org.springframework.data.redis.serializer.StringRedisSerializer;
-
-import java.util.concurrent.TimeUnit;
+import org.springframework.data.redis.connection.RedisPassword;
+import org.springframework.data.redis.connection.RedisStandaloneConfiguration;
 
 @Configuration
 public class RedisConfig {
@@ -24,11 +23,23 @@ public class RedisConfig {
     @Value("${spring.data.redis.port}")
     private int port;
 
+    @Value("${spring.data.redis.password}")
+    private String redisPassword;
+
     private static final String REDISSON_HOST_PREFIX = "redis://";
 
     @Bean
     public RedisConnectionFactory redisConnectionFactory() {
-        return new LettuceConnectionFactory(host, port);
+        RedisStandaloneConfiguration redisConfig = new RedisStandaloneConfiguration();
+        redisConfig.setHostName(host);
+        redisConfig.setPort(port);
+
+        // 비밀번호가 설정되어 있으면 비밀번호도 추가
+        if (!redisPassword.isEmpty()) {
+            redisConfig.setPassword(RedisPassword.of(redisPassword));
+        }
+
+        return new LettuceConnectionFactory(redisConfig);
     }
 
     @Bean
@@ -68,3 +79,5 @@ public class RedisConfig {
 
 
 }
+
+

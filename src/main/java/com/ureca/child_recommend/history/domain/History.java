@@ -1,6 +1,7 @@
 package com.ureca.child_recommend.history.domain;
 
 import com.ureca.child_recommend.child.domain.Child;
+import com.ureca.child_recommend.child.domain.ChildMbtiScore;
 import com.ureca.child_recommend.global.entity.BaseTimeEntity;
 import com.ureca.child_recommend.user.domain.User;
 import jakarta.persistence.*;
@@ -22,13 +23,13 @@ public class History extends BaseTimeEntity {
     private Long id;
 
     @Column
-    private Integer ieScore;
+    private Integer eiScore;
 
     @Column
     private Integer snScore;
 
     @Column
-    private Integer ftScore;
+    private Integer tfScore;
 
     @Column
     private Integer jpScore;
@@ -36,4 +37,14 @@ public class History extends BaseTimeEntity {
     @ManyToOne
     @JoinColumn(name = "child_id")
     private Child child;
+
+    public static History enrollToHistory(ChildMbtiScore score) {
+        return History.builder()
+                .eiScore(score.getEiScore())
+                .snScore(score.getSnScore())
+                .tfScore(score.getTfScore())
+                .jpScore(score.getJpScore())
+                .child(score.getChild())
+                .build();
+    }
 }

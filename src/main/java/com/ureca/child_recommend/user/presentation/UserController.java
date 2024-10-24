@@ -1,11 +1,19 @@
 package com.ureca.child_recommend.user.presentation;
 
+import com.ureca.child_recommend.contents.domain.Contents;
 import com.ureca.child_recommend.global.response.SuccessResponse;
+import com.ureca.child_recommend.relation.application.FeedBackService;
 import com.ureca.child_recommend.user.application.UserService;
+import jakarta.validation.Valid;
 import com.ureca.child_recommend.user.dto.UserDto;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.multipart.MultipartFile;
+
+import java.io.IOException;
+import java.util.List;
 
 
 @RestController
@@ -15,6 +23,7 @@ import org.springframework.web.bind.annotation.*;
 public class UserController {
 
     private final UserService userService;
+    private final FeedBackService feedBackService;
 
     /**
      * 24.10.17 작성자 : 정주현
@@ -50,5 +59,16 @@ public class UserController {
         return SuccessResponse.success("로그아웃 성공");
     }
 
+    @PatchMapping("/user")
+    public SuccessResponse<String> updateUser(@RequestBody @Valid UserDto.Request userRequest) {
+        userService.updateUser(userRequest);
+        return SuccessResponse.successWithoutResult(null); // 수정 완료 후 204 No Content 응답
+    }
+
+    @PatchMapping("/user/picture")
+    public SuccessResponse<String> updateUserProfile(@AuthenticationPrincipal Long userId,@RequestBody String profileUrl) throws IOException {
+        userService.updateUserProfile(userId, profileUrl);
+        return SuccessResponse.successWithoutResult(null); // 수정 완료 후 204 No Content 응답
+    }
 
 }

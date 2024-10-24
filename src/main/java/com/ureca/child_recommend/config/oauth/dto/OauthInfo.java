@@ -41,4 +41,18 @@ public class OauthInfo {
         this.gender = gender;
         this.ageRange = ageRange;
     }
+
+    public void setNickname(String nickname) {
+        this.nickname = nickname;
+    }
+
+    public void setEmail(String email) {this.email = email; }
+
+    public void setGender(String gender) {this.gender = gender; }
+
+    public void setAgeRange(String ageRange) {this.ageRange = ageRange; }
+
+    public void setProfileUrl(String profileUrl) {this.profileUrl = profileUrl; }
+
+
 }

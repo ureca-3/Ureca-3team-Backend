@@ -20,7 +20,7 @@ public class ContentsMbtiScore extends BaseTimeEntity {
     private Long id;
 
     @Column
-    private Integer eiScore;
+     private Integer eiScore;
 
     @Column
     private Integer snScore;
@@ -30,5 +30,14 @@ public class ContentsMbtiScore extends BaseTimeEntity {
 
     @Column
     private Integer jpScore;
+
+    public static ContentsMbtiScore saveContentsMbti(int eiScore, int snScore, int tfScore, int jpScore) {
+        return ContentsMbtiScore.builder()
+                .eiScore(eiScore)
+                .snScore(snScore)
+                .tfScore(tfScore)
+                .jpScore(jpScore)
+                .build();
+    }
 
 }
