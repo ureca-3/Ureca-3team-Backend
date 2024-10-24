@@ -14,7 +14,6 @@ public class SseEmitterManager {
 
 
     public SseEmitter createEmitter(){
-//        SseEmitter emitter = new SseEmitter(3600 * 1000L); // 1시간
         SseEmitter emitter = new SseEmitter(Long.MAX_VALUE); // Endless Connection
         emitters.add(emitter);
 
