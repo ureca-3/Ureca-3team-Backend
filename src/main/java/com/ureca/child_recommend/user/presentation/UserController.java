@@ -71,18 +71,4 @@ public class UserController {
         return SuccessResponse.successWithoutResult(null); // 수정 완료 후 204 No Content 응답
     }
 
-
-    // 좋아요한 컨텐츠 조회
-    @GetMapping("/user/feedback")
-    public SuccessResponse<List<String>> getLikedContents(@RequestBody Long childId) {
-        List<String> likedContents = feedBackService.getLikedContents(childId);
-        return SuccessResponse.success(likedContents);
-    }
-
-    // 최근 감상한 컨텐츠 조회
-    @GetMapping("/user/recentcontents")
-    public SuccessResponse<List<Contents>> getRecentContents(@AuthenticationPrincipal Long userId) {
-        List<Contents> recentContents = feedBackService.getRecentContents(userId);
-        return SuccessResponse.success(recentContents);
-    }
 }

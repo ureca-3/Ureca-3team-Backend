@@ -67,7 +67,7 @@ public class ChildService {
 
     // 자녀 조회
     public List<ChildDto.Response> getAllChildren(Long userId) {
-        List<Child> children = childRepository.findByUserIdAndStatus(userId, ChildStatus.NONACTIVE); // 조건에 맞는 조회
+        List<Child> children = childRepository.findByUserIdAndStatus(userId, ChildStatus.ACTIVE); // 조건에 맞는 조회
         return children.stream()
                 .map(ChildDto.Response::fromEntity) // fromEntity 메서드로 변환
                 .collect(Collectors.toList());
@@ -76,8 +76,15 @@ public class ChildService {
 
 
     // 자녀 상세 조회
-    public Child getChildById(Long childId) {
-        return childRepository.findById(childId).orElseThrow(()->new BusinessException(CommonErrorCode.CHILD_NOT_FOUND));
+    public Child getChildById(Long userId, Long childId) {
+        User user = userRepository.findById(userId)
+                .orElseThrow(() -> new BusinessException(CommonErrorCode.USER_NOT_FOUND));
+        Child child = childRepository.findById(childId)
+                .orElseThrow(() -> new BusinessException(CommonErrorCode.CHILD_NOT_FOUND));
+        if(user != child.getUser()) {
+            throw new BusinessException(CommonErrorCode.CHILD_NOT_FOUND);
+        }
+        return child;
     }
 
 

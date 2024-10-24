@@ -5,8 +5,10 @@ import com.ureca.child_recommend.child.application.FileService;
 import com.ureca.child_recommend.child.domain.Child;
 import com.ureca.child_recommend.child.domain.ChildMbtiScore;
 import com.ureca.child_recommend.child.presentation.dto.ChildDto;
+import com.ureca.child_recommend.contents.domain.Contents;
 import com.ureca.child_recommend.global.exception.errorcode.CommonErrorCode;
 import com.ureca.child_recommend.global.response.SuccessResponse;
+import com.ureca.child_recommend.relation.application.FeedBackService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -23,6 +25,7 @@ import java.util.List;
 public class ChildController {
     private final ChildService childService;
     private final FileService fileService;
+    private final FeedBackService feedBackService;
 
     //공통 사진 저장 API(URL 반환)
     @PostMapping("/picture")
@@ -50,8 +53,8 @@ public class ChildController {
 
 
     @GetMapping("/child/{child_id}")//상세조회
-    public SuccessResponse<ChildDto.Response> getChildById(@PathVariable("child_id") Long childId) {
-        Child child = childService.getChildById(childId);
+    public SuccessResponse<ChildDto.Response> getChildById(@AuthenticationPrincipal Long userId, @PathVariable("child_id") Long childId) {
+        Child child = childService.getChildById(userId, childId);
         ChildDto.Response childDto = ChildDto.Response.fromEntity(child);
         return SuccessResponse.success(childDto);
     }
@@ -60,7 +63,7 @@ public class ChildController {
     @PatchMapping("/child/{child_id}")
     public SuccessResponse<ChildDto.Response> updateChild( @PathVariable("child_id") Long childId,
                                                          @RequestBody ChildDto.Request childRequest) {
-        // 수정 처리
+
         ChildDto.Response updatedChild = childService.updateChild(childId, childRequest);
         return SuccessResponse.success(updatedChild);
     }
@@ -78,12 +81,26 @@ public class ChildController {
         childService.updateChildProfile(childId, profileUrl);
         return SuccessResponse.successWithoutResult(null);
     }
-//
+
     // 자녀 MBTI 조회 API
     @GetMapping("/child/mbti/{child_id}")
     public SuccessResponse<ChildMbtiScore> getChildMbti(@PathVariable("child_id") Long childId) {
         ChildMbtiScore mbtiResult = childService.getChildMbti(childId); // 자녀의 MBTI 조회
         return SuccessResponse.success(mbtiResult); // 성공 시 MBTI 결과 반환
+    }
+
+    // 좋아요한 컨텐츠 조회
+    @GetMapping("/child/feedback")
+    public SuccessResponse<List<String>> getLikedContents(@RequestBody Long childId) {
+        List<String> likedContents = feedBackService.getLikedContents(childId);
+        return SuccessResponse.success(likedContents);
+    }
+
+    // 최근 감상한 컨텐츠 조회
+    @GetMapping("/child/recentcontents")
+    public SuccessResponse<List<Contents>> getRecentContents( @RequestBody Long childId) {
+        List<Contents> recentContents = feedBackService.getRecentContents(childId);
+        return SuccessResponse.success(recentContents);
     }
 
 }

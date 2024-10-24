@@ -27,10 +27,10 @@ public class MbtiService {
     private final ChildMbtiScoreRepository childMbtiScoreRepository;
 
     @Transactional
-    public MbtiDto.Response.assessmentMbtiDto saveMbtiResult(MbtiDto.Request.assessmentMbtiDto dto, Long child_id) {
+    public MbtiDto.Response.assessmentMbtiDto saveMbtiResult(Long userId, MbtiDto.Request.assessmentMbtiDto dto, Long child_id) {
 
         String result = calculateMbti(dto);
-        Child child = childService.getChildById(child_id);
+        Child child = childService.getChildById(userId, child_id);
 
         // 1. 자녀 PK로 ChildMbti 데이터 조회
         Optional<ChildMbti> existingChildMbti = childMbtiRepository.findByChildIdAndStatus(child.getId(), ChildMbtiStatus.ACTIVE);

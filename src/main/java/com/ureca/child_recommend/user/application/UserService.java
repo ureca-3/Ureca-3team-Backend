@@ -109,15 +109,15 @@ public class UserService {
 
 
     // Redis에 최근 본 컨텐츠 ID 저장 (일주일간 유지)
-    public void saveRecentContent(Long userId, Long contentId) {
-        String key = RECENT_CONTENTS_KEY_PREFIX + userId;
+    public void saveRecentContent(Long childId, Long contentId) {
+        String key = RECENT_CONTENTS_KEY_PREFIX + childId;
         redisTemplate.opsForList().leftPush(key, contentId);
         redisTemplate.expire(key, 7, TimeUnit.DAYS);  // TTL 설정 (1주일)
     }
 
     // Redis에서 최근 본 컨텐츠 ID 목록 조회
-    public List<Object> getRecentContents(Long userId) {
-        String key = RECENT_CONTENTS_KEY_PREFIX + userId;
+    public List<Object> getRecentContents(Long childId) {
+        String key = RECENT_CONTENTS_KEY_PREFIX + childId;
         return redisTemplate.opsForList().range(key, 0, -1);  // 전체 목록 조회
     }
 
@@ -144,4 +144,3 @@ public class UserService {
         user.setProfileUrl(profileUrl); // 유저 사진 업데이트
     }
 }
-
