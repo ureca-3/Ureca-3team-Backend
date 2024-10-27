@@ -7,16 +7,13 @@ import com.ureca.child_recommend.config.oauth.client.Helper.KakaoOauthHelper;
 import com.ureca.child_recommend.config.redis.util.RedisUtil;
 import com.ureca.child_recommend.global.exception.BusinessException;
 import com.ureca.child_recommend.global.exception.errorcode.CommonErrorCode;
-import com.ureca.child_recommend.user.domain.Enum.UserRole;
-import com.ureca.child_recommend.user.domain.Enum.UserStatus;
-import com.ureca.child_recommend.user.domain.User;
+import com.ureca.child_recommend.user.domain.Users;
 import com.ureca.child_recommend.user.dto.UserDto;
 import com.ureca.child_recommend.user.infrastructure.UserRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
-import org.springframework.web.multipart.MultipartFile;
 
 import java.io.IOException;
 import java.util.List;
@@ -53,7 +50,7 @@ public class UserService {
     public UserDto.Response.SignIn login(String idToken){
         OauthInfo oauthInfo = kakaoOauthHelper.getOauthInfoByToken(idToken);
 
-        User user = userRepository.findByOauthInfoOid(oauthInfo.getOid()).orElseGet(()-> forceJoin(oauthInfo));
+        Users user = userRepository.findByOauthInfoOid(oauthInfo.getOid()).orElseGet(()-> forceJoin(oauthInfo));
 
         return UserDto.Response.SignIn.of(
                 jwtUtil.createAccessToken(user.getId(), ROLE_USER),
@@ -61,8 +58,8 @@ public class UserService {
     }
 
     //유저 존재하지 않을 시 생성
-    public User forceJoin(OauthInfo oauthInfo) {
-        User newUser = User.create(oauthInfo);
+    public Users forceJoin(OauthInfo oauthInfo) {
+        Users newUser = Users.create(oauthInfo);
         return userRepository.save(newUser);
     }
 
@@ -97,7 +94,7 @@ public class UserService {
     }
 
     //토큰 얻어오기
-    protected String getOrGenerateRefreshToken(User user){
+    protected String getOrGenerateRefreshToken(Users user){
         String refreshToken = redisUtil.getData(RT + user.getId());
 
         if (refreshToken == null) {
@@ -125,7 +122,7 @@ public class UserService {
     public void updateUser(UserDto.Request userRequest) {
         // 현재 사용자 정보를 가져옵니다. (예를 들어, SecurityContextHolder를 사용하여 현재 사용자 ID를 가져올 수 있습니다)
         Long currentUserId = getCurrentUserId(); // 현재 사용자 ID를 가져오는 로직 구현 필요
-        User user = userRepository.findById(currentUserId)
+        Users user = userRepository.findById(currentUserId)
                 .orElseThrow(() -> new BusinessException(CommonErrorCode.USER_NOT_FOUND));
 
         // 닉네임, 이메일, 프로필 URL 업데이트
@@ -139,7 +136,7 @@ public class UserService {
     }
 
     public void updateUserProfile(Long userId, String profileUrl) throws IOException{
-        User user = userRepository.findById(userId)
+        Users user = userRepository.findById(userId)
                 .orElseThrow(() -> new BusinessException(CommonErrorCode.USER_NOT_FOUND));
         user.setProfileUrl(profileUrl); // 유저 사진 업데이트
     }

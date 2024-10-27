@@ -6,7 +6,7 @@ import com.auth0.jwt.JWTVerifier;
 import com.auth0.jwt.algorithms.Algorithm;
 import com.auth0.jwt.interfaces.DecodedJWT;
 import com.ureca.child_recommend.config.jwt.LoginService;
-import com.ureca.child_recommend.user.domain.User;
+import com.ureca.child_recommend.user.domain.Users;
 import jakarta.annotation.PostConstruct;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -92,7 +92,7 @@ public class JwtUtil {
     // JWT 토큰에서 인증 정보(권한) 조회
     public Authentication getAuthentication(String token) {
         Long id = getIdFromToken(token);
-        User user = loginService.findUser(id);
+        Users user = loginService.findUser(id);
         return new UsernamePasswordAuthenticationToken(id, null, List.of(new SimpleGrantedAuthority(user.getRole().getKey())));
     }
 

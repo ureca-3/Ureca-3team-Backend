@@ -19,8 +19,8 @@ public class RedisConfig {
     @Value("${spring.data.redis.port}")
     private int port;
 
-    @Value("${spring.data.redis.password}")
-    private String redisPassword;
+//    @Value("${spring.data.redis.password}")
+//    private String redisPassword;
 
     private static final String REDISSON_HOST_PREFIX = "redis://";
 
@@ -30,10 +30,10 @@ public class RedisConfig {
         redisConfig.setHostName(host);
         redisConfig.setPort(port);
 
-        // 비밀번호가 설정되어 있으면 비밀번호도 추가
-        if (!redisPassword.isEmpty()) {
-            redisConfig.setPassword(RedisPassword.of(redisPassword));
-        }
+//        // 비밀번호가 설정되어 있으면 비밀번호도 추가
+//        if (!redisPassword.isEmpty()) {
+//            redisConfig.setPassword(RedisPassword.of(redisPassword));
+//        }
 
         return new LettuceConnectionFactory(redisConfig);
     }

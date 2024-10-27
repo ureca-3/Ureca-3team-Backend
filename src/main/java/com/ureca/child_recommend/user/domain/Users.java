@@ -13,7 +13,7 @@ import lombok.*;
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
 @AllArgsConstructor
 @Getter
-public class User extends BaseTimeEntity {
+public class Users extends BaseTimeEntity {
 
         @Id
         @GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -39,14 +39,14 @@ public class User extends BaseTimeEntity {
             return "user";
         }
 
-        private User(OauthInfo oauthInfo){
+        private Users(OauthInfo oauthInfo){
             this.oauthInfo = oauthInfo;
             this.status = UserStatus.ACTIVE;
             this.role = UserRole.USER;
         }
 
-        public static User create(OauthInfo oauthInfo){
-            return new User(oauthInfo);
+        public static Users create(OauthInfo oauthInfo){
+            return new Users(oauthInfo);
         }
 
 //        public void updatePhone(String phone) {

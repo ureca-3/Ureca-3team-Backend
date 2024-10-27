@@ -3,7 +3,7 @@ package com.ureca.child_recommend.child.domain;
 
 import com.ureca.child_recommend.child.domain.Enum.ChildStatus;
 import com.ureca.child_recommend.global.entity.BaseTimeEntity;
-import com.ureca.child_recommend.user.domain.User;
+import com.ureca.child_recommend.user.domain.Users;
 import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
@@ -39,18 +39,14 @@ public class Child extends BaseTimeEntity {
     @Column(nullable = false)
     private String profileUrl;
 
-    @Column(nullable = false)
+    @Enumerated(EnumType.STRING)
     private ChildStatus status;
-
-    @OneToOne
-    @JoinColumn(name = "childMbti_id")
-    private ChildMbti childMbti;
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "user_id")
-    private User user;
+    private Users user;
 
-    public static Child createChildProfile(String name, String gender, LocalDate birthday, String profileUrl, Integer age,  User user) {
+    public static Child createChildProfile(String name, String gender, LocalDate birthday, String profileUrl, Integer age,  Users user) {
         return Child.builder()
                 .name(name)
                 .gender(gender)
