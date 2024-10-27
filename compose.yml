@@ -9,18 +9,32 @@ services:
   #  cache-server:
   #    condition: service_healthy
 
-  pinkfong:
-    image: mysql
-    environment:
-      MYSQL_ROOT_PASSWORD: pwd1234
-      MYSQL_DATABASE: mbtiny_db # MySQL 최초 실행 시 ureca_db라는 데이터베이스를 생성해준다.
+  #  pinkfong:
+  #    image: mysql
+  #    environment:
+  #      MYSQL_ROOT_PASSWORD: pwd1234
+  #      MYSQL_DATABASE: mbtiny_db # MySQL 최초 실행 시 ureca_db라는 데이터베이스를 생성해준다.
+  #
+  #    volumes:
+  #      - ./mysql_data:/var/lib/mysql
+  #    ports:
+  #      - 3307:3306
+  #    healthcheck:
+  #      test: ["CMD", "mysqladmin", "ping"]
+  #      interval: 5s
+  #      retries: 10
 
+  pingkfong_postgresql:
+    image: postgres
+    environment:
+      POSTGRES_PASSWORD: pwd1234
+      POSTGRES_DB: mbtiny # MySQL 최초 실행 시 ureca_db라는 데이터베이스를 생성해준다.
     volumes:
-      - ./mysql_data:/var/lib/mysql
+      - ./postgres-data:/var/lib/postgresql/data
     ports:
-      - 3307:3306
+      - 5432:5432
     healthcheck:
-      test: ["CMD", "mysqladmin", "ping"]
+      test: [ "CMD-SHELL", "pg_isready -U postgres" ]
       interval: 5s
       retries: 10
 

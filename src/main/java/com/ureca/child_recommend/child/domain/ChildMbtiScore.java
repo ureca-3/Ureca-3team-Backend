@@ -62,4 +62,19 @@ public class ChildMbtiScore extends BaseTimeEntity {
                 .child(child)
                 .build();
     }
+    public String getEiType() {
+        return eiScore > 50 ? "E" : "I";
+    }
+
+    public String getSnType() {
+        return snScore > 50 ? "S" : "N";
+    }
+
+    public String getTfType() {
+        return tfScore > 50 ? "T" : "F";
+    }
+
+    public String getJpType() {
+        return jpScore > 50 ? "J" : "P";
+    }
 }
