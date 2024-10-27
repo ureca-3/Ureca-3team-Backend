@@ -5,13 +5,11 @@ import com.ureca.child_recommend.child.application.FileService;
 import com.ureca.child_recommend.child.domain.Child;
 import com.ureca.child_recommend.child.domain.ChildMbtiScore;
 import com.ureca.child_recommend.child.presentation.dto.ChildDto;
+import com.ureca.child_recommend.child.presentation.dto.ContentsDto;
 import com.ureca.child_recommend.contents.domain.Contents;
-import com.ureca.child_recommend.global.exception.errorcode.CommonErrorCode;
 import com.ureca.child_recommend.global.response.SuccessResponse;
 import com.ureca.child_recommend.relation.application.FeedBackService;
 import lombok.RequiredArgsConstructor;
-import org.springframework.http.HttpStatus;
-import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
@@ -103,4 +101,29 @@ public class ChildController {
         return SuccessResponse.success(recentContents);
     }
 
+
+    /**
+     * 24.10.24 작성자 : 정주현
+     * 특정 유저 자녀의 (나이,성별,mbti)로부터 임베딩 벡터 값 가져와서 db에 저장
+     * @param userId :  token - 부모 아이디
+     * @param childId : 자녀 아이디
+     */
+    @GetMapping("child/{childId}/embedding/generate")
+    public SuccessResponse<String> inputEmbeddingChild(@AuthenticationPrincipal Long userId,  @PathVariable Long childId){
+        childService.inputEmbedding(userId,childId);
+        return SuccessResponse.success("성공");
+    }
+
+    /**
+     * 24.10.24 작성자 : 정주현
+     * 특정 자녀와 (나이,성별,mbti)가 비슷한 유저 목록으로부터 책 목록 추출
+     * @param userId : token - 부모 아이디
+     * @param childId : 자녀 아이디
+     * @return
+     */
+    @GetMapping("child/{childId}/embedding")
+    public SuccessResponse<List<ContentsDto.Response.SimilarBookDto>> getSimilarUsers(@AuthenticationPrincipal Long userId, @PathVariable Long childId){
+        List<ContentsDto.Response.SimilarBookDto> response = childService.getSimilarUsersBooks(userId, childId);
+        return SuccessResponse.success(response);
+    }
 }
