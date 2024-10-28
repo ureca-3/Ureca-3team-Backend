@@ -4,6 +4,8 @@ import com.ureca.child_recommend.contents.domain.Contents;
 import com.ureca.child_recommend.global.response.SuccessResponse;
 import com.ureca.child_recommend.relation.application.FeedBackService;
 import com.ureca.child_recommend.user.application.UserService;
+import com.ureca.child_recommend.user.domain.Users;
+import jakarta.servlet.http.HttpServletResponse;
 import jakarta.validation.Valid;
 import com.ureca.child_recommend.user.dto.UserDto;
 import lombok.RequiredArgsConstructor;
@@ -30,12 +32,16 @@ public class UserController {
      * 카카오 로그인
      */
     @GetMapping("/kakao-login")
-    public SuccessResponse<UserDto.Response.SignIn> kakaoLogin(@RequestParam final String code){
+    public SuccessResponse<UserDto.Response.SignIn> kakaoLogin(@RequestParam final String code, HttpServletResponse servletResponse) throws IOException {
         // Step 1: code로 idToken 가져오기
         String idToken = userService.kakaoCode(code);
         // Step 2: idToken으로 로그인 처리
         UserDto.Response.SignIn response = userService.login(idToken);
+        String jwtToken = response.getAccessToken();
 
+        // 프론트에서 데이터 받기 위함 - 서버에서 테스트시 아래 두 줄 주석 처리
+        String redirectUrl = "http://localhost:3000?token="+jwtToken;
+        servletResponse.sendRedirect(redirectUrl);
         return SuccessResponse.success(response);
     }
 
@@ -60,8 +66,8 @@ public class UserController {
     }
 
     @PatchMapping("/user")
-    public SuccessResponse<String> updateUser(@RequestBody @Valid UserDto.Request userRequest) {
-        userService.updateUser(userRequest);
+    public SuccessResponse<String> updateUser(@AuthenticationPrincipal Long userId, @RequestBody @Valid UserDto.Request userRequest) {
+        userService.updateUser(userId, userRequest);
         return SuccessResponse.successWithoutResult(null); // 수정 완료 후 204 No Content 응답
     }
 
@@ -71,4 +77,9 @@ public class UserController {
         return SuccessResponse.successWithoutResult(null); // 수정 완료 후 204 No Content 응답
     }
 
+    @GetMapping("/user")
+    public SuccessResponse<Users> getUserData(@AuthenticationPrincipal Long userId) {
+        Users findUser = userService.getUserData(userId);
+        return SuccessResponse.success(findUser);
+    }
 }
