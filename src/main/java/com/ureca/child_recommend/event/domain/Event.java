@@ -26,7 +26,7 @@ public class Event {
     private String name;
 
     @Column
-    private LocalDateTime date;
+    private LocalDate date;
 
     @Column(columnDefinition = "TEXT")
     private String description;

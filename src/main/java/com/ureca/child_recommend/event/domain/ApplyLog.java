@@ -1,6 +1,7 @@
 package com.ureca.child_recommend.event.domain;
 
-import com.ureca.child_recommend.user.domain.User;
+import com.ureca.child_recommend.event.domain.Enum.ApplyLogStatus;
+import com.ureca.child_recommend.user.domain.Users;
 import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
@@ -22,17 +23,20 @@ public class ApplyLog {
     private Long id;
 
     @Column
-    private LocalDateTime log;
+    private String name;
 
     @Column
     private String phone;
 
     @Column
-    private String name;
+    private LocalDateTime log;
+
+    @Column
+    private ApplyLogStatus status;
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "user_id")
-    private User user;
+    private Users user;
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "event_id")

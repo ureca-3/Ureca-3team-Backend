@@ -1,6 +1,6 @@
 package com.ureca.child_recommend.event.domain;
 
-import com.ureca.child_recommend.user.domain.User;
+import com.ureca.child_recommend.user.domain.Users;
 import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
@@ -32,7 +32,7 @@ public class LogHistory {
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "user_id")
-    private User user;
+    private Users user;
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "event_id")
