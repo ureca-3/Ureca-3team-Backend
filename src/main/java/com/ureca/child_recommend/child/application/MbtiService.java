@@ -67,7 +67,7 @@ public class MbtiService {
         ChildMbtiScore deleteChildMbti = childMbtiScoreRepository.findById(childMbtiScoreId).orElseThrow(()->new BusinessException(CommonErrorCode.ASSESSMENT_NOT_FOUND));
         deleteChildMbti.updateStatus(ChildMbtiScoreStatus.DELETE);
 
-        ChildMbti childMbti = childMbtiRepository.findByChildMbtiScore(deleteChildMbti).orElseThrow(()->new BusinessException(CommonErrorCode.ASSESSMENT_NOT_FOUND));;
+        ChildMbti childMbti = childMbtiRepository.findByChildMbtiScore(deleteChildMbti).orElseThrow(()->new BusinessException(CommonErrorCode.ASSESSMENT_NOT_FOUND));
 
         childMbti.updateStatus(ChildMbtiStatus.DELETE);
 
