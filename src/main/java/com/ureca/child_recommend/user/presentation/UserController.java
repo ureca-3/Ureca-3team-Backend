@@ -41,13 +41,7 @@ public class UserController {
         UserDto.Response.SignIn response = userService.login(idToken);
         String jwtToken = response.getAccessToken();
 
-        /* 해당 사용자의 자녀 정보 가져오기 */
-        Long loginUserId = userService.getUser(idToken).getId();
-        int childVal = childService.getAllChildren(loginUserId).size();
-        String redirectUrl ;
-        if (childVal==0) redirectUrl = "http://localhost:3000/register";
-        else redirectUrl = "http://localhost:3000/mypage";
-        servletResponse.sendRedirect(redirectUrl+ "?token="+jwtToken);
+        servletResponse.sendRedirect("http://localhost:3000?token=" + jwtToken);
         return SuccessResponse.success(response);
     }
 
