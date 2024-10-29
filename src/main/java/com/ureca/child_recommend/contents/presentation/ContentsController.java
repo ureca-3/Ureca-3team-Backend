@@ -1,11 +1,14 @@
 package com.ureca.child_recommend.contents.presentation;
 
 import com.ureca.child_recommend.contents.application.ContentsService;
+import com.ureca.child_recommend.contents.domain.Contents;
 import com.ureca.child_recommend.contents.presentation.dto.ContentsDto;
 import com.ureca.child_recommend.global.response.SuccessResponse;
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
+
+import java.util.List;
 
 @RestController 
 @RequiredArgsConstructor 
@@ -15,9 +18,9 @@ public class ContentsController {
 
     // contents 저장
     @PostMapping("/save")
-    public SuccessResponse<String> saveContents(@AuthenticationPrincipal Long userId, @RequestBody ContentsDto.Request request) {
-        contentsService.saveContents(userId, request);
-        return SuccessResponse.successWithoutResult("콘텐츠 저장을 완료했습니다.");
+    public SuccessResponse<Long> saveContents(@AuthenticationPrincipal Long userId, @RequestBody ContentsDto.Request request) {
+        Contents content = contentsService.saveContents(userId, request);
+        return SuccessResponse.success(content.getId());
     }
 
     // 특정 contents 읽기
@@ -39,5 +42,10 @@ public class ContentsController {
     @PatchMapping("/delete/{contentsId}")
     public SuccessResponse<ContentsDto.Response> deleteContents(@AuthenticationPrincipal Long userId, @PathVariable("contentsId") Long contentsId) {
         return SuccessResponse.success(contentsService.deleteContents(contentsId));
+    }
+
+    @GetMapping("/search/{keyword}")
+    public SuccessResponse<List<Contents>> searchContents(@AuthenticationPrincipal Long userId, @PathVariable("keyword") String keyword) {
+        return SuccessResponse.success(contentsService.searchContents(keyword));
     }
 }

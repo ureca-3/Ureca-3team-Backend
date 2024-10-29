@@ -17,6 +17,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
@@ -60,7 +61,7 @@ public class ContentsService {
 
     // 저장, 기본 데이터 입력 후 GPT 활용하여 mbti 데이터 저장
     @Transactional
-    public void saveContents(Long userId, ContentsDto.Request request) {
+    public Contents saveContents(Long userId, ContentsDto.Request request) {
         GptDto.Request gptRequest;
         if (memberChatMap.get(userId) == null) {
             gptRequest = gptWebClient.of(500);
@@ -71,8 +72,6 @@ public class ContentsService {
         }
 
         String summary = request.getDescription(); 
-
-//        System.out.println(summary);
 
         addChatMessages(gptRequest, USER, "'" + summary + "'" +
                 "의 줄거리인 콘텐츠의 MBTI의 비율을 전체 100% 중 " +
@@ -127,6 +126,8 @@ public class ContentsService {
         String message = String.format("New Contents: %s", savedContent.getTitle());
         redisTemplate.convertAndSend(bookChannel.getTopic(), message); // 알림 발송
 
+
+        return savedContent;
     }
 
     public ContentsDto.Response readContents(Long contentsId) {
@@ -153,4 +154,11 @@ public class ContentsService {
         return ContentsDto.Response.contentsData(findContents);
     }
 
+    // 컨텐츠 검색
+    public List<Contents> searchContents(String keyword) {
+        List<Contents> searchContents = contentsRepository.findByTitleContainingOrAuthorContaining(keyword, keyword);
+        if (searchContents.isEmpty()) throw new BusinessException(CommonErrorCode.CONTENTS_NOT_FOUND);
+
+        return searchContents;
+    }
 }

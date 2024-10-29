@@ -43,6 +43,9 @@ public enum CommonErrorCode implements ErrorCode{
 
     // 추가할 NO_CONTENT 관련 에러 코드
     NO_CONTENT_AVAILABLE(HttpStatus.NO_CONTENT, "2040", "요청한 리소스가 없습니다."),
+    // history error (4601 ~
+    HISTORY_NOT_FOUND(HttpStatus.BAD_REQUEST, "4601", "히스토리 내역이 없습니다."),
+
     ;
 
     private final HttpStatus httpStatus;
