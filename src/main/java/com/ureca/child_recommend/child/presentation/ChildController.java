@@ -34,11 +34,11 @@ public class ChildController {
 
     // 자녀 프로필 생성 API
     @PostMapping("/child")
-    public SuccessResponse<String> createChildProfile(@AuthenticationPrincipal Long userId,
+    public SuccessResponse<Long> createChildProfile(@AuthenticationPrincipal Long userId,
                                                       @RequestBody ChildDto.Request childRequest) {
 
-            childService.createChildProfile(userId, childRequest); // 자녀 프로필 생성
-            return SuccessResponse.successWithoutResult(null); // 성공 메시지 반환
+            Long child_id = childService.createChildProfile(userId, childRequest); // 자녀 프로필 생성
+            return SuccessResponse.success(child_id); // 성공 메시지 반환
     }
 
     // 내 자녀 조회 API

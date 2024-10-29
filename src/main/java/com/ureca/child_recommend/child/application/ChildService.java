@@ -47,7 +47,7 @@ public class ChildService {
     }
 
     @Transactional
-    public void createChildProfile(Long userId, ChildDto.Request childRequest) {
+    public Long createChildProfile(Long userId, ChildDto.Request childRequest) {
         // userId로 사용자 정보 가져오기
         Users user = userRepository.findById(userId)
                 .orElseThrow(() -> new BusinessException(CommonErrorCode.USER_NOT_FOUND));
@@ -64,6 +64,8 @@ public class ChildService {
 
         // 자녀 프로필 저장
         childRepository.save(child);
+
+        return child.getId();
     }
 
     // 자녀 조회

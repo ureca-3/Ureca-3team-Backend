@@ -36,6 +36,7 @@ public class ChildDto {
     @Builder
     @AllArgsConstructor(access = AccessLevel.PUBLIC) // public 생성자 추가
     public static class Response {
+        private Long childId;
         private String name;
         private String gender;
         private LocalDate birthday;
@@ -45,6 +46,7 @@ public class ChildDto {
 
         public static Response fromEntity(Child child) {
             return Response.builder()
+                    .childId(child.getId())
                     .name(child.getName())
                     .gender(child.getGender())
                     .birthday(child.getBirthday())

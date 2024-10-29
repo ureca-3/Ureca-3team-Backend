@@ -12,6 +12,7 @@ import com.ureca.child_recommend.user.dto.UserDto;
 import com.ureca.child_recommend.user.infrastructure.UserRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.redis.core.RedisTemplate;
+import org.springframework.security.core.userdetails.User;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -119,10 +120,10 @@ public class UserService {
     }
 
     @Transactional
-    public void updateUser(UserDto.Request userRequest) {
+    public void updateUser(Long userId, UserDto.Request userRequest) {
         // 현재 사용자 정보를 가져옵니다. (예를 들어, SecurityContextHolder를 사용하여 현재 사용자 ID를 가져올 수 있습니다)
-        Long currentUserId = getCurrentUserId(); // 현재 사용자 ID를 가져오는 로직 구현 필요
-        Users user = userRepository.findById(currentUserId)
+//        Long currentUserId = getCurrentUserId(); // 현재 사용자 ID를 가져오는 로직 구현 필요
+        Users user = userRepository.findById(userId)
                 .orElseThrow(() -> new BusinessException(CommonErrorCode.USER_NOT_FOUND));
 
         // 닉네임, 이메일, 프로필 URL 업데이트
@@ -139,5 +140,10 @@ public class UserService {
         Users user = userRepository.findById(userId)
                 .orElseThrow(() -> new BusinessException(CommonErrorCode.USER_NOT_FOUND));
         user.setProfileUrl(profileUrl); // 유저 사진 업데이트
+    }
+
+    public Users getUserData(Long userId) {
+        Users user = userRepository.findById(userId).orElseThrow(() -> new BusinessException(CommonErrorCode.USER_NOT_FOUND));
+        return user;
     }
 }
