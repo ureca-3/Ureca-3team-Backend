@@ -42,7 +42,7 @@ public class ChildMbtiScore extends BaseTimeEntity {
     @Enumerated(EnumType.STRING)
     private ChildMbtiScoreStatus status; //ACTIVE,NONACTIVE,DELETE
 
-    @ManyToOne
+    @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "child_id")
     private Child child;
 

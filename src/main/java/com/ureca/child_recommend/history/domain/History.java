@@ -33,7 +33,7 @@ public class History extends BaseTimeEntity {
     @Column
     private Integer jpScore;
 
-    @ManyToOne
+    @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "child_id")
     private Child child;
 

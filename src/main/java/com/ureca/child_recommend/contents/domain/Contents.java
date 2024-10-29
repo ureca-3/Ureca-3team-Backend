@@ -46,7 +46,7 @@ public class Contents extends BaseTimeEntity {
     @Enumerated(EnumType.STRING)
     private ContentsStatus status;
 
-    @OneToOne
+    @OneToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "contentsMbti_id")
     private ContentsMbtiScore contentsMbti;
 

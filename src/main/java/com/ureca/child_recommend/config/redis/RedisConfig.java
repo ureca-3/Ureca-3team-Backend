@@ -1,11 +1,15 @@
 package com.ureca.child_recommend.config.redis;
 
+import com.ureca.child_recommend.notice.application.UserSubscriber;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.data.redis.connection.RedisConnectionFactory;
 import org.springframework.data.redis.connection.lettuce.LettuceConnectionFactory;
 import org.springframework.data.redis.core.RedisTemplate;
+import org.springframework.data.redis.core.ZSetOperations;
+import org.springframework.data.redis.listener.ChannelTopic;
+import org.springframework.data.redis.listener.RedisMessageListenerContainer;
 import org.springframework.data.redis.serializer.StringRedisSerializer;
 import org.springframework.data.redis.connection.RedisPassword;
 import org.springframework.data.redis.connection.RedisStandaloneConfiguration;
@@ -50,4 +54,30 @@ public class RedisConfig {
         return redisTemplate;
     }
 
+    @Bean
+    public ChannelTopic bookChannel() {
+        return new ChannelTopic("bookChannel");
+    }
+
+    @Bean
+    public RedisMessageListenerContainer redisMessageListenerContainer(
+            RedisConnectionFactory connectionFactory,
+            UserSubscriber userSubscriber,
+            ChannelTopic bookChannel) {
+        // Redis 메시지 리스너 컨테이너 설정
+        RedisMessageListenerContainer container = new RedisMessageListenerContainer();
+        container.setConnectionFactory(connectionFactory);
+        container.addMessageListener(userSubscriber, bookChannel);
+        return container;
+    }
+
+    // ZSet Operations (좋아요 순위 작업용)
+    @Bean
+    public ZSetOperations<String, Object> zSetOperations(RedisTemplate<String, Object> redisTemplate) {
+        return redisTemplate.opsForZSet();
+    }
+
+
 }
+
+

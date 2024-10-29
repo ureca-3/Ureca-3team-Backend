@@ -11,6 +11,8 @@ import com.ureca.child_recommend.contents.presentation.dto.GptDto;
 import com.ureca.child_recommend.global.exception.BusinessException;
 import com.ureca.child_recommend.global.exception.errorcode.CommonErrorCode;
 import lombok.RequiredArgsConstructor;
+import org.springframework.data.redis.core.RedisTemplate;
+import org.springframework.data.redis.listener.ChannelTopic;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -33,6 +35,8 @@ public class ContentsService {
 
     private final GptWebClient gptWebClient;
     private final Map<Long, GptDto.Request> memberChatMap = new HashMap<>();
+    private final ChannelTopic bookChannel;
+    private final RedisTemplate redisTemplate;
 
     // 대화내용 삭제
     public void removeChat(Long userId) {
@@ -117,6 +121,11 @@ public class ContentsService {
         // 제목과 작가 확인 시 없으면 생성
         Contents savedContent = contentsRepository.findByTitleAndAuthor(request.getTitle(), request.getAuthor()).orElseGet(()
                 -> saveContent(userId, request, mbtiScore, mbtiRes.toString()));
+
+        // 📢 알림 발행: Redis 채널에 메시지 전송
+        String message = String.format("New Contents: %s", savedContent.getTitle());
+        redisTemplate.convertAndSend(bookChannel.getTopic(), message); // 알림 발송
+
 
         return savedContent;
     }
