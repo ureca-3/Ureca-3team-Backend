@@ -27,7 +27,7 @@ public class ChildMbti extends BaseTimeEntity {
     @Enumerated(EnumType.STRING)
     private ChildMbtiStatus status; //ACTIVE, NONACTIVE
 
-    @ManyToOne
+    @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "child_id")
     private Child child;
 
