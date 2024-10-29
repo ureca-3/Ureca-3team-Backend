@@ -1,10 +1,10 @@
-package com.ureca.child_recommend.Viewing.application;
+package com.ureca.child_recommend.viewing.application;
 
 import com.ureca.child_recommend.contents.domain.Contents;
 import com.ureca.child_recommend.contents.infrastructure.ContentsRepository;
 import com.ureca.child_recommend.global.exception.BusinessException;
 import com.ureca.child_recommend.global.exception.errorcode.CommonErrorCode;
-import com.ureca.child_recommend.Viewing.dto.ContentLikeDto;
+import com.ureca.child_recommend.viewing.dto.ContentLikeDto;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.data.redis.core.ZSetOperations;

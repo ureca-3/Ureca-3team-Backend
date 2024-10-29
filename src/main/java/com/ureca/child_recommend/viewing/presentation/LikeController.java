@@ -1,8 +1,8 @@
-package com.ureca.child_recommend.Viewing.presentation;
+package com.ureca.child_recommend.viewing.presentation;
 
-import com.ureca.child_recommend.Viewing.application.ViewingLikesService;
-import com.ureca.child_recommend.Viewing.dto.LikeRequestDto;
-import com.ureca.child_recommend.Viewing.infrastructure.UserChildRepository;
+import com.ureca.child_recommend.viewing.application.ViewingLikesService;
+import com.ureca.child_recommend.viewing.dto.LikeRequestDto;
+import com.ureca.child_recommend.viewing.infrastructure.UserChildRepository;
 import com.ureca.child_recommend.global.exception.BusinessException;
 import com.ureca.child_recommend.global.exception.errorcode.CommonErrorCode;
 import com.ureca.child_recommend.global.response.SuccessResponse;
