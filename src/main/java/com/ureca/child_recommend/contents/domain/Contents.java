@@ -86,9 +86,7 @@ public class Contents extends BaseTimeEntity {
         if (request.getPublicationYear() != null) {
             this.publicationYear = request.getPublicationYear();
         }
-        if (request.getStatus() != null) {
-            this.status = request.getStatus();
-        }
+        this.status = ContentsStatus.ACTIVE;
     }
 
     public void updateStatus(ContentsStatus status) {

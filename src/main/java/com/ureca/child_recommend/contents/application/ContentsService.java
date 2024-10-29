@@ -11,8 +11,6 @@ import com.ureca.child_recommend.contents.presentation.dto.GptDto;
 import com.ureca.child_recommend.global.exception.BusinessException;
 import com.ureca.child_recommend.global.exception.errorcode.CommonErrorCode;
 import lombok.RequiredArgsConstructor;
-import org.springframework.data.redis.core.RedisTemplate;
-import org.springframework.data.redis.listener.ChannelTopic;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -35,8 +33,6 @@ public class ContentsService {
 
     private final GptWebClient gptWebClient;
     private final Map<Long, GptDto.Request> memberChatMap = new HashMap<>();
-    private final ChannelTopic bookChannel;
-    private final RedisTemplate redisTemplate;
 
     // 대화내용 삭제
     public void removeChat(Long userId) {
@@ -66,19 +62,37 @@ public class ContentsService {
         if (memberChatMap.get(userId) == null) {
             gptRequest = gptWebClient.of(500);
             addChatMessages(gptRequest, SYSTEM, "너는 책 줄거리를 기반으로 MBTI 비율을 알려주는 ai야. " +
-                    "줄거리를 기반으로 MBTI 성향을 전체 100%인 E와 I의 비율 합 중 E의 비율, 전체 100%인 S와 N의 비율 합 중 S의 비율, 전체 100%인 T와 F의 비율 합 중 T의 비율, 전체 100%인 J와 P의 비율 합 중 J의 비율을 구해줘.");
+                    "줄거리를 기반으로 MBTI 성향을 전체 100%인 E와 I의 비율 합 중 E의 비율, 전체 100%인 S와 N의 비율 합 중 S의 비율, 전체 100%인 T와 F의 비율 합 중 T의 비율, 전체 100%인 J와 P의 비율 합 중 J의 비율을 구해줘." +
+                    "MBTI 특징은 아래와 같으니, 해당 특징들로 비율을 계산해줘" +
+                    "INFJ : 차가운, 알 수 없는, 미묘한, 따뜻한, 감성적인\n" +
+                    "INFP : 감성적인, 나른한, 우울한, 따뜻한, 눈물이 많은, 요정같은\n" +
+                    "INTJ : 무심한, 냉정한, 시니컬한, 지적인, 은근 다정한, 생각이 깊은\n" +
+                    "INTP :영리한, 괴짜같은, 건조한, 기계같은, 지적인, 너드한, 무심한, 창의적인\n" +
+                    "ISTP : 시니컬한, 피곤한, 귀찮음이 많은, 쿨한, 무관심한, 사회적 거리두기\n" +
+                    "ISFP : 중심적인, 예술적인, 호기심이 많은, 인간 고양이\n" +
+                    "ISTJ : 분석적인, 규칙적인, 규율적인, 모범적인, 무뚝뚝한\n" +
+                    "ISFJ :수호적인, 선한, 구호적인, 친절한, 따스한, 영역이 넓은\n" +
+                    "ENFJ : 온화한, 다정한, 부드러운, 지혜로운, 따스한, 모범적인\n" +
+                    "ENFP : 긍정적인, 친절한, 사교적인, 활발한, 해피 바이러스\n" +
+                    "ENTJ :냉담한, 냉정한, 지적인, 호탕한, 쿨한, 지휘적인\n" +
+                    "ENTP : 유머러스한, 쿨한, 말이 많은, 뒷심 부족한, 주도적인, 창의적인\n" +
+                    "ESTJ : 냉담한, 냉철한, 지적인, 지도적인, 지휘적인, 관리자같은\n" +
+                    "ESFJ : 선한, 구호적인, 인맥이 넓은, 모범적인, 사교적인, 소통적인\n" +
+                    "ESTP : 호탕한, 직설적인, 은근 냉담한, 유머러스한, 쿨한, 모험적인\n" +
+                    "ESFP : 사교적인, 쾌활한, 항상 바쁜, 인싸같은, 친구가 많은, 입담이 뛰어난\n" +
+                    "\n");
         } else {
             gptRequest = memberChatMap.get(userId);
         }
 
-        String summary = request.getDescription(); 
+        String summary = request.getDescription();
 
         addChatMessages(gptRequest, USER, "'" + summary + "'" +
                 "의 줄거리인 콘텐츠의 MBTI의 비율을 전체 100% 중 " +
                 "E: {}%\n" +
                 "S: {}%\n" +
                 "T: {}%\n" +
-                "J: {}%\n 형식으로 알려줘" );
+                "J: {}%\n 형식으로 알려주는데, 0%랑 100%는 절대 주지마" );
 
         GptDto.Response gptResponse = gptWebClient.assistantRes(gptRequest);
 
@@ -122,11 +136,6 @@ public class ContentsService {
         Contents savedContent = contentsRepository.findByTitleAndAuthor(request.getTitle(), request.getAuthor()).orElseGet(()
                 -> saveContent(userId, request, mbtiScore, mbtiRes.toString()));
 
-        // 📢 알림 발행: Redis 채널에 메시지 전송
-        String message = String.format("New Contents: %s", savedContent.getTitle());
-        redisTemplate.convertAndSend(bookChannel.getTopic(), message); // 알림 발송
-
-
         return savedContent;
     }
 
@@ -154,11 +163,16 @@ public class ContentsService {
         return ContentsDto.Response.contentsData(findContents);
     }
 
-    // 컨텐츠 검색
+    // 컨텐츠 검색 - active인 상태만
     public List<Contents> searchContents(String keyword) {
-        List<Contents> searchContents = contentsRepository.findByTitleContainingOrAuthorContaining(keyword, keyword);
+        List<Contents> searchContents = contentsRepository.findByTitleContainingOrAuthorContainingAndStatus(keyword, keyword, ContentsStatus.ACTIVE);
         if (searchContents.isEmpty()) throw new BusinessException(CommonErrorCode.CONTENTS_NOT_FOUND);
 
         return searchContents;
+    }
+
+    // 컨텐츠 리스트 페이지 처리 - 5개씩 (최신 데이터)
+    public List<Contents> getAllContents() {
+        return contentsRepository.findAll();
     }
 }

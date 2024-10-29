@@ -30,7 +30,7 @@ public class ContentsController {
         return SuccessResponse.success(content);
     }
     
-    // 특정 contents 수정
+    // 특정 contents 수정 -> 수정 시 active status로
     @PatchMapping("/update/{contentsId}")
     public SuccessResponse<ContentsDto.Response> updatecontent(@AuthenticationPrincipal Long userId, @PathVariable("contentsId") Long contentsId,
                                   @RequestBody ContentsDto.Request request) {
@@ -47,5 +47,10 @@ public class ContentsController {
     @GetMapping("/search/{keyword}")
     public SuccessResponse<List<Contents>> searchContents(@AuthenticationPrincipal Long userId, @PathVariable("keyword") String keyword) {
         return SuccessResponse.success(contentsService.searchContents(keyword));
+    }
+
+    @GetMapping("/all")
+    public SuccessResponse<List<Contents>> getAllContents(@AuthenticationPrincipal Long userId) {
+        return SuccessResponse.success(contentsService.getAllContents());
     }
 }
