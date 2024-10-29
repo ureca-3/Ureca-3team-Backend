@@ -41,6 +41,7 @@ public class SseEmitterManager {
         }
     }
 
+/*
     // 유저의 자녀 MBTI가 변경 시 알림 전송
     public void sendMbtiChangeNotification(Long userId, String childName){
         String notification = childName + "의 MBTI가 변경되었습니다.";
@@ -52,6 +53,7 @@ public class SseEmitterManager {
             }
         }
     }
+*/
 
     @Scheduled(fixedRate = 120000) // 2 분마다 heartbeat 전송
     public void sendHeartbeat() {

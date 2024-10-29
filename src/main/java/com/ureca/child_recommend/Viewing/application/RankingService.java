@@ -1,10 +1,10 @@
-package com.ureca.child_recommend.ranking.application;
+package com.ureca.child_recommend.Viewing.application;
 
 import com.ureca.child_recommend.contents.domain.Contents;
 import com.ureca.child_recommend.contents.infrastructure.ContentsRepository;
 import com.ureca.child_recommend.global.exception.BusinessException;
 import com.ureca.child_recommend.global.exception.errorcode.CommonErrorCode;
-import com.ureca.child_recommend.ranking.dto.ContentLikeDto;
+import com.ureca.child_recommend.Viewing.dto.ContentLikeDto;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.data.redis.core.ZSetOperations;
@@ -24,6 +24,7 @@ public class RankingService {
     private final ZSetOperations<String, Object> zSetOperations;
     private final RedisTemplate<String, Object> redisTemplate;
     private final ContentsRepository contentsRepository; // 콘텐츠 제목 조회
+
     private static final String REDIS_KEY = "content:likes"; // 현재 좋아요 저장 키
     private static final String CHILD_LIKED_KEY = "child:liked"; // 자녀의 좋아요 상태 저장 키
 
@@ -49,13 +50,13 @@ public class RankingService {
             redisTemplate.opsForValue().set(childLikedKey, "true"); // 자녀의 좋아요 상태 저장
 
             // 자정까지 남은 시간을 계산하여 TTL 설정
-            long minutesUntilMidnight = calculateMinutesUntilMidnight();
+            long minutesUntilMidnight = calcMinutesUntilMidnight();
             redisTemplate.expire(REDIS_KEY, Duration.ofMinutes(minutesUntilMidnight));
         }
     }
 
     // 자정까지 남은 시간을 계산하는 메서드 (분 단위)
-    private long calculateMinutesUntilMidnight() {
+    private long calcMinutesUntilMidnight() {
         LocalDateTime now = LocalDateTime.now();
         LocalDateTime midnight = now.toLocalDate().atStartOfDay().plusDays(1); // 자정 시간
         return ChronoUnit.MINUTES.between(now, midnight); // 자정까지 남은 분 계산
