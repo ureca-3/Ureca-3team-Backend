@@ -22,4 +22,6 @@ public interface ChildMbtiScoreRepository extends JpaRepository<ChildMbtiScore, 
     void deleteByUpdateAtAndStatus(LocalDateTime thresholdDateTime, ChildMbtiScoreStatus childMbtiScoreStatus);
 
     List<ChildMbtiScore> findByAssessmentDateAndStatus(LocalDate yesterday, ChildMbtiScoreStatus childMbtiScoreStatus);
+
+    List<ChildMbtiScore> findByChildIdAndStatusIn(Long childId,List<ChildMbtiScoreStatus> status);
 }

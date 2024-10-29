@@ -7,13 +7,18 @@ import com.ureca.child_recommend.child.domain.Enum.ChildMbtiScoreStatus;
 import com.ureca.child_recommend.child.domain.Enum.ChildMbtiStatus;
 import com.ureca.child_recommend.child.infrastructure.ChildMbtiRepository;
 import com.ureca.child_recommend.child.infrastructure.ChildMbtiScoreRepository;
+import com.ureca.child_recommend.child.infrastructure.ChildRepository;
 import com.ureca.child_recommend.child.presentation.dto.MbtiDto;
 import com.ureca.child_recommend.global.exception.BusinessException;
 import com.ureca.child_recommend.global.exception.errorcode.CommonErrorCode;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+
+import java.util.Arrays;
+import java.util.List;
 import java.util.Optional;
+import java.util.stream.Collectors;
 
 @Service
 @Transactional(readOnly = true)
@@ -25,6 +30,7 @@ public class MbtiService {
     private final ChildMbtiRepository childMbtiRepository;
 
     private final ChildMbtiScoreRepository childMbtiScoreRepository;
+    private final ChildRepository childRepository;
 
     @Transactional
     public MbtiDto.Response.assessmentMbtiDto saveMbtiResult(Long userId, MbtiDto.Request.assessmentMbtiDto dto, Long child_id) {
@@ -40,9 +46,6 @@ public class MbtiService {
             childMbti.updateStatus(ChildMbtiStatus.NONACTIVE);
         });
 
-        // ChildMbti 저장
-        childMbtiRepository.save(ChildMbti.enrollToMbti(result, child));
-
         // 1. 자녀 PK로 ChildMbti 데이터 조회
         Optional<ChildMbtiScore> existingChildMbtiScore = childMbtiScoreRepository.findByChildIdAndStatus(child.getId(), ChildMbtiScoreStatus.ACTIVE);
 
@@ -51,7 +54,11 @@ public class MbtiService {
             ChildMbtiScore.updateStatus(ChildMbtiScoreStatus.NONACTIVE);
         });
 
-        childMbtiScoreRepository.save(ChildMbtiScore.enrollToMbtiScore(dto.getM(),dto.getB(), dto.getT(), dto.getI(), child));
+        ChildMbtiScore newChildMbtiScore = childMbtiScoreRepository.save(ChildMbtiScore.enrollToMbtiScore(dto.getM(),dto.getB(), dto.getT(), dto.getI(), child));
+
+        // ChildMbti 저장
+        childMbtiRepository.save(ChildMbti.enrollToMbti(result, child,newChildMbtiScore));
+
         return MbtiDto.Response.assessmentMbtiDto.of(result);
     }
 
@@ -59,6 +66,10 @@ public class MbtiService {
     public void deleteMbti(Long childMbtiScoreId) {
         ChildMbtiScore deleteChildMbti = childMbtiScoreRepository.findById(childMbtiScoreId).orElseThrow(()->new BusinessException(CommonErrorCode.ASSESSMENT_NOT_FOUND));
         deleteChildMbti.updateStatus(ChildMbtiScoreStatus.DELETE);
+
+        ChildMbti childMbti = childMbtiRepository.findByChildMbtiScore(deleteChildMbti).orElseThrow(()->new BusinessException(CommonErrorCode.ASSESSMENT_NOT_FOUND));;
+
+        childMbti.updateStatus(ChildMbtiStatus.DELETE);
 
     }
 
@@ -81,5 +92,21 @@ public class MbtiService {
                 .toString();
 
         return result;
+    }
+
+    public List<MbtiDto.Response.assessmentMbtiResultDto> getAssessmentMbtiResults(Long userId, Long childId) {
+
+        childRepository.findByIdAndUserId(childId,userId).orElseThrow(()->new BusinessException(CommonErrorCode.CHILD_NOT_FOUND));
+
+        //mbti 별 스코어 가져오기
+        List<ChildMbtiScore> childMbtiScoreList = childMbtiScoreRepository.
+                findByChildIdAndStatusIn(childId, Arrays.asList(ChildMbtiScoreStatus.ACTIVE,ChildMbtiScoreStatus.NONACTIVE));
+
+        return childMbtiScoreList.stream()
+                .map(o -> {
+                    String mbtiResult = childMbtiRepository.findMbtiResultByChildMbtiScore(o);
+                    return MbtiDto.Response.assessmentMbtiResultDto.of(o,mbtiResult);
+                })
+                .collect(Collectors.toList());
     }
 }
