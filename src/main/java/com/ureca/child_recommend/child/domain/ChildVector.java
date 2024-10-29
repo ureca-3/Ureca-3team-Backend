@@ -27,7 +27,7 @@ public class ChildVector extends BaseTimeEntity {
     @Array(length = 1536)
     private float[] embedding;
 
-    @OneToOne
+    @OneToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "child_id")
     private Child childId;
 
