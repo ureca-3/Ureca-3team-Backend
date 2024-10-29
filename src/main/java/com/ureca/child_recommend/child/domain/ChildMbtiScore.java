@@ -1,8 +1,6 @@
 package com.ureca.child_recommend.child.domain;
 
-
 import com.ureca.child_recommend.child.domain.Enum.ChildMbtiScoreStatus;
-import com.ureca.child_recommend.child.domain.Enum.ChildMbtiStatus;
 import com.ureca.child_recommend.global.entity.BaseTimeEntity;
 import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
