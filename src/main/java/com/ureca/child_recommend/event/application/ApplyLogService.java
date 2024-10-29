@@ -88,7 +88,6 @@ public class ApplyLogService {
     }
 
 
-
     private boolean checkAndRegisterUserId(Long userId) {
         // Redis에서 사용자 ID가 있는지 확인
         Boolean userExists = redisTemplate.opsForList().range(USER_ID_LIST_KEY, 0, -1).stream()
@@ -106,6 +105,7 @@ public class ApplyLogService {
         }
     }
 
+    @Transactional
     public List<ApplyLog> setLogStatus() {
         List<ApplyLog> applyLogs =  applyLogRepository.findAllByOrderByLogAsc();
         int cnt = 0;
@@ -119,6 +119,7 @@ public class ApplyLogService {
         return winnerLogs;
     }
 
+    @Transactional
     public void moveWinnerLog(List<ApplyLog> applyLogs) {
         for(ApplyLog applylog : applyLogs) {
             WinnerLog winnerLog = WinnerLog.builder()

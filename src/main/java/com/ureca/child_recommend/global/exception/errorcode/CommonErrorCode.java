@@ -47,7 +47,7 @@ public enum CommonErrorCode implements ErrorCode{
     HISTORY_NOT_FOUND(HttpStatus.BAD_REQUEST, "4601", "히스토리 내역이 없습니다."),
 
     // event error(4701 ~
-    LOGHISTORY_NOT_FOUND(HttpStatus.NOT_FOUND, "4701", "해당 응모 내역이 없습니다."),
+    LOG_NOT_FOUND(HttpStatus.NOT_FOUND, "4701", "삭제할 로그가 없습니다."),
     LOG_DELETE_ERROR(HttpStatus.BAD_REQUEST, "4702", "로그 삭제를 할 수 없습니다."),
     EVENT_NOT_FOUND(HttpStatus.NOT_FOUND, "4703", "해당 이벤트가 존재하지 않습니다."),
     APPLY_EXISTS(HttpStatus.BAD_REQUEST, "4704", "이미 응모하셨습니다."),

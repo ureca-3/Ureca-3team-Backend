@@ -36,7 +36,7 @@ public class LogHistoryService {
     @Transactional
     public void deleteBeforeLog(List<LogHistory> logHistories) {
         if (logHistories == null || logHistories.isEmpty()) {
-            throw new BusinessException(LOGHISTORY_NOT_FOUND);
+            throw new BusinessException(LOG_NOT_FOUND);
         }
 
         try {

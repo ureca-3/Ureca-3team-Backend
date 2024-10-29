@@ -7,6 +7,7 @@ import com.ureca.child_recommend.event.domain.WinnerLog;
 import com.ureca.child_recommend.event.infrastructure.EventRepository;
 import com.ureca.child_recommend.event.infrastructure.LogHistoryRepository;
 import com.ureca.child_recommend.event.infrastructure.WinnerLogRepository;
+import com.ureca.child_recommend.global.exception.BusinessException;
 import com.ureca.child_recommend.user.infrastructure.UserRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
@@ -14,6 +15,8 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.util.ArrayList;
 import java.util.List;
+
+import static com.ureca.child_recommend.global.exception.errorcode.CommonErrorCode.LOG_NOT_FOUND;
 
 @Service
 @Transactional(readOnly = true)
@@ -33,6 +36,11 @@ public class WinnerLogService {
     @Transactional
     public void moveToHistory() {
         List<WinnerLog> winnerLogs = winnerLogRepository.findAll();
+
+        if (winnerLogs.isEmpty()) {
+            throw new BusinessException(LOG_NOT_FOUND);
+        }
+
         List<LogHistory> logHistories = new ArrayList<>();
         for(WinnerLog winnerlog : winnerLogs) {
             LogHistory logHistory = LogHistory.builder()
