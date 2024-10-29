@@ -27,7 +27,7 @@ public class ApplyLogController {
     private final EventRepository eventRepository;
     private final ApplyLogRepository applyLogRepository;
 
-    @PostMapping("/apply-logs")
+    @PostMapping("/event/apply") // 응모 api
     public SuccessResponse<ApplyLog> createApplyLog(@RequestParam String name, @RequestParam String phone, @RequestParam Long userId) {
 
 
@@ -43,14 +43,14 @@ public class ApplyLogController {
         return SuccessResponse.success(applyLog);
     }
 
-//    @Scheduled(cron = "0 0 17 * * ?") // 매일 17시에 실행
-    public SuccessResponse<String> findWinner(@AuthenticationPrincipal Long userId){
+//    @Scheduled(cron = "0 0 17 * * ?") // 합격자 선별,테이블 이동 / 매일 17시에 실행
+    public SuccessResponse<String> findWinner(){
         List<ApplyLog> winnerLog = applyLogService.setLogStatus();
         applyLogService.moveWinnerLog(winnerLog);
         return SuccessResponse.successWithoutResult(null);
     }
 
-//    @Scheduled(cron = "0 0 12 * * ?")
+//    @Scheduled(cron = "0 0 12 * * ?") // 응모로그 삭제
     public SuccessResponse<String> deleteApplyLog() {
         applyLogService.deleteAllLog();
         return SuccessResponse.successWithoutResult(null);

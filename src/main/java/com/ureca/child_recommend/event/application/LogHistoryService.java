@@ -10,7 +10,11 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import static com.ureca.child_recommend.global.exception.errorcode.CommonErrorCode.USER_NOT_FOUND;
+import java.time.LocalDateTime;
+import java.time.temporal.ChronoUnit;
+import java.util.List;
+
+import static com.ureca.child_recommend.global.exception.errorcode.CommonErrorCode.*;
 
 @Service
 @Transactional(readOnly = true)
@@ -20,11 +24,25 @@ public class LogHistoryService {
     private final LogHistoryRepository logHistoryRepository;
 
     @Transactional
-    public void patchLogHistoryStatus(LogHistoryDto.Request historyRequest) {
-        LogHistory logHistory = logHistoryRepository.findById(historyRequest.getLogId())
-                .orElseThrow(() -> new BusinessException(USER_NOT_FOUND));
+    public List<LogHistory> findLogDate() {
+        LocalDateTime log = LocalDateTime.now().minus(1, ChronoUnit.MONTHS);
+        log = log.minus(1,ChronoUnit.DAYS);
 
-        // 엔티티 메서드를 호출하여 상태 업데이트
-        logHistory.updateStatus(historyRequest.getStatus());
+        List<LogHistory> logHistories = logHistoryRepository.findAllByLog(log);
+
+        return logHistories;
+    }
+
+    @Transactional
+    public void deleteBeforeLog(List<LogHistory> logHistories) {
+        if (logHistories == null || logHistories.isEmpty()) {
+            throw new BusinessException(LOGHISTORY_NOT_FOUND);
+        }
+
+        try {
+            logHistoryRepository.deleteAll(logHistories);
+        } catch (Exception e) {
+            throw new BusinessException(LOG_DELETE_ERROR);
+        }
     }
 }

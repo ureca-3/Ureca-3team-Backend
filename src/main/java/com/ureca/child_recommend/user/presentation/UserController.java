@@ -77,9 +77,9 @@ public class UserController {
         return SuccessResponse.successWithoutResult(null); // 수정 완료 후 204 No Content 응답
     }
 
-    @GetMapping("/user")
-    public SuccessResponse<Users> getUserData(@AuthenticationPrincipal Long userId) {
-        Users findUser = userService.getUserData(userId);
-        return SuccessResponse.success(findUser);
-    }
+        @GetMapping("/user")
+        public SuccessResponse<Users> getUserData(@AuthenticationPrincipal Long userId) {
+            Users findUser = userService.getUserData(userId);
+            return SuccessResponse.success(findUser);
+        }
 }

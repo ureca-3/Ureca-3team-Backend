@@ -6,6 +6,7 @@ import com.ureca.child_recommend.event.domain.WinnerLog;
 import com.ureca.child_recommend.event.infrastructure.ApplyLogRepository;
 import com.ureca.child_recommend.event.infrastructure.EventRepository;
 import com.ureca.child_recommend.event.infrastructure.WinnerLogRepository;
+import com.ureca.child_recommend.global.exception.BusinessException;
 import com.ureca.child_recommend.user.infrastructure.UserRepository;
 import lombok.RequiredArgsConstructor;
 import org.redisson.api.RLock;
@@ -20,6 +21,8 @@ import java.time.LocalTime;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.TimeUnit;
+
+import static com.ureca.child_recommend.global.exception.errorcode.CommonErrorCode.*;
 
 @Service
 @Transactional(readOnly = true)
@@ -65,22 +68,22 @@ public class ApplyLogService {
                         if (isRegistered) {
                             createAndSendApplyLog(applyLog);
                         } else {
-                            System.out.println("Operation blocked for user: " + userId + " due to duplication.");
+                            throw new BusinessException(APPLY_EXISTS);
                         }
                     } finally {
                         lock.unlock(); // 작업 종료 후 락 해제
                         System.out.println("Lock released for user: " + userId + "!");
                     }
                 } else {
-                    System.out.println("Could not acquire lock for user: " + userId + ", try again later.");
+                    throw new BusinessException(APPLY_EXISTS);
                 }
             } catch (InterruptedException e) {
                 Thread.currentThread().interrupt();
-                System.out.println("Lock acquisition interrupted for user: " + userId + ": " + e.getMessage());
+                throw new BusinessException(APPLY_EXISTS);
             }
         } else {
             // 시간 조건에 맞지 않을 경우 메시지 출력
-            System.out.println("Execution allowed only between 13:00 and 13:10.");
+            throw new BusinessException(NOT_APPLY_TIME);
         }
     }
 

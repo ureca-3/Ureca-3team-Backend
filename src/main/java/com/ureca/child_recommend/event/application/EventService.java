@@ -4,6 +4,8 @@ import com.ureca.child_recommend.event.domain.Event;
 import com.ureca.child_recommend.event.domain.WinnerLog;
 import com.ureca.child_recommend.event.infrastructure.EventRepository;
 import com.ureca.child_recommend.event.presentation.dto.EventDto;
+import com.ureca.child_recommend.global.exception.BusinessException;
+import com.ureca.child_recommend.global.exception.errorcode.CommonErrorCode;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -27,5 +29,17 @@ public class EventService {
 
         // Event 객체를 데이터베이스에 저장
         eventRepository.save(event);
+    }
+
+    public EventDto.Response getEvent(Long eventId) {
+        Event event = eventRepository.findById(eventId)
+                .orElseThrow(() -> new BusinessException(CommonErrorCode.EVENT_NOT_FOUND));
+
+        // Event를 EventDto.Response로 변환
+        return EventDto.Response.builder()
+                .name(event.getName())
+                .date(event.getDate())
+                .description(event.getDescription())
+                .build();
     }
 }

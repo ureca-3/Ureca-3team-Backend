@@ -14,4 +14,13 @@ public class EventDto {
         private LocalDate date; // LocalDate 등 적절한 타입으로 수정 가능
         private String description;
     }
+
+    @Builder
+    @Getter
+    public static class Response {
+        private String name;
+        private LocalDate date; // LocalDate 등 적절한 타입으로 수정 가능
+        private String description;
+    }
+
 }
