@@ -1,11 +1,14 @@
 package com.ureca.child_recommend.child.presentation;
 
 import com.ureca.child_recommend.child.application.MbtiService;
+import com.ureca.child_recommend.child.presentation.dto.ChildDto;
 import com.ureca.child_recommend.child.presentation.dto.MbtiDto;
 import com.ureca.child_recommend.global.response.SuccessResponse;
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
+
+import java.util.List;
 
 @RestController
 @RequiredArgsConstructor
@@ -29,6 +32,16 @@ public class MbtiController {
         return SuccessResponse.success(childMbtiScore_id);
     }
 
+    /**
+     * 24.10.29 작성자 : 정주현
+     * 자녀의 진단 내역 조회
+     */
+    @GetMapping("/assessment/{child_id}")
+    public SuccessResponse<List<MbtiDto.Response.assessmentMbtiResultDto>> getAssessmentMbtiResults(@AuthenticationPrincipal Long userId,@PathVariable("child_id") Long childId){
+        List<MbtiDto.Response.assessmentMbtiResultDto> response =  mbtiService.getAssessmentMbtiResults(userId,childId);
+        return SuccessResponse.success(response);
+
+    }
 }
 
 
