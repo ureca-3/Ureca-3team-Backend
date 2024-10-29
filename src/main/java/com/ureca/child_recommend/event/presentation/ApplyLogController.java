@@ -3,16 +3,19 @@ package com.ureca.child_recommend.event.presentation;
 import com.ureca.child_recommend.event.application.ApplyLogService;
 import com.ureca.child_recommend.event.domain.ApplyLog;
 import com.ureca.child_recommend.event.domain.Enum.ApplyLogStatus;
+import com.ureca.child_recommend.event.infrastructure.ApplyLogRepository;
 import com.ureca.child_recommend.event.infrastructure.EventRepository;
-import com.ureca.child_recommend.user.domain.Users;
+import com.ureca.child_recommend.global.response.SuccessResponse;
 import com.ureca.child_recommend.user.infrastructure.UserRepository;
 import lombok.RequiredArgsConstructor;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
+import org.springframework.scheduling.annotation.Scheduled;
+import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
 
 import java.time.LocalDate;
 import java.time.LocalDateTime;
+import java.util.List;
 
 @RestController
 @RequiredArgsConstructor
@@ -22,9 +25,12 @@ public class ApplyLogController {
     private final ApplyLogService applyLogService;
     private final UserRepository userRepository;
     private final EventRepository eventRepository;
+    private final ApplyLogRepository applyLogRepository;
 
     @PostMapping("/apply-logs")
-    public ResponseEntity<ApplyLog> createApplyLog(@RequestParam String name, @RequestParam String phone, @RequestParam Long userId) {
+    public SuccessResponse<ApplyLog> createApplyLog(@RequestParam String name, @RequestParam String phone, @RequestParam Long userId) {
+
+
         ApplyLog applyLog = ApplyLog.builder()
                 .name(name)
                 .phone(phone)
@@ -34,9 +40,20 @@ public class ApplyLogController {
                 .event(eventRepository.findEventByDate(LocalDate.now()).get())
                 .build();
         applyLogService.executeWithLock(userId,applyLog);
-        return ResponseEntity.ok(applyLog);
-    }//심재민   박진 정현수  이민석   이병준 홍민기   나균안 이인복 이승헌 정성종
+        return SuccessResponse.success(applyLog);
+    }
 
+//    @Scheduled(cron = "0 0 17 * * ?") // 매일 17시에 실행
+    public SuccessResponse<String> findWinner(@AuthenticationPrincipal Long userId){
+        List<ApplyLog> winnerLog = applyLogService.setLogStatus();
+        applyLogService.moveWinnerLog(winnerLog);
+        return SuccessResponse.successWithoutResult(null);
+    }
 
+//    @Scheduled(cron = "0 0 12 * * ?")
+    public SuccessResponse<String> deleteApplyLog() {
+        applyLogService.deleteAllLog();
+        return SuccessResponse.successWithoutResult(null);
+    }
 }
 

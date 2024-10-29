@@ -1,5 +1,7 @@
 package com.ureca.child_recommend.event.domain;
 
+import com.ureca.child_recommend.event.domain.Enum.LogHistoryStatus;
+import com.ureca.child_recommend.global.entity.BaseTimeEntity;
 import com.ureca.child_recommend.user.domain.Users;
 import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
@@ -14,7 +16,7 @@ import java.time.LocalDateTime;
 @NoArgsConstructor
 @Builder
 @Getter
-public class LogHistory {
+public class LogHistory extends BaseTimeEntity {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -22,13 +24,17 @@ public class LogHistory {
     private Long id;
 
     @Column
-    private LocalDateTime log;
+    private String name;
 
     @Column
     private String phone;
 
     @Column
-    private String name;
+    private LocalDateTime log;
+
+    @Column
+    private LogHistoryStatus status; // ACTIVE , NONACTIVE
+
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "user_id")
@@ -38,6 +44,9 @@ public class LogHistory {
     @JoinColumn(name = "event_id")
     private Event event;
 
+    public void updateStatus(LogHistoryStatus newStatus) {
+        this.status = newStatus;
+    }
 
 
 }

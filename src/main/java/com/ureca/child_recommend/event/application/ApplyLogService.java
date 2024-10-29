@@ -1,6 +1,12 @@
 package com.ureca.child_recommend.event.application;
 
 import com.ureca.child_recommend.event.domain.ApplyLog;
+import com.ureca.child_recommend.event.domain.Enum.ApplyLogStatus;
+import com.ureca.child_recommend.event.domain.WinnerLog;
+import com.ureca.child_recommend.event.infrastructure.ApplyLogRepository;
+import com.ureca.child_recommend.event.infrastructure.EventRepository;
+import com.ureca.child_recommend.event.infrastructure.WinnerLogRepository;
+import com.ureca.child_recommend.user.infrastructure.UserRepository;
 import lombok.RequiredArgsConstructor;
 import org.redisson.api.RLock;
 import org.redisson.api.RedissonClient;
@@ -10,6 +16,9 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.data.redis.core.RedisTemplate;
 
+import java.time.LocalTime;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.concurrent.TimeUnit;
 
 @Service
@@ -20,45 +29,61 @@ public class ApplyLogService {
     private final KafkaTemplate<String, ApplyLog> kafkaTemplate;
     private final RedissonClient redissonClient;
     private final RedisTemplate<String, Object> redisTemplate; // RedisTemplate 추가
+    private final ApplyLogRepository applyLogRepository;
+    private final WinnerLogRepository winnerLogRepository;
+    private final UserRepository userRepository;
+    private final EventRepository eventRepository;
     private static final String TOPIC_NAME = "apply-log-topic";
     private static final String USER_ID_LIST_KEY = "registered_user_ids"; // Redis 리스트 키
 
     public ApplyLog createAndSendApplyLog(ApplyLog applyLog) {
-        // ApplyLog 테이블에 객체 저장하는 로직
-        kafkaTemplate.send(TOPIC_NAME, applyLog);  // Kafka에 전송
+        kafkaTemplate.send(TOPIC_NAME, applyLog);
         return applyLog;
     }
 
     public void executeWithLock(Long userId, ApplyLog applyLog) {
-        // 사용자의 식별자를 기반으로 락 이름을 설정합니다.
-        RLock lock = redissonClient.getLock("lock:" + userId);
+        // 현재 시간을 가져옵니다
+        LocalTime now = LocalTime.now();
 
-        try {
-            // 분산락을 획득합니다. 10초 후 자동으로 해제됩니다.
-            if (lock.tryLock(10, 10, TimeUnit.SECONDS)) {
-                try {
-                    // 중복 체크 및 등록 메소드 호출
-                    boolean isRegistered = checkAndRegisterUserId(userId);
+        // 실행 조건: 13시에서 13시 10분 사이
+        LocalTime startTime = LocalTime.of(13, 0);
+        LocalTime endTime = LocalTime.of(13, 10);
 
-                    // 등록이 성공한 경우에만 ApplyLog를 생성하고 전송합니다.
-                    if (isRegistered) {
-                        createAndSendApplyLog(applyLog);
-                    } else {
-                        // 중복된 경우 작업을 블락하거나 다른 처리를 할 수 있음
-                        System.out.println("Operation blocked for user: " + userId + " due to duplication.");
+        // 시간대 확인
+        if (now.isAfter(startTime) && now.isBefore(endTime)) {
+            // 락 이름 설정
+            RLock lock = redissonClient.getLock("lock:" + userId);
+
+            try {
+                // 분산락을 획득 (10초 후 자동 해제)
+                if (lock.tryLock(10, 10, TimeUnit.SECONDS)) {
+                    try {
+                        // 중복 체크 및 등록
+                        boolean isRegistered = checkAndRegisterUserId(userId);
+
+                        // 등록이 성공한 경우에만 ApplyLog를 생성하고 전송
+                        if (isRegistered) {
+                            createAndSendApplyLog(applyLog);
+                        } else {
+                            System.out.println("Operation blocked for user: " + userId + " due to duplication.");
+                        }
+                    } finally {
+                        lock.unlock(); // 작업 종료 후 락 해제
+                        System.out.println("Lock released for user: " + userId + "!");
                     }
-                } finally {
-                    lock.unlock(); // 작업이 끝나면 락을 해제합니다.
-                    System.out.println("Lock released for user: " + userId + "!");
+                } else {
+                    System.out.println("Could not acquire lock for user: " + userId + ", try again later.");
                 }
-            } else {
-                System.out.println("Could not acquire lock for user: " + userId + ", try again later.");
+            } catch (InterruptedException e) {
+                Thread.currentThread().interrupt();
+                System.out.println("Lock acquisition interrupted for user: " + userId + ": " + e.getMessage());
             }
-        } catch (InterruptedException e) {
-            Thread.currentThread().interrupt();
-            System.out.println("Lock acquisition interrupted for user: " + userId + ": " + e.getMessage());
+        } else {
+            // 시간 조건에 맞지 않을 경우 메시지 출력
+            System.out.println("Execution allowed only between 13:00 and 13:10.");
         }
     }
+
 
 
     private boolean checkAndRegisterUserId(Long userId) {
@@ -76,6 +101,39 @@ public class ApplyLogService {
             System.out.println("User ID " + userId + " already exists.");
             return false; // 중복 시 false 반환
         }
+    }
+
+    public List<ApplyLog> setLogStatus() {
+        List<ApplyLog> applyLogs =  applyLogRepository.findAllByOrderByLogAsc();
+        int cnt = 0;
+        List<ApplyLog> winnerLogs = new ArrayList<>();
+        for(ApplyLog applylog : applyLogs) {
+            if(applylog.getLog().getHour() >= 13 && cnt < 100) {
+                cnt+=1;
+                winnerLogs.add(applylog);
+            } else if(cnt == 100) {break;}
+        }
+        return winnerLogs;
+    }
+
+    public void moveWinnerLog(List<ApplyLog> applyLogs) {
+        for(ApplyLog applylog : applyLogs) {
+            WinnerLog winnerLog = WinnerLog.builder()
+                    .name(applylog.getName())
+                    .phone(applylog.getPhone())
+                    .log(applylog.getLog())
+                    .user(userRepository.findById(applylog.getUser().getId()).get())
+                    .event(eventRepository.findEventById(applylog.getEvent().getId()).get())
+                    .build();
+
+            winnerLogRepository.save(winnerLog);
+        }
+    }
+
+    @Transactional
+    public void deleteAllLog() {
+        applyLogRepository.deleteAll();
+        System.out.println("응모로그 전체 삭제 완료.");
     }
 
 }

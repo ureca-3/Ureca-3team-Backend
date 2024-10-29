@@ -22,13 +22,14 @@ public class WinnerLog {
     private Long id;
 
     @Column
-    private LocalDateTime log;
+    private String name;
 
     @Column
     private String phone;
 
     @Column
-    private String name;
+    private LocalDateTime log;
+
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "user_id")
