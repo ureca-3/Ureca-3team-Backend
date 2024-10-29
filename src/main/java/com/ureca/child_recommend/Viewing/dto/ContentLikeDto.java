@@ -1,4 +1,4 @@
-package com.ureca.child_recommend.ranking.dto;
+package com.ureca.child_recommend.Viewing.dto;
 
 import lombok.AllArgsConstructor;
 import lombok.Getter;

@@ -1,4 +1,4 @@
-package com.ureca.child_recommend.ranking.presentation;
+package com.ureca.child_recommend.Viewing.presentation;
 
 import lombok.RequiredArgsConstructor;
 import org.springframework.web.bind.annotation.GetMapping;

@@ -1,4 +1,4 @@
-package com.ureca.child_recommend.ranking.infrastructure;
+package com.ureca.child_recommend.Viewing.infrastructure;
 
 import com.ureca.child_recommend.child.domain.Child;
 import org.springframework.data.jpa.repository.JpaRepository;
