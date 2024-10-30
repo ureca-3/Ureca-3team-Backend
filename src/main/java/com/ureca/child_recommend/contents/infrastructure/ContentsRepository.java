@@ -13,4 +13,6 @@ public interface ContentsRepository extends JpaRepository<Contents, Long> {
 
     List<Contents> findByTitleContainingOrAuthorContainingAndStatus(String title, String author,ContentsStatus status);
 
+    List<Contents> findByIdIn(List<Long> contentsIdList);
+
 }

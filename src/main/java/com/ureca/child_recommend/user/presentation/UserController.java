@@ -1,7 +1,5 @@
 package com.ureca.child_recommend.user.presentation;
 
-import com.ureca.child_recommend.child.application.ChildService;
-import com.ureca.child_recommend.contents.domain.Contents;
 import com.ureca.child_recommend.global.response.SuccessResponse;
 import com.ureca.child_recommend.relation.application.FeedBackService;
 import com.ureca.child_recommend.user.application.UserService;
@@ -13,10 +11,8 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
-import org.springframework.web.multipart.MultipartFile;
 
 import java.io.IOException;
-import java.util.List;
 
 
 @RestController
@@ -27,7 +23,6 @@ public class UserController {
 
     private final UserService userService;
     private final FeedBackService feedBackService;
-    private final ChildService childService;
 
     /**
      * 24.10.17 작성자 : 정주현
@@ -41,7 +36,9 @@ public class UserController {
         UserDto.Response.SignIn response = userService.login(idToken);
         String jwtToken = response.getAccessToken();
 
-        servletResponse.sendRedirect("http://localhost:3000?token=" + jwtToken);
+        // 프론트에서 데이터 받기 위함 - 서버에서 테스트시 아래 두 줄 주석 처리
+        String redirectUrl = "http://localhost:3000?token="+jwtToken;
+        servletResponse.sendRedirect(redirectUrl);
         return SuccessResponse.success(response);
     }
 

@@ -4,7 +4,7 @@ import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Getter;
 
-public class ContentsDto {
+public class ContentsRecommendDto {
 
     public static class Response{
 

@@ -1,18 +1,16 @@
 package com.ureca.child_recommend.child.presentation;
 
 import com.ureca.child_recommend.child.application.ChildService;
-import com.ureca.child_recommend.child.application.FileService;
 import com.ureca.child_recommend.child.domain.Child;
 import com.ureca.child_recommend.child.domain.ChildMbtiScore;
 import com.ureca.child_recommend.child.presentation.dto.ChildDto;
-import com.ureca.child_recommend.child.presentation.dto.ContentsDto;
+import com.ureca.child_recommend.child.presentation.dto.ContentsRecommendDto;
 import com.ureca.child_recommend.contents.domain.Contents;
 import com.ureca.child_recommend.global.response.SuccessResponse;
 import com.ureca.child_recommend.relation.application.FeedBackService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
-import org.springframework.web.multipart.MultipartFile;
 
 import java.io.IOException;
 import java.util.List;
@@ -22,15 +20,9 @@ import java.util.List;
 @RequestMapping("/api/v1")
 public class ChildController {
     private final ChildService childService;
-    private final FileService fileService;
     private final FeedBackService feedBackService;
 
-    //공통 사진 저장 API(URL 반환)
-    @PostMapping("/picture")
-    public SuccessResponse<String> uploadFile(@RequestParam("file") MultipartFile file) throws IOException {
-            String fileUrl = fileService.uploadFile(file);
-            return SuccessResponse.success(fileUrl);
-    }
+
 
     // 자녀 프로필 생성 API
     @PostMapping("/child")
@@ -49,8 +41,8 @@ public class ChildController {
     }
 
 
-
-    @GetMapping("/child/{child_id}")//상세조회
+    //상세조회
+    @GetMapping("/child/{child_id}")
     public SuccessResponse<ChildDto.Response> getChildById(@AuthenticationPrincipal Long userId, @PathVariable("child_id") Long childId) {
         Child child = childService.getChildById(userId, childId);
         ChildDto.Response childDto = ChildDto.Response.fromEntity(child);
@@ -122,8 +114,8 @@ public class ChildController {
      * @return
      */
     @GetMapping("child/{childId}/embedding")
-    public SuccessResponse<List<ContentsDto.Response.SimilarBookDto>> getSimilarUsers(@AuthenticationPrincipal Long userId, @PathVariable Long childId){
-        List<ContentsDto.Response.SimilarBookDto> response = childService.getSimilarUsersBooks(userId, childId);
+    public SuccessResponse<List<ContentsRecommendDto.Response.SimilarBookDto>> getSimilarUsers(@AuthenticationPrincipal Long userId, @PathVariable Long childId){
+        List<ContentsRecommendDto.Response.SimilarBookDto> response = childService.getSimilarUsersBooks(userId, childId);
         return SuccessResponse.success(response);
     }
 }
