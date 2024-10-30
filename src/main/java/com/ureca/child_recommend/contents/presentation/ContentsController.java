@@ -1,5 +1,6 @@
 package com.ureca.child_recommend.contents.presentation;
 
+import com.ureca.child_recommend.child.presentation.dto.ContentsRecommendDto;
 import com.ureca.child_recommend.contents.application.ContentsService;
 import com.ureca.child_recommend.contents.domain.Contents;
 import com.ureca.child_recommend.contents.presentation.dto.ContentsDto;
@@ -29,11 +30,11 @@ public class ContentsController {
         Contents content = contentsService.readContents(contentsId);
         return SuccessResponse.success(content);
     }
-    
+
     // 특정 contents 수정 -> 수정 시 active status로
     @PatchMapping("/admin/update/{contentsId}")
     public SuccessResponse<ContentsDto.Response> updatecontent(@AuthenticationPrincipal Long userId, @PathVariable("contentsId") Long contentsId,
-                                  @RequestBody ContentsDto.Request request) {
+                                                               @RequestBody ContentsDto.Request request) {
         ContentsDto.Response content = contentsService.updateContents(contentsId, request);
         return SuccessResponse.success(content);
     }
@@ -53,4 +54,32 @@ public class ContentsController {
     public SuccessResponse<List<Contents>> getAllContents(@AuthenticationPrincipal Long userId) {
         return SuccessResponse.success(contentsService.getAllContents());
     }
+
+    /**
+     * 24.10.24 작성자 : 정주현
+     * 도서 임베딩 값 삽입
+     * @param userId  : token - 부모 아이디
+     * @return
+     */
+    @GetMapping("/{contentsId}/embedding/generate")
+    public SuccessResponse<String> inputEmbeddingBook(@AuthenticationPrincipal Long userId,@PathVariable("contentsId") Long contentsId){
+       contentsService.inputEmbedding(userId,contentsId);
+        return SuccessResponse.successWithoutResult("성공");
+
+    }
+
+    /**
+     * 24.10.24 작성자 : 정주현
+     * 유저와 좋아요 한 도서와 비슷한 값 추출
+     * @param userId  : token - 부모 아이디
+     * @return
+     */
+    @GetMapping("/child/{childId}/recommendations")
+    public SuccessResponse<List<ContentsRecommendDto.Response.SimilarBookDto>> searchBook(@AuthenticationPrincipal Long userId, @PathVariable("childId") Long childId){
+        List<ContentsRecommendDto.Response.SimilarBookDto> response = contentsService.seachUserLikeContentsSim(userId,childId);
+        return SuccessResponse.success(response);
+
+    }
+
+
 }

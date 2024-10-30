@@ -50,8 +50,8 @@ public class Contents extends BaseTimeEntity {
     @JoinColumn(name = "contentsMbti_id")
     private ContentsMbtiScore contentsMbti;
 
-//    @OneToMany(mappedBy = "contents",cascade = CascadeType.ALL)
-//    List<FeedBack> feedBackList = new ArrayList<>();
+    @OneToOne(mappedBy = "contents", fetch = FetchType.LAZY)
+    private ContentsVector contentsVector;
 
     public static Contents saveContents(ContentsDto.Request request, ContentsMbtiScore mbtiScore, String mbtiResult) {
         return Contents.builder()
