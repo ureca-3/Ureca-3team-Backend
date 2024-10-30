@@ -36,7 +36,7 @@ public class ContentsService {
     private final GptWebClient gptWebClient;
     private final Map<Long, GptDto.Request> memberChatMap = new HashMap<>();
     private final ChannelTopic bookChannel;
-    private final RedisTemplate redisTemplate;
+    private final RedisTemplate<String, Object> redisTemplate;
 
     // 대화내용 삭제
     public void removeChat(Long userId) {
@@ -129,6 +129,8 @@ public class ContentsService {
         String message = String.format("{\"message\": \"New Content: %s\", \"contentId\": %d}", savedContent.getTitle(), savedContent.getId());
         redisTemplate.convertAndSend(bookChannel.getTopic(), message); // Redis로 전송
 
+        // 알림을 Redis 리스트에 저장
+        redisTemplate.opsForList().leftPush("notifications", message);
 
         return savedContent;
     }

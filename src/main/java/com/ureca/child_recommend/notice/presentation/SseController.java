@@ -1,11 +1,15 @@
 package com.ureca.child_recommend.notice.presentation;
 
 import com.ureca.child_recommend.notice.application.SseEmitterManager;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.servlet.mvc.method.annotation.SseEmitter;
+
+import java.util.List;
 
 @RestController
 //@RequiredArgsConstructor
@@ -29,8 +33,15 @@ public class SseController {
 
 private final SseEmitterManager sseEmitterManager;
 
-public SseController(SseEmitterManager sseEmitterManager) {
+    private final RedisTemplate<String, Object> redisTemplate;
+
+    private static final String NOTIFICATION_KEY = "notifications";
+
+
+@Autowired
+public SseController(SseEmitterManager sseEmitterManager, RedisTemplate<String, Object> redisTemplate) {
     this.sseEmitterManager = sseEmitterManager;
+    this.redisTemplate = redisTemplate;
 }
 
 @GetMapping("/newbook")
@@ -42,6 +53,11 @@ public void sendSseEvent(String notification){
     sseEmitterManager.sendContentNotification(notification);
 }
 
+    @GetMapping("/previous")
+    public List<Object> getPreviousNotifications() {
+        // Redis에 저장된 모든 이전 알림을 가져옵니다.
+        return redisTemplate.opsForList().range(NOTIFICATION_KEY, 0, -1);
+    }
 
 }
 
