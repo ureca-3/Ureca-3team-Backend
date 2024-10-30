@@ -1,27 +1,34 @@
 package com.ureca.child_recommend.contents.application;
 
+import com.ureca.child_recommend.child.infrastructure.ChildRepository;
+import com.ureca.child_recommend.child.presentation.dto.ContentsRecommendDto;
+import com.ureca.child_recommend.config.embedding.EmbeddingUtil;
 import com.ureca.child_recommend.config.gpt.GptWebClient;
 import com.ureca.child_recommend.contents.domain.Contents;
 import com.ureca.child_recommend.contents.domain.ContentsMbtiScore;
+import com.ureca.child_recommend.contents.domain.ContentsVector;
 import com.ureca.child_recommend.contents.domain.Enum.ContentsStatus;
 import com.ureca.child_recommend.contents.infrastructure.ContentsMbtiRepository;
 import com.ureca.child_recommend.contents.infrastructure.ContentsRepository;
+import com.ureca.child_recommend.contents.infrastructure.ContentsVectorRepository;
 import com.ureca.child_recommend.contents.presentation.dto.ContentsDto;
 import com.ureca.child_recommend.contents.presentation.dto.GptDto;
 import com.ureca.child_recommend.global.exception.BusinessException;
 import com.ureca.child_recommend.global.exception.errorcode.CommonErrorCode;
+import com.ureca.child_recommend.relation.FeedBack;
+import com.ureca.child_recommend.relation.infrastructure.FeedBackRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.data.redis.listener.ChannelTopic;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import java.nio.channels.Channel;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
+import java.util.stream.Collectors;
 
 @Service
 @RequiredArgsConstructor
@@ -29,6 +36,12 @@ import java.util.regex.Pattern;
 public class ContentsService {
     private final ContentsRepository contentsRepository;
     private final ContentsMbtiRepository mbtiRepository;
+    private final ChildRepository childRepository;
+    private final EmbeddingUtil embeddingUtil;
+    private final ContentsVectorRepository contentsVectorRepository;
+    private final FeedBackRepository feedBackRepository;
+
+
 
     private static final String USER = "user";
     private static final String ASSISTNAT = "assistant";
@@ -181,5 +194,87 @@ public class ContentsService {
     // 컨텐츠 리스트 페이지 처리 - 5개씩 (최신 데이터)
     public List<Contents> getAllContents() {
         return contentsRepository.findAll();
+    }
+
+
+
+    @Transactional
+    public void inputEmbedding(Long userId, Long contentsId) {
+        Contents contents = contentsRepository.findById(contentsId).orElseThrow(() -> new BusinessException(CommonErrorCode.CONTENTS_NOT_FOUND));
+
+        GptDto.Request gptRequest;
+
+        gptRequest = gptWebClient.of(500);
+        addChatMessages(gptRequest, SYSTEM, "당신은 키워드를 추출하고 텍스트를 요약하는 작업을 수행하는 도우미입니다." +
+                " 주어진 텍스트에서 가장 중요한 다섯 개의 키워드를 제공하고, 다음 형식으로 요약하세요:\n" +
+                "키워드: [키워드 목록]\n" +
+                "요약: [두 문장 요약]\n");
+        addChatMessages(gptRequest, USER, contents.getDescription());
+
+        GptDto.Response gptResponse = gptWebClient.assistantRes(gptRequest);
+        String content = gptResponse.getChoices().get(0).getMessage().getContent();
+
+        // 키워드와 요약본을 분리하기 위해 먼저 줄 바꿈(\n)으로 나눕니다.
+        String[] lines = content.split("\n");
+
+        // 각 줄에서 키워드와 요약본을 추출합니다.
+        String keywords = "";
+        String summary = "";
+
+        // 키워드와 요약본을 찾아서 변수에 저장
+        for (String line : lines) {
+            if (line.startsWith("키워드:")) {
+                keywords = line.substring("키워드:".length()).trim();
+            } else if (line.startsWith("요약:")) {
+                summary = line.substring("요약:".length()).trim();
+            }
+        }
+
+        // String.format을 사용하여 최종 문자열 생성
+        String input = String.format("책 제목: %s, 키워드: %s, 저자: %s, 요약본: %s, MBTI: %s, %s, %s, %s",
+                contents.getTitle(),
+                keywords,
+                contents.getAuthor(),
+                summary,
+                contents.getContentsMbti().getEiScore() + "%",
+                contents.getContentsMbti().getSnScore() + "%",
+                contents.getContentsMbti().getTfScore() + "%",
+                contents.getContentsMbti().getJpScore() + "%");
+
+        System.out.println(input);
+
+        //임베딩 벡터 생성
+        float[] contentsEmbedding = embeddingUtil.createEmbedding(input);
+
+        saveContentsEmbedding(contentsEmbedding,contents);
+
+    }
+
+    protected void saveContentsEmbedding(float[] contentsEmbedding, Contents contents){
+
+        ContentsVector contentsVector = ContentsVector.createContentsVector(contentsEmbedding,contents);
+        contentsVectorRepository.save(contentsVector);
+
+    }
+
+
+    public List<ContentsRecommendDto.Response.SimilarBookDto> seachUserLikeContentsSim(Long userId, Long childId) {
+        childRepository.findByIdAndUserId(childId,userId).orElseThrow(() -> new BusinessException(CommonErrorCode.CHILD_NOT_FOUND));
+
+        List<FeedBack> feedBackList = feedBackRepository.findTop5LikesByChildId(childId);
+
+        //  각 피드백의 임베딩 벡터 추출
+        List<Long> contentsIdLists = feedBackList.stream()
+                .map(feedback -> feedback.getContents().getId())
+                .toList();
+
+
+        List<Long> VectorcontentsIdList = contentsVectorRepository.findSimilarContentsByAverageEmbedding(contentsIdLists);
+
+        List<Contents> contentsList = contentsRepository.findByIdIn(VectorcontentsIdList);
+
+        return contentsList.stream()
+                        .map(o-> ContentsRecommendDto.Response.SimilarBookDto.of(o.getId(),o.getTitle(),o.getPosterUrl()))
+                .collect(Collectors.toList());
     }
 }

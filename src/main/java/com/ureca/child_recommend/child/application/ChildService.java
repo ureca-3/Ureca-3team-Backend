@@ -9,7 +9,7 @@ import com.ureca.child_recommend.child.infrastructure.ChildMbtiScoreRepository;
 import com.ureca.child_recommend.child.infrastructure.ChildRepository;
 import com.ureca.child_recommend.child.infrastructure.ChildVectorRepository;
 import com.ureca.child_recommend.child.presentation.dto.ChildDto;
-import com.ureca.child_recommend.child.presentation.dto.ContentsDto;
+import com.ureca.child_recommend.child.presentation.dto.ContentsRecommendDto;
 import com.ureca.child_recommend.config.embedding.EmbeddingUtil;
 import com.ureca.child_recommend.global.exception.BusinessException;
 import com.ureca.child_recommend.global.exception.errorcode.CommonErrorCode;
@@ -177,7 +177,7 @@ public class ChildService {
      * @param childId : 자녀 pk
      * @return SimilarBookDto : 변환값
      */
-    public List<ContentsDto.Response.SimilarBookDto> getSimilarUsersBooks(Long userId, Long childId) {
+    public List<ContentsRecommendDto.Response.SimilarBookDto> getSimilarUsersBooks(Long userId, Long childId) {
         //해당 자녀가 해당 부모의 자녀인지 확인
         childRepository.findByIdAndUserId(childId,userId).orElseThrow(()->new BusinessException(CommonErrorCode.CHILD_NOT_FOUND));
 
@@ -189,7 +189,7 @@ public class ChildService {
 
         // 피드백 목록을 SimilarBookDto로 변환
         return feedBackList.stream()
-                .map(o-> ContentsDto.Response.SimilarBookDto.of(o.getContents().getId(),o.getContents().getTitle(),o.getContents().getPosterUrl()))
+                .map(o-> ContentsRecommendDto.Response.SimilarBookDto.of(o.getContents().getId(),o.getContents().getTitle(),o.getContents().getPosterUrl()))
                 .collect(Collectors.toList());
 
     }
@@ -200,7 +200,7 @@ public class ChildService {
      * @param childId : 자녀 pk
      * @return SimilarUserDto : 반환값
      */
-    public List<ContentsDto.Response.SimilarUserDto> getSimilarTotalUsers(Long userId, Long childId) {
+    public List<ContentsRecommendDto.Response.SimilarUserDto> getSimilarTotalUsers(Long userId, Long childId) {
         //해당 자녀가 해당 부모의 자녀인지 확인
         childRepository.findByIdAndUserId(childId,userId).orElseThrow(()->new BusinessException(CommonErrorCode.CHILD_NOT_FOUND));
 
@@ -209,7 +209,7 @@ public class ChildService {
 
         // Object[] 배열에서 DTO로 변환
         return results.stream()
-                .map(result -> new ContentsDto.Response.SimilarUserDto(
+                .map(result -> new ContentsRecommendDto.Response.SimilarUserDto(
                         ((Number) result[0]).longValue(),   // child_id
                         ((Number) result[1]).floatValue()   // similarity
                 ))
