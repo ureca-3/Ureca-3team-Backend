@@ -26,4 +26,8 @@ public class RedisUtil {
         redisTemplate.delete(key);
     }
 
+    public void sendNotified(String topic ,String message){
+        redisTemplate.convertAndSend(topic, message);
+    }
+
 }

@@ -4,6 +4,7 @@ import com.ureca.child_recommend.child.infrastructure.ChildRepository;
 import com.ureca.child_recommend.child.presentation.dto.ContentsRecommendDto;
 import com.ureca.child_recommend.config.embedding.EmbeddingUtil;
 import com.ureca.child_recommend.config.gpt.GptWebClient;
+import com.ureca.child_recommend.config.redis.util.RedisUtil;
 import com.ureca.child_recommend.contents.domain.Contents;
 import com.ureca.child_recommend.contents.domain.ContentsMbtiScore;
 import com.ureca.child_recommend.contents.domain.ContentsVector;
@@ -38,10 +39,9 @@ public class ContentsService {
     private final ContentsMbtiRepository mbtiRepository;
     private final ChildRepository childRepository;
     private final EmbeddingUtil embeddingUtil;
+    private final RedisUtil redisUtil;
     private final ContentsVectorRepository contentsVectorRepository;
     private final FeedBackRepository feedBackRepository;
-
-
 
     private static final String USER = "user";
     private static final String ASSISTNAT = "assistant";
@@ -50,7 +50,6 @@ public class ContentsService {
     private final GptWebClient gptWebClient;
     private final Map<Long, GptDto.Request> memberChatMap = new HashMap<>();
     private final ChannelTopic bookChannel;
-    private final RedisTemplate redisTemplate;
     // 대화내용 삭제
     public void removeChat(Long userId) {
         if (!memberChatMap.containsKey(userId)) {
@@ -155,7 +154,8 @@ public class ContentsService {
 
         // 📢 알림 발행: Redis 채널에 메시지 전송
         String message = String.format("New Contents: %s", savedContent.getTitle());
-        redisTemplate.convertAndSend(bookChannel.getTopic(), message); // 알림 발송
+        redisUtil.sendNotified(bookChannel.getTopic(),message);
+
         return savedContent;
     }
 
