@@ -96,7 +96,7 @@ public class ContentsService {
                 "E: {}%\n" +
                 "S: {}%\n" +
                 "T: {}%\n" +
-                "J: {}%\n 형식으로 알려주는데, 0%랑 100%는 절대 주지마" );
+                "J: {}%\n 형식으로 알려주는데, 각 값 0이랑 100은 절대 주지마" );
 
         GptDto.Response gptResponse = gptWebClient.assistantRes(gptRequest);
 
@@ -146,10 +146,10 @@ public class ContentsService {
         return savedContent;
     }
 
-    public ContentsDto.Response readContents(Long contentsId) {
+    public Contents readContents(Long contentsId) {
         Contents findContents = contentsRepository.findById(contentsId).orElseThrow(()
                 -> new BusinessException(CommonErrorCode.CONTENTS_NOT_FOUND));
-        return ContentsDto.Response.contentsData(findContents);
+        return findContents;
     }
 
     @Transactional

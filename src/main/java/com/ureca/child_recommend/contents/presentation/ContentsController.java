@@ -17,7 +17,7 @@ public class ContentsController {
     private final ContentsService contentsService;
 
     // contents 저장
-    @PostMapping("/save")
+    @PostMapping("/admin/save")
     public SuccessResponse<Long> saveContents(@AuthenticationPrincipal Long userId, @RequestBody ContentsDto.Request request) {
         Contents content = contentsService.saveContents(userId, request);
         return SuccessResponse.success(content.getId());
@@ -25,13 +25,13 @@ public class ContentsController {
 
     // 특정 contents 읽기
     @GetMapping("/read/{contentsId}")
-    public SuccessResponse<ContentsDto.Response> readContent(@AuthenticationPrincipal Long userId, @PathVariable("contentsId") Long contentsId) {
-        ContentsDto.Response content = contentsService.readContents(contentsId);
+    public SuccessResponse<Contents> readContent(@AuthenticationPrincipal Long userId, @PathVariable("contentsId") Long contentsId) {
+        Contents content = contentsService.readContents(contentsId);
         return SuccessResponse.success(content);
     }
     
     // 특정 contents 수정 -> 수정 시 active status로
-    @PatchMapping("/update/{contentsId}")
+    @PatchMapping("/admin/update/{contentsId}")
     public SuccessResponse<ContentsDto.Response> updatecontent(@AuthenticationPrincipal Long userId, @PathVariable("contentsId") Long contentsId,
                                   @RequestBody ContentsDto.Request request) {
         ContentsDto.Response content = contentsService.updateContents(contentsId, request);
@@ -39,7 +39,7 @@ public class ContentsController {
     }
 
     // 특정 contents 삭제
-    @PatchMapping("/delete/{contentsId}")
+    @PatchMapping("/admin/delete/{contentsId}")
     public SuccessResponse<ContentsDto.Response> deleteContents(@AuthenticationPrincipal Long userId, @PathVariable("contentsId") Long contentsId) {
         return SuccessResponse.success(contentsService.deleteContents(contentsId));
     }

@@ -46,7 +46,7 @@ public class Contents extends BaseTimeEntity {
     @Enumerated(EnumType.STRING)
     private ContentsStatus status;
 
-    @OneToOne(fetch = FetchType.LAZY)
+    @OneToOne(fetch = FetchType.EAGER)
     @JoinColumn(name = "contentsMbti_id")
     private ContentsMbtiScore contentsMbti;
 
@@ -86,7 +86,9 @@ public class Contents extends BaseTimeEntity {
         if (request.getPublicationYear() != null) {
             this.publicationYear = request.getPublicationYear();
         }
-        this.status = ContentsStatus.ACTIVE;
+        if (request.getStatus() != null) {
+            this.status = request.getStatus();
+        }
     }
 
     public void updateStatus(ContentsStatus status) {
