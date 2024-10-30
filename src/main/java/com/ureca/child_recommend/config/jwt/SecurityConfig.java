@@ -38,8 +38,8 @@ public class SecurityConfig{
                 .authorizeHttpRequests(authorize -> authorize
                         .requestMatchers("/api/v1/auth/kakao").permitAll()
                         .requestMatchers("/api/v1/auth/kakao-login").permitAll()
-                        .requestMatchers("/api/v1/**").hasAnyRole("USER")
-
+                        .requestMatchers("/api/v1/contents/admin/**").hasRole("ADMIN")
+                        .requestMatchers("/api/v1/**").hasAnyRole("USER", "ADMIN")
                         .requestMatchers("**").permitAll()
 
                         .anyRequest().authenticated())
