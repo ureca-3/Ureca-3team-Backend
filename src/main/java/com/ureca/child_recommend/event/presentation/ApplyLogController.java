@@ -39,7 +39,7 @@ public class ApplyLogController {
                 .user(userRepository.findById(userId).get()) // userId로 User 객체 생성 (User 엔티티가 필요함)
                 .event(eventRepository.findEventByDate(LocalDate.now()).get())
                 .build();
-        applyLogService.executeWithLock(userId,applyLog);
+        applyLogService.checkAndRegisterUserId(userId, applyLog);
         return SuccessResponse.success(applyLog);
     }
 
@@ -53,6 +53,7 @@ public class ApplyLogController {
 //    @Scheduled(cron = "0 0 12 * * ?") // 응모로그 삭제
     public SuccessResponse<String> deleteApplyLog() {
         applyLogService.deleteAllLog();
+        applyLogService.removeAllUserIds();
         return SuccessResponse.successWithoutResult(null);
     }
 }

@@ -41,7 +41,7 @@ public class UserController {
         UserDto.Response.SignIn response = userService.login(idToken);
         String jwtToken = response.getAccessToken();
 
-        servletResponse.sendRedirect("http://localhost:3000?token=" + jwtToken);
+//        servletResponse.sendRedirect("http://localhost:3000?token=" + jwtToken);
         return SuccessResponse.success(response);
     }
 

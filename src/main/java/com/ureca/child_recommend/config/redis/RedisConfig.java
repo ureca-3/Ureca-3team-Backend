@@ -25,35 +25,29 @@ public class RedisConfig {
 
     @Value("${spring.data.redis.port}")
     private int port;
-//    @Value("${spring.data.redis.password}")
-//    private String redisPassword;
+
     private static final String REDISSON_HOST_PREFIX = "redis://";
 
     @Bean
     public RedisConnectionFactory redisConnectionFactory() {
-        RedisStandaloneConfiguration redisConfig = new RedisStandaloneConfiguration();
-        redisConfig.setHostName(host);
-        redisConfig.setPort(port);
-
-//        // 비밀번호가 설정되어 있으면 비밀번호도 추가
-//        if (!redisPassword.isEmpty()) {
-//            redisConfig.setPassword(RedisPassword.of(redisPassword));
-//        }
-
-        return new LettuceConnectionFactory(redisConfig);
+        return new LettuceConnectionFactory(host, port);
     }
 
     @Bean
     public RedissonClient redissonClient() {
+        System.out.println("Redis Host: " + host); // Host 확인
+        System.out.println("Redis Port: " + port); // Port 확인
         Config config = new Config();
-        config.useSingleServer().setAddress("redis://" + host + ":" + port);
+        System.out.println(config.useSingleServer().getAddress()); // Port 확인
+        config.useSingleServer().setAddress(REDISSON_HOST_PREFIX + host + ":" + port);
+        System.out.println("Redis Address: " + config.useSingleServer().getAddress()); // 설정된 주소 확인
         return Redisson.create(config);
     }
 
     @Bean
-    public RedisTemplate<String, Object> redisTemplate() {
+    public RedisTemplate<String, Object> redisTemplate(RedisConnectionFactory redisConnectionFactory) {
         RedisTemplate<String, Object> redisTemplate = new RedisTemplate<>();
-        redisTemplate.setConnectionFactory(redisConnectionFactory());
+        redisTemplate.setConnectionFactory(redisConnectionFactory);
 
         // 일반적인 key:value 의 경우 시리얼라이저
         redisTemplate.setKeySerializer(new StringRedisSerializer());
@@ -72,7 +66,6 @@ public class RedisConfig {
             RedisConnectionFactory connectionFactory,
             UserSubscriber userSubscriber,
             ChannelTopic bookChannel) {
-        // Redis 메시지 리스너 컨테이너 설정
         RedisMessageListenerContainer container = new RedisMessageListenerContainer();
         container.setConnectionFactory(connectionFactory);
         container.addMessageListener(userSubscriber, bookChannel);
@@ -84,8 +77,4 @@ public class RedisConfig {
     public ZSetOperations<String, Object> zSetOperations(RedisTemplate<String, Object> redisTemplate) {
         return redisTemplate.opsForZSet();
     }
-
-
 }
-
-
