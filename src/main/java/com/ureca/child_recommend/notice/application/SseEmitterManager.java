@@ -34,7 +34,11 @@ public class SseEmitterManager {
     public void sendContentNotification(String notification){
         for(SseEmitter emitter : emitters){
             try{
-                emitter.send(notification, MediaType.TEXT_EVENT_STREAM);
+/*                // JSON 형식으로 메시지 포맷 지정
+                String jsonMessage = "{\"message\": \"" + notification + "\"}";
+                emitter.send(jsonMessage, MediaType.APPLICATION_JSON);*/
+// 1650 수정
+                emitter.send(notification, MediaType.TEXT_PLAIN);
             } catch (Exception e){
                 emitters.remove(emitter); // 실패 시 emitter 제거
             }
@@ -54,6 +58,7 @@ public class SseEmitterManager {
         }
     }
 */
+/*
 
     @Scheduled(fixedRate = 120000) // 2 분마다 heartbeat 전송
     public void sendHeartbeat() {
@@ -67,6 +72,7 @@ public class SseEmitterManager {
             }
         }
     }
+*/
 
 
 }

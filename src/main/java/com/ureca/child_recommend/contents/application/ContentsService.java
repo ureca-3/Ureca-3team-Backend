@@ -71,7 +71,7 @@ public class ContentsService {
             gptRequest = memberChatMap.get(userId);
         }
 
-        String summary = request.getDescription(); 
+        String summary = request.getDescription();
 
         addChatMessages(gptRequest, USER, "'" + summary + "'" +
                 "의 줄거리인 콘텐츠의 MBTI의 비율을 전체 100% 중 " +
@@ -123,8 +123,11 @@ public class ContentsService {
                 -> saveContent(userId, request, mbtiScore, mbtiRes.toString()));
 
         // 📢 알림 발행: Redis 채널에 메시지 전송
-        String message = String.format("New Contents: %s", savedContent.getTitle());
-        redisTemplate.convertAndSend(bookChannel.getTopic(), message); // 알림 발송
+/*        String message = String.format("New Contents: %s", savedContent.getTitle());
+        redisTemplate.convertAndSend(bookChannel.getTopic(), message); // 알림 발송*/
+// 1650 수정
+        String message = String.format("{\"message\": \"New Content: %s\", \"contentId\": %d}", savedContent.getTitle(), savedContent.getId());
+        redisTemplate.convertAndSend(bookChannel.getTopic(), message); // Redis로 전송
 
 
         return savedContent;

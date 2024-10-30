@@ -3,6 +3,7 @@ package com.ureca.child_recommend.notice.presentation;
 import com.ureca.child_recommend.notice.application.SseEmitterManager;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.servlet.mvc.method.annotation.SseEmitter;
 
@@ -33,7 +34,7 @@ public SseController(SseEmitterManager sseEmitterManager) {
 }
 
 @GetMapping("/newbook")
-public SseEmitter subscribe(){
+public SseEmitter subscribe(@RequestParam("token") String token){
     return sseEmitterManager.createEmitter();
 }
 

@@ -34,6 +34,10 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
                                     HttpServletResponse response,
                                     FilterChain filterChain) throws IOException, ServletException {
         String token = jwtUtil.resolveToken(request.getHeader("Authorization"));
+        // 헤더에 토큰이 없으면 URL 파라미터에서 토큰을 가져옴
+        if (token == null || token.isEmpty()) {
+            token = request.getParameter("token");
+        }
         if (token != null && !token.isEmpty()) {
             try {
 //                if (request.getRequestURI().equals("/api/v1/auth/reissue")) {
