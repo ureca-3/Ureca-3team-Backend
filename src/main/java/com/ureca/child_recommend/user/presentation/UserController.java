@@ -1,5 +1,6 @@
 package com.ureca.child_recommend.user.presentation;
 
+import com.ureca.child_recommend.child.application.ChildService;
 import com.ureca.child_recommend.contents.domain.Contents;
 import com.ureca.child_recommend.global.response.SuccessResponse;
 import com.ureca.child_recommend.relation.application.FeedBackService;
@@ -26,6 +27,7 @@ public class UserController {
 
     private final UserService userService;
     private final FeedBackService feedBackService;
+    private final ChildService childService;
 
     /**
      * 24.10.17 작성자 : 정주현
@@ -39,9 +41,7 @@ public class UserController {
         UserDto.Response.SignIn response = userService.login(idToken);
         String jwtToken = response.getAccessToken();
 
-        // 프론트에서 데이터 받기 위함 - 서버에서 테스트시 아래 두 줄 주석 처리
-        String redirectUrl = "http://localhost:3000?token="+jwtToken;
-        servletResponse.sendRedirect(redirectUrl);
+        servletResponse.sendRedirect("http://localhost:3000?token=" + jwtToken);
         return SuccessResponse.success(response);
     }
 
