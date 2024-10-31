@@ -58,6 +58,12 @@ public class UserService {
                 getOrGenerateRefreshToken(user));
     }
 
+    // 유저 정보 가져오기
+    public Users getUser(String idToken) {
+        OauthInfo oauthInfo = kakaoOauthHelper.getOauthInfoByToken(idToken);
+        return userRepository.findByOauthInfoOid(oauthInfo.getOid()).orElseThrow(() -> new BusinessException(CommonErrorCode.USER_NOT_FOUND));
+    }
+
     //유저 존재하지 않을 시 생성
     public Users forceJoin(OauthInfo oauthInfo) {
         Users newUser = Users.create(oauthInfo);
@@ -75,7 +81,7 @@ public class UserService {
             throw new BusinessException(JWT_REFRESHTOKEN_NOT_MATCH);
         }
 
-        String newRefreshToken =jwtUtil.createRefreshToken(userIdInToken);
+        String newRefreshToken = jwtUtil.createRefreshToken(userIdInToken);
         String newAccessToken = jwtUtil.createAccessToken(userIdInToken, ROLE_USER);
         redisUtil.setData(RT+userIdInToken,newRefreshToken,jwtUtil.REFRESH_TOKEN_VALID_TIME);
 
@@ -143,7 +149,7 @@ public class UserService {
     }
 
     public Users getUserData(Long userId) {
-        Users user = userRepository.findById(userId).orElseThrow(() -> new BusinessException(CommonErrorCode.USER_NOT_FOUND));
-        return user;
+        return userRepository.findById(userId)
+                .orElseThrow(() -> new BusinessException(CommonErrorCode.USER_NOT_FOUND));
     }
 }

@@ -1,15 +1,23 @@
 package com.ureca.child_recommend.contents.application;
 
+import com.ureca.child_recommend.child.infrastructure.ChildRepository;
+import com.ureca.child_recommend.child.presentation.dto.ContentsRecommendDto;
+import com.ureca.child_recommend.config.embedding.EmbeddingUtil;
 import com.ureca.child_recommend.config.gpt.GptWebClient;
+import com.ureca.child_recommend.config.redis.util.RedisUtil;
 import com.ureca.child_recommend.contents.domain.Contents;
 import com.ureca.child_recommend.contents.domain.ContentsMbtiScore;
+import com.ureca.child_recommend.contents.domain.ContentsVector;
 import com.ureca.child_recommend.contents.domain.Enum.ContentsStatus;
 import com.ureca.child_recommend.contents.infrastructure.ContentsMbtiRepository;
 import com.ureca.child_recommend.contents.infrastructure.ContentsRepository;
+import com.ureca.child_recommend.contents.infrastructure.ContentsVectorRepository;
 import com.ureca.child_recommend.contents.presentation.dto.ContentsDto;
 import com.ureca.child_recommend.contents.presentation.dto.GptDto;
 import com.ureca.child_recommend.global.exception.BusinessException;
 import com.ureca.child_recommend.global.exception.errorcode.CommonErrorCode;
+import com.ureca.child_recommend.relation.FeedBack;
+import com.ureca.child_recommend.relation.infrastructure.FeedBackRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.data.redis.listener.ChannelTopic;
@@ -21,6 +29,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
+import java.util.stream.Collectors;
 
 @Service
 @RequiredArgsConstructor
@@ -28,6 +37,11 @@ import java.util.regex.Pattern;
 public class ContentsService {
     private final ContentsRepository contentsRepository;
     private final ContentsMbtiRepository mbtiRepository;
+    private final ChildRepository childRepository;
+    private final EmbeddingUtil embeddingUtil;
+    private final RedisUtil redisUtil;
+    private final ContentsVectorRepository contentsVectorRepository;
+    private final FeedBackRepository feedBackRepository;
 
     private static final String USER = "user";
     private static final String ASSISTNAT = "assistant";
@@ -36,7 +50,6 @@ public class ContentsService {
     private final GptWebClient gptWebClient;
     private final Map<Long, GptDto.Request> memberChatMap = new HashMap<>();
     private final ChannelTopic bookChannel;
-    private final RedisTemplate<String, Object> redisTemplate;
 
     // 대화내용 삭제
     public void removeChat(Long userId) {
@@ -66,7 +79,25 @@ public class ContentsService {
         if (memberChatMap.get(userId) == null) {
             gptRequest = gptWebClient.of(500);
             addChatMessages(gptRequest, SYSTEM, "너는 책 줄거리를 기반으로 MBTI 비율을 알려주는 ai야. " +
-                    "줄거리를 기반으로 MBTI 성향을 전체 100%인 E와 I의 비율 합 중 E의 비율, 전체 100%인 S와 N의 비율 합 중 S의 비율, 전체 100%인 T와 F의 비율 합 중 T의 비율, 전체 100%인 J와 P의 비율 합 중 J의 비율을 구해줘.");
+                    "줄거리를 기반으로 MBTI 성향을 전체 100%인 E와 I의 비율 합 중 E의 비율, 전체 100%인 S와 N의 비율 합 중 S의 비율, 전체 100%인 T와 F의 비율 합 중 T의 비율, 전체 100%인 J와 P의 비율 합 중 J의 비율을 구해줘." +
+                    "MBTI 특징은 아래와 같으니, 해당 특징들로 비율을 계산해줘" +
+                    "INFJ : 차가운, 알 수 없는, 미묘한, 따뜻한, 감성적인\n" +
+                    "INFP : 감성적인, 나른한, 우울한, 따뜻한, 눈물이 많은, 요정같은\n" +
+                    "INTJ : 무심한, 냉정한, 시니컬한, 지적인, 은근 다정한, 생각이 깊은\n" +
+                    "INTP :영리한, 괴짜같은, 건조한, 기계같은, 지적인, 너드한, 무심한, 창의적인\n" +
+                    "ISTP : 시니컬한, 피곤한, 귀찮음이 많은, 쿨한, 무관심한, 사회적 거리두기\n" +
+                    "ISFP : 중심적인, 예술적인, 호기심이 많은, 인간 고양이\n" +
+                    "ISTJ : 분석적인, 규칙적인, 규율적인, 모범적인, 무뚝뚝한\n" +
+                    "ISFJ :수호적인, 선한, 구호적인, 친절한, 따스한, 영역이 넓은\n" +
+                    "ENFJ : 온화한, 다정한, 부드러운, 지혜로운, 따스한, 모범적인\n" +
+                    "ENFP : 긍정적인, 친절한, 사교적인, 활발한, 해피 바이러스\n" +
+                    "ENTJ :냉담한, 냉정한, 지적인, 호탕한, 쿨한, 지휘적인\n" +
+                    "ENTP : 유머러스한, 쿨한, 말이 많은, 뒷심 부족한, 주도적인, 창의적인\n" +
+                    "ESTJ : 냉담한, 냉철한, 지적인, 지도적인, 지휘적인, 관리자같은\n" +
+                    "ESFJ : 선한, 구호적인, 인맥이 넓은, 모범적인, 사교적인, 소통적인\n" +
+                    "ESTP : 호탕한, 직설적인, 은근 냉담한, 유머러스한, 쿨한, 모험적인\n" +
+                    "ESFP : 사교적인, 쾌활한, 항상 바쁜, 인싸같은, 친구가 많은, 입담이 뛰어난\n" +
+                    "\n");
         } else {
             gptRequest = memberChatMap.get(userId);
         }
@@ -78,7 +109,7 @@ public class ContentsService {
                 "E: {}%\n" +
                 "S: {}%\n" +
                 "T: {}%\n" +
-                "J: {}%\n 형식으로 알려줘" );
+                "J: {}%\n 형식으로 알려주는데, 각 값 0이랑 100은 절대 주지마" );
 
         GptDto.Response gptResponse = gptWebClient.assistantRes(gptRequest);
 
@@ -127,18 +158,19 @@ public class ContentsService {
         redisTemplate.convertAndSend(bookChannel.getTopic(), message); // 알림 발송*/
 // 1650 수정
         String message = String.format("{\"message\": \"New Content: %s\", \"contentId\": %d}", savedContent.getTitle(), savedContent.getId());
-        redisTemplate.convertAndSend(bookChannel.getTopic(), message); // Redis로 전송
+        redisUtil.sendNotified(bookChannel.getTopic(),message);
 
         // 알림을 Redis 리스트에 저장
-        redisTemplate.opsForList().leftPush("notifications", message);
+        redisUtil.pushToList("notifications", message);
+
 
         return savedContent;
     }
 
-    public ContentsDto.Response readContents(Long contentsId) {
+    public Contents readContents(Long contentsId) {
         Contents findContents = contentsRepository.findById(contentsId).orElseThrow(()
                 -> new BusinessException(CommonErrorCode.CONTENTS_NOT_FOUND));
-        return ContentsDto.Response.contentsData(findContents);
+        return findContents;
     }
 
     @Transactional
@@ -159,11 +191,98 @@ public class ContentsService {
         return ContentsDto.Response.contentsData(findContents);
     }
 
-    // 컨텐츠 검색
+    // 컨텐츠 검색 - active인 상태만
     public List<Contents> searchContents(String keyword) {
-        List<Contents> searchContents = contentsRepository.findByTitleContainingOrAuthorContaining(keyword, keyword);
+        List<Contents> searchContents = contentsRepository.findByTitleContainingOrAuthorContainingAndStatus(keyword, keyword, ContentsStatus.ACTIVE);
         if (searchContents.isEmpty()) throw new BusinessException(CommonErrorCode.CONTENTS_NOT_FOUND);
 
         return searchContents;
+    }
+
+    // 컨텐츠 리스트 페이지 처리 - 5개씩 (최신 데이터)
+    public List<Contents> getAllContents() {
+        return contentsRepository.findAll();
+    }
+
+
+
+    @Transactional
+    public void inputEmbedding(Long userId, Long contentsId) {
+        Contents contents = contentsRepository.findById(contentsId).orElseThrow(() -> new BusinessException(CommonErrorCode.CONTENTS_NOT_FOUND));
+
+        GptDto.Request gptRequest;
+
+        gptRequest = gptWebClient.of(500);
+        addChatMessages(gptRequest, SYSTEM, "당신은 키워드를 추출하고 텍스트를 요약하는 작업을 수행하는 도우미입니다." +
+                " 주어진 텍스트에서 가장 중요한 다섯 개의 키워드를 제공하고, 다음 형식으로 요약하세요:\n" +
+                "키워드: [키워드 목록]\n" +
+                "요약: [두 문장 요약]\n");
+        addChatMessages(gptRequest, USER, contents.getDescription());
+
+        GptDto.Response gptResponse = gptWebClient.assistantRes(gptRequest);
+        String content = gptResponse.getChoices().get(0).getMessage().getContent();
+
+        // 키워드와 요약본을 분리하기 위해 먼저 줄 바꿈(\n)으로 나눕니다.
+        String[] lines = content.split("\n");
+
+        // 각 줄에서 키워드와 요약본을 추출합니다.
+        String keywords = "";
+        String summary = "";
+
+        // 키워드와 요약본을 찾아서 변수에 저장
+        for (String line : lines) {
+            if (line.startsWith("키워드:")) {
+                keywords = line.substring("키워드:".length()).trim();
+            } else if (line.startsWith("요약:")) {
+                summary = line.substring("요약:".length()).trim();
+            }
+        }
+
+        // String.format을 사용하여 최종 문자열 생성
+        String input = String.format("책 제목: %s, 키워드: %s, 저자: %s, 요약본: %s, MBTI: %s, %s, %s, %s",
+                contents.getTitle(),
+                keywords,
+                contents.getAuthor(),
+                summary,
+                contents.getContentsMbti().getEiScore() + "%",
+                contents.getContentsMbti().getSnScore() + "%",
+                contents.getContentsMbti().getTfScore() + "%",
+                contents.getContentsMbti().getJpScore() + "%");
+
+        System.out.println(input);
+
+        //임베딩 벡터 생성
+        float[] contentsEmbedding = embeddingUtil.createEmbedding(input);
+
+        saveContentsEmbedding(contentsEmbedding,contents);
+
+    }
+
+    protected void saveContentsEmbedding(float[] contentsEmbedding, Contents contents){
+
+        ContentsVector contentsVector = ContentsVector.createContentsVector(contentsEmbedding,contents);
+        contentsVectorRepository.save(contentsVector);
+
+    }
+
+
+    public List<ContentsRecommendDto.Response.SimilarBookDto> seachUserLikeContentsSim(Long userId, Long childId) {
+        childRepository.findByIdAndUserId(childId,userId).orElseThrow(() -> new BusinessException(CommonErrorCode.CHILD_NOT_FOUND));
+
+        List<FeedBack> feedBackList = feedBackRepository.findTop5LikesByChildId(childId);
+
+        //  각 피드백의 임베딩 벡터 추출
+        List<Long> contentsIdLists = feedBackList.stream()
+                .map(feedback -> feedback.getContents().getId())
+                .toList();
+
+
+        List<Long> VectorcontentsIdList = contentsVectorRepository.findSimilarContentsByAverageEmbedding(contentsIdLists);
+
+        List<Contents> contentsList = contentsRepository.findByIdIn(VectorcontentsIdList);
+
+        return contentsList.stream()
+                .map(o-> ContentsRecommendDto.Response.SimilarBookDto.of(o.getId(),o.getTitle(),o.getPosterUrl()))
+                .collect(Collectors.toList());
     }
 }
