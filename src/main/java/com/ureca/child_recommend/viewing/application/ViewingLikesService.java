@@ -27,6 +27,7 @@ import java.util.Set;
 @RequiredArgsConstructor
 public class ViewingLikesService {
 
+
     private final ZSetOperations<String, Object> zSetOperations;
     private final RedisTemplate<String, Object> redisTemplate;
     private final ContentsRepository contentsRepository;

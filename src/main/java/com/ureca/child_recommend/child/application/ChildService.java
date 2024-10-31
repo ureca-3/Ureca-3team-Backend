@@ -2,7 +2,6 @@ package com.ureca.child_recommend.child.application;
 
 import com.ureca.child_recommend.child.domain.Child;
 import com.ureca.child_recommend.child.domain.ChildMbtiScore;
-import com.ureca.child_recommend.child.domain.ChildVector;
 import com.ureca.child_recommend.child.domain.Enum.ChildMbtiScoreStatus;
 import com.ureca.child_recommend.child.domain.Enum.ChildStatus;
 import com.ureca.child_recommend.child.infrastructure.ChildMbtiScoreRepository;
@@ -10,7 +9,6 @@ import com.ureca.child_recommend.child.infrastructure.ChildRepository;
 import com.ureca.child_recommend.child.infrastructure.ChildVectorRepository;
 import com.ureca.child_recommend.child.presentation.dto.ChildDto;
 import com.ureca.child_recommend.child.presentation.dto.ContentsRecommendDto;
-import com.ureca.child_recommend.config.embedding.EmbeddingUtil;
 import com.ureca.child_recommend.global.exception.BusinessException;
 import com.ureca.child_recommend.global.exception.errorcode.CommonErrorCode;
 import com.ureca.child_recommend.relation.FeedBack;
@@ -34,7 +32,6 @@ public class ChildService {
     private final ChildMbtiScoreRepository childMbtiScoreRepository;
     private final UserRepository userRepository;
     private final ChildVectorRepository childVectorRepository;
-    private final EmbeddingUtil embeddingUtil;
     private final FeedBackRepository feedBackRepository;
 
     public ChildDto.Response findChildById(Long childId) {
@@ -146,7 +143,7 @@ public class ChildService {
         //해당 자녀와 비슷한 유저 목록 조회
         List<Long> results = childVectorRepository.findSimilarChildId(childId);
 
-        // 비슷한 유저들의 피드백 조회(엔티티 그래프를 통해 N+1 발생을 없앰 +IN을 통해서 리스트에 있는 목록을 한번에 다 가져옴)
+        // 비슷한 유저들의 피드백 조회
         List<FeedBack> feedBackList = feedBackRepository.findAllByChildIdIn(results);
 
         // 피드백 목록을 SimilarBookDto로 변환

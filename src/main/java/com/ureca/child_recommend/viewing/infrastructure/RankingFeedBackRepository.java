@@ -6,6 +6,7 @@ import org.springframework.data.jpa.repository.JpaRepository;
 
 public interface RankingFeedBackRepository extends JpaRepository<FeedBack, Long> {
 
+
     // childId와 contentId로 FeedBack 기록을 삭제
     void deleteByChildIdAndContentsId(Long childId, Long contentsId);
 
