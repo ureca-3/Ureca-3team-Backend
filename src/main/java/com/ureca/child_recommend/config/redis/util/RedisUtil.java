@@ -30,4 +30,9 @@ public class RedisUtil {
         redisTemplate.convertAndSend(topic, message);
     }
 
+    // 새 메서드 추가: Redis 리스트에 데이터를 삽입하는 메서드
+    public void pushToList(String key, String value) {
+        redisTemplate.opsForList().leftPush(key, value);
+    }
+
 }

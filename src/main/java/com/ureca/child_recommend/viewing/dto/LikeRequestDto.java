@@ -1,5 +1,6 @@
 package com.ureca.child_recommend.viewing.dto;
 
+
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
@@ -8,5 +9,6 @@ import lombok.NoArgsConstructor;
 @NoArgsConstructor
 @AllArgsConstructor
 public class LikeRequestDto {
+
     private Long childId; // 좋아요를 누른 자녀의 ID
 }
