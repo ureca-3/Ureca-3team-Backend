@@ -176,6 +176,8 @@ public class ContentsService {
         Contents findContents = contentsRepository.findWithContentsScoreById(contentsId).orElseThrow(()
                 -> new BusinessException(CommonErrorCode.CONTENTS_NOT_FOUND));
 
+        findContents.updateContents(request);
+
         return ContentsDto.Response.contentsData(findContents, findContents.getContentsMbti());
     }
 
@@ -190,7 +192,7 @@ public class ContentsService {
 
     // 컨텐츠 검색 - active인 상태만
     public List<ContentsDto.Response> searchContents(String keyword) {
-        List<Contents> searchContents = contentsRepository.findByTitleContainsAndStatus(keyword, ContentsStatus.ACTIVE);
+        List<Contents> searchContents = contentsRepository.findByTitleAndStatus(keyword, ContentsStatus.ACTIVE);
         if (keyword.equals("")) {
             throw new BusinessException(CommonErrorCode.CONTENTS_NOT_FOUND);
         }

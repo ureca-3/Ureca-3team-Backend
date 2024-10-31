@@ -4,6 +4,8 @@ import com.ureca.child_recommend.contents.domain.Contents;
 import com.ureca.child_recommend.contents.domain.Enum.ContentsStatus;
 import org.springframework.data.jpa.repository.EntityGraph;
 import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.data.jpa.repository.Query;
+import feign.Param;
 
 import java.util.List;
 import java.util.Optional;
@@ -14,7 +16,9 @@ public interface ContentsRepository extends JpaRepository<Contents, Long> {
 
     List<Contents> findByStatusAndTitleContaining(ContentsStatus status, String title);
 
-    List<Contents> findByTitleContainsAndStatus(String title, ContentsStatus status);
+    @Query("SELECT c FROM Contents c WHERE c.title LIKE %:keyword% AND c.status = :status")
+    List<Contents> findByTitleAndStatus(@Param("keyword") String keyword, @Param("status") ContentsStatus status);
+
 
     List<Contents> findByIdIn(List<Long> contentsIdList);
 
