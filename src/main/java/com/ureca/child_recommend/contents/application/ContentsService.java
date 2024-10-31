@@ -152,6 +152,10 @@ public class ContentsService {
         Contents savedContent = contentsRepository.findByTitleAndAuthor(request.getTitle(), request.getAuthor()).orElseGet(()
                 -> saveContent(userId, request, mbtiScore, mbtiRes.toString()));
 
+        //임베딩벡터 생성
+        inputEmbedding(savedContent.getId());
+
+
         // 📢 알림 발행: Redis 채널에 메시지 전송
         String message = String.format("New Contents: %s", savedContent.getTitle());
         redisUtil.sendNotified(bookChannel.getTopic(),message);
@@ -198,8 +202,7 @@ public class ContentsService {
 
 
 
-    @Transactional
-    public void inputEmbedding(Long userId, Long contentsId) {
+    private void inputEmbedding(Long contentsId) {
         Contents contents = contentsRepository.findById(contentsId).orElseThrow(() -> new BusinessException(CommonErrorCode.CONTENTS_NOT_FOUND));
 
         GptDto.Request gptRequest;
