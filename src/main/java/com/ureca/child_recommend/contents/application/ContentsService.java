@@ -16,14 +16,15 @@ import com.ureca.child_recommend.contents.presentation.dto.ContentsDto;
 import com.ureca.child_recommend.contents.presentation.dto.GptDto;
 import com.ureca.child_recommend.global.exception.BusinessException;
 import com.ureca.child_recommend.global.exception.errorcode.CommonErrorCode;
-import com.ureca.child_recommend.relation.FeedBack;
 import com.ureca.child_recommend.relation.infrastructure.FeedBackRepository;
 import lombok.RequiredArgsConstructor;
-import org.springframework.data.redis.core.RedisTemplate;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.data.redis.listener.ChannelTopic;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -172,7 +173,7 @@ public class ContentsService {
     }
 
     public ContentsDto.Response readContents(Long contentsId) {
-        Contents findContents = contentsRepository.findById(contentsId).orElseThrow(()
+        Contents findContents = contentsRepository.findWithContentsScoreById(contentsId).orElseThrow(()
                 -> new BusinessException(CommonErrorCode.CONTENTS_NOT_FOUND));
 
         return ContentsDto.Response.contentsData(findContents, findContents.getContentsMbti());
@@ -180,16 +181,17 @@ public class ContentsService {
 
     @Transactional
     public ContentsDto.Response updateContents(Long contentsId, ContentsDto.Request request) { // 수정된 데이터가 존재하면 반영
-        Contents findContents = contentsRepository.findById(contentsId).orElseThrow(()
+        Contents findContents = contentsRepository.findWithContentsScoreById(contentsId).orElseThrow(()
                 -> new BusinessException(CommonErrorCode.CONTENTS_NOT_FOUND));
 
         findContents.updateContents(request);
+
         return ContentsDto.Response.contentsData(findContents, findContents.getContentsMbti());
     }
 
     @Transactional
     public ContentsDto.Response deleteContents(Long contentsId) {
-        Contents findContents = contentsRepository.findById(contentsId).orElseThrow(()
+        Contents findContents = contentsRepository.findWithContentsScoreById(contentsId).orElseThrow(()
                 -> new BusinessException(CommonErrorCode.CONTENTS_NOT_FOUND));
 
         findContents.updateStatus(ContentsStatus.NONACTIVE);
@@ -197,16 +199,23 @@ public class ContentsService {
     }
 
     // 컨텐츠 검색 - active인 상태만
-    public List<Contents> searchContents(String keyword) {
-        List<Contents> searchContents = contentsRepository.findByStatusAndTitleContaining(ContentsStatus.ACTIVE, keyword);
-        if (searchContents.isEmpty() || keyword.equals("")) throw new BusinessException(CommonErrorCode.CONTENTS_NOT_FOUND);
+    public List<ContentsDto.Response> searchContents(String keyword) {
+        List<Contents> searchContents = contentsRepository.findByTitleAndStatus(keyword, ContentsStatus.ACTIVE);
+        if (keyword.equals("")) {
+            throw new BusinessException(CommonErrorCode.CONTENTS_NOT_FOUND);
+        }
+        List<ContentsDto.Response> result = searchContents.stream()
+                .map(ContentsDto.Response::contentsSingleData)
+                .collect(Collectors.toList());
 
-        return searchContents;
+        return result;
     }
 
+
     // 컨텐츠 리스트 페이지 처리 - 5개씩 (최신 데이터)
-    public List<Contents> getAllContents() {
-        return contentsRepository.findAll();
+    public Page<ContentsDto.Response> getAllContents(Pageable pageable) {
+        return contentsRepository.findAll(pageable)
+                .map(ContentsDto.Response::contentsSingleData);
     }
 
 
@@ -217,7 +226,8 @@ public class ContentsService {
         GptDto.Request gptRequest;
 
         gptRequest = gptWebClient.of(500);
-        addChatMessages(gptRequest, SYSTEM, "당신은 키워드를 추출하고 텍스트를 요약하는 작업을 수행하는 도우미입니다." +
+        addChatMessages(gptRequest, SYSTEM,
+                "당신은 키워드를 추출하고 텍스트를 요약하는 작업을 수행하는 도우미입니다." +
                 " 주어진 텍스트에서 가장 중요한 다섯 개의 키워드를 제공하고, 다음 형식으로 요약하세요:\n" +
                 "키워드: [키워드 목록]\n" +
                 "요약: [두 문장 요약]\n");
@@ -266,20 +276,13 @@ public class ContentsService {
 
         ContentsVector contentsVector = ContentsVector.createContentsVector(contentsEmbedding,contents);
         contentsVectorRepository.save(contentsVector);
-
     }
 
 
     public List<ContentsRecommendDto.Response.SimilarBookDto> seachUserLikeContentsSim(Long userId, Long childId) {
         childRepository.findByIdAndUserId(childId,userId).orElseThrow(() -> new BusinessException(CommonErrorCode.CHILD_NOT_FOUND));
 
-        List<FeedBack> feedBackList = feedBackRepository.findTop5LikesByChildId(childId);
-
-        //  각 피드백의 임베딩 벡터 추출
-        List<Long> contentsIdLists = feedBackList.stream()
-                .map(feedback -> feedback.getContents().getId())
-                .toList();
-
+        List<Long> contentsIdLists = feedBackRepository.findTop5LikesByChildId(childId);
 
         List<Long> VectorcontentsIdList = contentsVectorRepository.findSimilarContentsByAverageEmbedding(contentsIdLists);
 
