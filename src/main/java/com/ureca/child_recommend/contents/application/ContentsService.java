@@ -19,6 +19,8 @@ import com.ureca.child_recommend.global.exception.errorcode.CommonErrorCode;
 import com.ureca.child_recommend.relation.FeedBack;
 import com.ureca.child_recommend.relation.infrastructure.FeedBackRepository;
 import lombok.RequiredArgsConstructor;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.data.redis.listener.ChannelTopic;
 import org.springframework.stereotype.Service;
@@ -205,10 +207,9 @@ public class ContentsService {
 
 
     // 컨텐츠 리스트 페이지 처리 - 5개씩 (최신 데이터)
-    public List<ContentsDto.Response> getAllContents() {
-        return contentsRepository.findAll().stream()
-                .map(ContentsDto.Response::contentsSingleData)
-                .collect(Collectors.toList());
+    public Page<ContentsDto.Response> getAllContents(Pageable pageable) {
+        return contentsRepository.findAll(pageable)
+                .map(ContentsDto.Response::contentsSingleData);
     }
 
 

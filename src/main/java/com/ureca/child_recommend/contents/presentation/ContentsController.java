@@ -7,6 +7,9 @@ import com.ureca.child_recommend.contents.presentation.dto.ContentsDto;
 import com.ureca.child_recommend.global.exception.BusinessException;
 import com.ureca.child_recommend.global.response.SuccessResponse;
 import lombok.RequiredArgsConstructor;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
 
@@ -52,8 +55,11 @@ public class ContentsController {
     }
 
     @GetMapping("/all")
-    public SuccessResponse<List<ContentsDto.Response>> getAllContents(@AuthenticationPrincipal Long userId) {
-        return SuccessResponse.success(contentsService.getAllContents());
+    public SuccessResponse<Page<ContentsDto.Response>> getAllContents(@AuthenticationPrincipal Long userId,
+                                                                      @RequestParam(defaultValue = "0") int page,
+                                                                      @RequestParam(defaultValue = "5") int size) {
+        Pageable pageable = PageRequest.of(page,size);
+        return SuccessResponse.success(contentsService.getAllContents(pageable));
     }
 
     /**
