@@ -50,6 +50,7 @@ public class ContentsService {
     private final GptWebClient gptWebClient;
     private final Map<Long, GptDto.Request> memberChatMap = new HashMap<>();
     private final ChannelTopic bookChannel;
+
     // 대화내용 삭제
     public void removeChat(Long userId) {
         if (!memberChatMap.containsKey(userId)) {
@@ -157,8 +158,15 @@ public class ContentsService {
 
 
         // 📢 알림 발행: Redis 채널에 메시지 전송
-        String message = String.format("New Contents: %s", savedContent.getTitle());
+/*        String message = String.format("New Contents: %s", savedContent.getTitle());
+        redisTemplate.convertAndSend(bookChannel.getTopic(), message); // 알림 발송*/
+// 1650 수정
+        String message = String.format("{\"message\": \"New Content: %s\", \"contentId\": %d}", savedContent.getTitle(), savedContent.getId());
         redisUtil.sendNotified(bookChannel.getTopic(),message);
+
+        // 알림을 Redis 리스트에 저장
+        redisUtil.pushToList("notifications", message);
+
 
         return savedContent;
     }
@@ -278,7 +286,7 @@ public class ContentsService {
         List<Contents> contentsList = contentsRepository.findByIdIn(VectorcontentsIdList);
 
         return contentsList.stream()
-                        .map(o-> ContentsRecommendDto.Response.SimilarBookDto.of(o.getId(),o.getTitle(),o.getPosterUrl()))
+                .map(o-> ContentsRecommendDto.Response.SimilarBookDto.of(o.getId(),o.getTitle(),o.getPosterUrl()))
                 .collect(Collectors.toList());
     }
 }
