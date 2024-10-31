@@ -5,6 +5,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.stereotype.Service;
 
+import java.util.List;
 import java.util.concurrent.TimeUnit;
 
 @Service
@@ -33,6 +34,11 @@ public class RedisUtil {
     // 새 메서드 추가: Redis 리스트에 데이터를 삽입하는 메서드
     public void pushToList(String key, String value) {
         redisTemplate.opsForList().leftPush(key, value);
+    }
+
+    // Redis 리스트에서 데이터를 범위로 가져오기
+    public List<Object> getListRange(String key, long start, long end) {
+        return redisTemplate.opsForList().range(key, start, end);
     }
 
 }
