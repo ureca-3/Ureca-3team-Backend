@@ -16,10 +16,8 @@ import com.ureca.child_recommend.contents.presentation.dto.ContentsDto;
 import com.ureca.child_recommend.contents.presentation.dto.GptDto;
 import com.ureca.child_recommend.global.exception.BusinessException;
 import com.ureca.child_recommend.global.exception.errorcode.CommonErrorCode;
-import com.ureca.child_recommend.relation.FeedBack;
 import com.ureca.child_recommend.relation.infrastructure.FeedBackRepository;
 import lombok.RequiredArgsConstructor;
-import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.data.redis.listener.ChannelTopic;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -217,7 +215,8 @@ public class ContentsService {
         GptDto.Request gptRequest;
 
         gptRequest = gptWebClient.of(500);
-        addChatMessages(gptRequest, SYSTEM, "당신은 키워드를 추출하고 텍스트를 요약하는 작업을 수행하는 도우미입니다." +
+        addChatMessages(gptRequest, SYSTEM,
+                "당신은 키워드를 추출하고 텍스트를 요약하는 작업을 수행하는 도우미입니다." +
                 " 주어진 텍스트에서 가장 중요한 다섯 개의 키워드를 제공하고, 다음 형식으로 요약하세요:\n" +
                 "키워드: [키워드 목록]\n" +
                 "요약: [두 문장 요약]\n");
@@ -273,13 +272,7 @@ public class ContentsService {
     public List<ContentsRecommendDto.Response.SimilarBookDto> seachUserLikeContentsSim(Long userId, Long childId) {
         childRepository.findByIdAndUserId(childId,userId).orElseThrow(() -> new BusinessException(CommonErrorCode.CHILD_NOT_FOUND));
 
-        List<FeedBack> feedBackList = feedBackRepository.findTop5LikesByChildId(childId);
-
-        //  각 피드백의 임베딩 벡터 추출
-        List<Long> contentsIdLists = feedBackList.stream()
-                .map(feedback -> feedback.getContents().getId())
-                .toList();
-
+        List<Long> contentsIdLists = feedBackRepository.findTop5LikesByChildId(childId);
 
         List<Long> VectorcontentsIdList = contentsVectorRepository.findSimilarContentsByAverageEmbedding(contentsIdLists);
 
