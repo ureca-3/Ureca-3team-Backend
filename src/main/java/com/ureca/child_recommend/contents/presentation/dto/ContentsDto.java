@@ -24,7 +24,7 @@ public class ContentsDto {
         private ContentsStatus status;
         private ContentsMbtiScore contentsMbti;
 
-        public static Response contentsData(Contents contents) {
+        public static Response contentsData(Contents contents, ContentsMbtiScore mbtiScore) {
             return Response.builder()
                     .id(contents.getId())
                     .title(contents.getTitle())
@@ -35,7 +35,7 @@ public class ContentsDto {
                     .publicationYear(contents.getPublicationYear())
                     .contentsMbtiResult(contents.getContentsMbtiResult())
                     .status(contents.getStatus())
-                    .contentsMbti(contents.getContentsMbti())
+                    .contentsMbti(mbtiScore)
                     .build();
         }
     }

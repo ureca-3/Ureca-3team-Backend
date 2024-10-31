@@ -26,8 +26,8 @@ public class ContentsController {
 
     // 특정 contents 읽기
     @GetMapping("/read/{contentsId}")
-    public SuccessResponse<Contents> readContent(@AuthenticationPrincipal Long userId, @PathVariable("contentsId") Long contentsId) {
-        Contents content = contentsService.readContents(contentsId);
+    public SuccessResponse<ContentsDto.Response> readContent(@AuthenticationPrincipal Long userId, @PathVariable("contentsId") Long contentsId) {
+        ContentsDto.Response content = contentsService.readContents(contentsId);
         return SuccessResponse.success(content);
     }
 
@@ -45,27 +45,14 @@ public class ContentsController {
         return SuccessResponse.success(contentsService.deleteContents(contentsId));
     }
 
-    @GetMapping("/search/{keyword}")
-    public SuccessResponse<List<Contents>> searchContents(@AuthenticationPrincipal Long userId, @PathVariable("keyword") String keyword) {
+    @GetMapping("/search")
+    public SuccessResponse<List<Contents>> searchContents(@AuthenticationPrincipal Long userId, @RequestParam String keyword) {
         return SuccessResponse.success(contentsService.searchContents(keyword));
     }
 
     @GetMapping("/all")
     public SuccessResponse<List<Contents>> getAllContents(@AuthenticationPrincipal Long userId) {
         return SuccessResponse.success(contentsService.getAllContents());
-    }
-
-    /**
-     * 24.10.24 작성자 : 정주현
-     * 도서 임베딩 값 삽입
-     * @param userId  : token - 부모 아이디
-     * @return
-     */
-    @GetMapping("/{contentsId}/embedding/generate")
-    public SuccessResponse<String> inputEmbeddingBook(@AuthenticationPrincipal Long userId,@PathVariable("contentsId") Long contentsId){
-       contentsService.inputEmbedding(userId,contentsId);
-        return SuccessResponse.successWithoutResult("성공");
-
     }
 
     /**
@@ -80,6 +67,19 @@ public class ContentsController {
         return SuccessResponse.success(response);
 
     }
+
+    //    /**
+//     * 24.10.24 작성자 : 정주현
+//     * 도서 임베딩 값 삽입
+//     * @param userId  : token - 부모 아이디
+//     * @return
+//     */
+//    @GetMapping("/{contentsId}/embedding/generate")
+//    public SuccessResponse<String> inputEmbeddingBook(@AuthenticationPrincipal Long userId,@PathVariable("contentsId") Long contentsId){
+//       contentsService.inputEmbedding(userId,contentsId);
+//        return SuccessResponse.successWithoutResult("성공");
+//
+//    }
 
 
 }
