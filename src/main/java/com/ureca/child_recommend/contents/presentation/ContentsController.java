@@ -4,6 +4,7 @@ import com.ureca.child_recommend.child.presentation.dto.ContentsRecommendDto;
 import com.ureca.child_recommend.contents.application.ContentsService;
 import com.ureca.child_recommend.contents.domain.Contents;
 import com.ureca.child_recommend.contents.presentation.dto.ContentsDto;
+import com.ureca.child_recommend.global.exception.BusinessException;
 import com.ureca.child_recommend.global.response.SuccessResponse;
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
@@ -46,12 +47,12 @@ public class ContentsController {
     }
 
     @GetMapping("/search")
-    public SuccessResponse<List<Contents>> searchContents(@AuthenticationPrincipal Long userId, @RequestParam String keyword) {
+    public SuccessResponse<List<ContentsDto.Response>> searchContents(String keyword) {
         return SuccessResponse.success(contentsService.searchContents(keyword));
     }
 
     @GetMapping("/all")
-    public SuccessResponse<List<Contents>> getAllContents(@AuthenticationPrincipal Long userId) {
+    public SuccessResponse<List<ContentsDto.Response>> getAllContents(@AuthenticationPrincipal Long userId) {
         return SuccessResponse.success(contentsService.getAllContents());
     }
 

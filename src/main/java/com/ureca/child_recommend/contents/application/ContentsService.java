@@ -24,6 +24,7 @@ import org.springframework.data.redis.listener.ChannelTopic;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -189,16 +190,25 @@ public class ContentsService {
     }
 
     // 컨텐츠 검색 - active인 상태만
-    public List<Contents> searchContents(String keyword) {
+    @Transactional
+    public List<ContentsDto.Response> searchContents(String keyword) {
         List<Contents> searchContents = contentsRepository.findByStatusAndTitleContaining(ContentsStatus.ACTIVE, keyword);
-        if (searchContents.isEmpty() || keyword.equals("")) throw new BusinessException(CommonErrorCode.CONTENTS_NOT_FOUND);
+        if (searchContents.isEmpty() || keyword.equals("")) {
+            throw new BusinessException(CommonErrorCode.CONTENTS_NOT_FOUND);
+        }
 
-        return searchContents;
+        // Contents 리스트를 ContentsDto.Response 리스트로 변환
+        return searchContents.stream()
+                .map(ContentsDto.Response::contentsSingleData) // Contents를 ContentsDto.Response로 매핑
+                .collect(Collectors.toList());
     }
 
+
     // 컨텐츠 리스트 페이지 처리 - 5개씩 (최신 데이터)
-    public List<Contents> getAllContents() {
-        return contentsRepository.findAll();
+    public List<ContentsDto.Response> getAllContents() {
+        return contentsRepository.findAll().stream()
+                .map(ContentsDto.Response::contentsSingleData)
+                .collect(Collectors.toList());
     }
 
 
