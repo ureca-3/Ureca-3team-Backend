@@ -134,44 +134,6 @@ public class ChildService {
 
 
     /**
-     * 특정 자녀의 id를 통해 - (나이,성별,mbti)로 임베딩 벡터 생성
-     * @param childId : 자녀 pk
-     */
-    @Transactional
-    public void inputEmbedding(Long userId,Long childId) {
-
-
-        Child child = childRepository.findByIdAndUserId(childId,userId).orElseThrow(()-> new BusinessException(CommonErrorCode.CHILD_NOT_FOUND));
-
-        ChildMbtiScore childMbtiScore = childMbtiScoreRepository.findByChildIdAndStatus(child.getId(), ChildMbtiScoreStatus.ACTIVE).orElseThrow(()-> new BusinessException(CommonErrorCode.ASSESSMENT_NOT_FOUND));
-
-        String input = String.format("나이: %d, 성별: %s, MBTI: %s-%s, %s-%s, %s-%s, %s-%s",
-                child.getAge(),
-                child.getGender(),
-                childMbtiScore.getSnType(), childMbtiScore.getEiScore()+"%",
-                childMbtiScore.getSnType(), childMbtiScore.getSnScore()+"%",
-                childMbtiScore.getTfType(), childMbtiScore.getTfScore()+"%",
-                childMbtiScore.getJpType(), childMbtiScore.getJpScore()+"%");
-
-        //임베딩 벡터 생성
-        float[] childEmbedding = embeddingUtil.createEmbedding(input);
-
-        saveChildEmbedding(childEmbedding,child);
-    }
-
-    /**
-     * 자녀의 임베딩 벡터값 디비에 저장
-     * @param childEmbedding : 자녀의 임베딩 벡터 값
-     * @param child : 자녀 객체
-     */
-    protected void saveChildEmbedding(float[] childEmbedding, Child child){
-
-        ChildVector childVector = ChildVector.createChildVector(childEmbedding,child);
-        childVectorRepository.save(childVector);
-
-    }
-
-    /**
      * 해당 자녀와 유사한 유저 목록을 통해 유저들이 좋아요 누른 도서를 추천 받음.
      * @param userId : 부모(유저) pk
      * @param childId : 자녀 pk
