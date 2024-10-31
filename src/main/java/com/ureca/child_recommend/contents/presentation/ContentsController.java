@@ -26,8 +26,8 @@ public class ContentsController {
 
     // 특정 contents 읽기
     @GetMapping("/read/{contentsId}")
-    public SuccessResponse<Contents> readContent(@AuthenticationPrincipal Long userId, @PathVariable("contentsId") Long contentsId) {
-        Contents content = contentsService.readContents(contentsId);
+    public SuccessResponse<ContentsDto.Response> readContent(@AuthenticationPrincipal Long userId, @PathVariable("contentsId") Long contentsId) {
+        ContentsDto.Response content = contentsService.readContents(contentsId);
         return SuccessResponse.success(content);
     }
 
@@ -45,8 +45,8 @@ public class ContentsController {
         return SuccessResponse.success(contentsService.deleteContents(contentsId));
     }
 
-    @GetMapping("/search/{keyword}")
-    public SuccessResponse<List<Contents>> searchContents(@AuthenticationPrincipal Long userId, @PathVariable("keyword") String keyword) {
+    @GetMapping("/search")
+    public SuccessResponse<List<Contents>> searchContents(@AuthenticationPrincipal Long userId, @RequestParam String keyword) {
         return SuccessResponse.success(contentsService.searchContents(keyword));
     }
 

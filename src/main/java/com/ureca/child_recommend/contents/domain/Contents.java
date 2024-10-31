@@ -1,5 +1,6 @@
 package com.ureca.child_recommend.contents.domain;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.ureca.child_recommend.contents.domain.Enum.ContentsStatus;
 import com.ureca.child_recommend.contents.presentation.dto.ContentsDto;
 import com.ureca.child_recommend.global.entity.BaseTimeEntity;
