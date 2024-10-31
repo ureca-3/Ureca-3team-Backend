@@ -9,6 +9,6 @@ public class KafkaConfig {
 
     @Bean
     public NewTopic applyLogTopic() {
-        return new NewTopic("apply-log-topic", 4, (short) 1);  // 파티션과 복제본 수 설정
+        return new NewTopic("apply-log-topic", 8, (short) 1);  // 파티션과 복제본 수 설정
     }
 }
