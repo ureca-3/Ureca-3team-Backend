@@ -4,8 +4,12 @@ import com.ureca.child_recommend.child.presentation.dto.ContentsRecommendDto;
 import com.ureca.child_recommend.contents.application.ContentsService;
 import com.ureca.child_recommend.contents.domain.Contents;
 import com.ureca.child_recommend.contents.presentation.dto.ContentsDto;
+import com.ureca.child_recommend.global.exception.BusinessException;
 import com.ureca.child_recommend.global.response.SuccessResponse;
 import lombok.RequiredArgsConstructor;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
 
@@ -46,13 +50,16 @@ public class ContentsController {
     }
 
     @GetMapping("/search")
-    public SuccessResponse<List<Contents>> searchContents(@AuthenticationPrincipal Long userId, @RequestParam String keyword) {
+    public SuccessResponse<List<ContentsDto.Response>> searchContents(String keyword) {
         return SuccessResponse.success(contentsService.searchContents(keyword));
     }
 
     @GetMapping("/all")
-    public SuccessResponse<List<Contents>> getAllContents(@AuthenticationPrincipal Long userId) {
-        return SuccessResponse.success(contentsService.getAllContents());
+    public SuccessResponse<Page<ContentsDto.Response>> getAllContents(@AuthenticationPrincipal Long userId,
+                                                                      @RequestParam(defaultValue = "0") int page,
+                                                                      @RequestParam(defaultValue = "5") int size) {
+        Pageable pageable = PageRequest.of(page,size);
+        return SuccessResponse.success(contentsService.getAllContents(pageable));
     }
 
     /**
