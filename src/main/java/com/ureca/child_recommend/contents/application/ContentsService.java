@@ -163,10 +163,11 @@ public class ContentsService {
         return savedContent;
     }
 
-    public Contents readContents(Long contentsId) {
+    public ContentsDto.Response readContents(Long contentsId) {
         Contents findContents = contentsRepository.findById(contentsId).orElseThrow(()
                 -> new BusinessException(CommonErrorCode.CONTENTS_NOT_FOUND));
-        return findContents;
+
+        return ContentsDto.Response.contentsData(findContents, findContents.getContentsMbti());
     }
 
     @Transactional
@@ -175,7 +176,7 @@ public class ContentsService {
                 -> new BusinessException(CommonErrorCode.CONTENTS_NOT_FOUND));
 
         findContents.updateContents(request);
-        return ContentsDto.Response.contentsData(findContents);
+        return ContentsDto.Response.contentsData(findContents, findContents.getContentsMbti());
     }
 
     @Transactional
@@ -184,13 +185,13 @@ public class ContentsService {
                 -> new BusinessException(CommonErrorCode.CONTENTS_NOT_FOUND));
 
         findContents.updateStatus(ContentsStatus.NONACTIVE);
-        return ContentsDto.Response.contentsData(findContents);
+        return ContentsDto.Response.contentsData(findContents, findContents.getContentsMbti());
     }
 
     // 컨텐츠 검색 - active인 상태만
     public List<Contents> searchContents(String keyword) {
-        List<Contents> searchContents = contentsRepository.findByTitleContainingOrAuthorContainingAndStatus(keyword, keyword, ContentsStatus.ACTIVE);
-        if (searchContents.isEmpty()) throw new BusinessException(CommonErrorCode.CONTENTS_NOT_FOUND);
+        List<Contents> searchContents = contentsRepository.findByStatusAndTitleContaining(ContentsStatus.ACTIVE, keyword);
+        if (searchContents.isEmpty() || keyword.equals("")) throw new BusinessException(CommonErrorCode.CONTENTS_NOT_FOUND);
 
         return searchContents;
     }
