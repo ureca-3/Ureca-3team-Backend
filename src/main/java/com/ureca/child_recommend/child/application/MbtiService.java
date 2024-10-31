@@ -3,12 +3,15 @@ package com.ureca.child_recommend.child.application;
 import com.ureca.child_recommend.child.domain.Child;
 import com.ureca.child_recommend.child.domain.ChildMbti;
 import com.ureca.child_recommend.child.domain.ChildMbtiScore;
+import com.ureca.child_recommend.child.domain.ChildVector;
 import com.ureca.child_recommend.child.domain.Enum.ChildMbtiScoreStatus;
 import com.ureca.child_recommend.child.domain.Enum.ChildMbtiStatus;
 import com.ureca.child_recommend.child.infrastructure.ChildMbtiRepository;
 import com.ureca.child_recommend.child.infrastructure.ChildMbtiScoreRepository;
 import com.ureca.child_recommend.child.infrastructure.ChildRepository;
+import com.ureca.child_recommend.child.infrastructure.ChildVectorRepository;
 import com.ureca.child_recommend.child.presentation.dto.MbtiDto;
+import com.ureca.child_recommend.config.embedding.EmbeddingUtil;
 import com.ureca.child_recommend.global.exception.BusinessException;
 import com.ureca.child_recommend.global.exception.errorcode.CommonErrorCode;
 import lombok.RequiredArgsConstructor;
@@ -28,9 +31,10 @@ public class MbtiService {
     private final ChildService childService;
 
     private final ChildMbtiRepository childMbtiRepository;
-
     private final ChildMbtiScoreRepository childMbtiScoreRepository;
     private final ChildRepository childRepository;
+    private final EmbeddingUtil embeddingUtil;
+    private final ChildVectorRepository childVectorRepository;
 
     @Transactional
     public MbtiDto.Response.assessmentMbtiDto saveMbtiResult(Long userId, MbtiDto.Request.assessmentMbtiDto dto, Long child_id) {
@@ -58,6 +62,8 @@ public class MbtiService {
 
         // ChildMbti 저장
         childMbtiRepository.save(ChildMbti.enrollToMbti(result, child,newChildMbtiScore));
+
+        inputEmbedding(child,newChildMbtiScore);
 
         return MbtiDto.Response.assessmentMbtiDto.of(result);
     }
@@ -109,4 +115,37 @@ public class MbtiService {
                 })
                 .collect(Collectors.toList());
     }
+
+    /**
+     *  (나이,성별,mbti)로 임베딩 벡터 생성
+     */
+    @Transactional
+    public void inputEmbedding(Child child,ChildMbtiScore childMbtiScore) {
+
+        String input = String.format("나이: %d, 성별: %s, MBTI: %s-%s, %s-%s, %s-%s, %s-%s",
+                child.getAge(),
+                child.getGender(),
+                childMbtiScore.getSnType(), childMbtiScore.getEiScore()+"%",
+                childMbtiScore.getSnType(), childMbtiScore.getSnScore()+"%",
+                childMbtiScore.getTfType(), childMbtiScore.getTfScore()+"%",
+                childMbtiScore.getJpType(), childMbtiScore.getJpScore()+"%");
+
+        //임베딩 벡터 생성
+        float[] childEmbedding = embeddingUtil.createEmbedding(input);
+
+        saveChildEmbedding(childEmbedding,child);
+    }
+
+    /**
+     * 자녀의 임베딩 벡터값 디비에 저장
+     * @param childEmbedding : 자녀의 임베딩 벡터 값
+     * @param child : 자녀 객체
+     */
+    protected void saveChildEmbedding(float[] childEmbedding, Child child){
+
+        ChildVector childVector = ChildVector.createChildVector(childEmbedding,child);
+        childVectorRepository.save(childVector);
+
+    }
+
 }

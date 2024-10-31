@@ -94,17 +94,17 @@ public class ChildController {
     }
 
 
-    /**
-     * 24.10.24 작성자 : 정주현
-     * 특정 유저 자녀의 (나이,성별,mbti)로부터 임베딩 벡터 값 가져와서 db에 저장
-     * @param userId :  token - 부모 아이디
-     * @param childId : 자녀 아이디
-     */
-    @GetMapping("child/{childId}/embedding/generate")
-    public SuccessResponse<String> inputEmbeddingChild(@AuthenticationPrincipal Long userId,  @PathVariable Long childId){
-        childService.inputEmbedding(userId,childId);
-        return SuccessResponse.success("성공");
-    }
+//    /**
+//     * 24.10.24 작성자 : 정주현
+//     * 특정 유저 자녀의 (나이,성별,mbti)로부터 임베딩 벡터 값 가져와서 db에 저장
+//     * @param userId :  token - 부모 아이디
+//     * @param childId : 자녀 아이디
+//     */
+//    @GetMapping("child/{childId}/embedding/generate")
+//    public SuccessResponse<String> inputEmbeddingChild(@AuthenticationPrincipal Long userId,  @PathVariable Long childId){
+//        childService.inputEmbedding(userId,childId);
+//        return SuccessResponse.success("성공");
+//    }
 
     /**
      * 24.10.24 작성자 : 정주현

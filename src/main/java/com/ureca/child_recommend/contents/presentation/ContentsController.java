@@ -57,19 +57,6 @@ public class ContentsController {
 
     /**
      * 24.10.24 작성자 : 정주현
-     * 도서 임베딩 값 삽입
-     * @param userId  : token - 부모 아이디
-     * @return
-     */
-    @GetMapping("/{contentsId}/embedding/generate")
-    public SuccessResponse<String> inputEmbeddingBook(@AuthenticationPrincipal Long userId,@PathVariable("contentsId") Long contentsId){
-       contentsService.inputEmbedding(userId,contentsId);
-        return SuccessResponse.successWithoutResult("성공");
-
-    }
-
-    /**
-     * 24.10.24 작성자 : 정주현
      * 유저와 좋아요 한 도서와 비슷한 값 추출
      * @param userId  : token - 부모 아이디
      * @return
@@ -80,6 +67,19 @@ public class ContentsController {
         return SuccessResponse.success(response);
 
     }
+
+    //    /**
+//     * 24.10.24 작성자 : 정주현
+//     * 도서 임베딩 값 삽입
+//     * @param userId  : token - 부모 아이디
+//     * @return
+//     */
+//    @GetMapping("/{contentsId}/embedding/generate")
+//    public SuccessResponse<String> inputEmbeddingBook(@AuthenticationPrincipal Long userId,@PathVariable("contentsId") Long contentsId){
+//       contentsService.inputEmbedding(userId,contentsId);
+//        return SuccessResponse.successWithoutResult("성공");
+//
+//    }
 
 
 }
