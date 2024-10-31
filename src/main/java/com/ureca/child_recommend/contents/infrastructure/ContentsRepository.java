@@ -14,6 +14,8 @@ public interface ContentsRepository extends JpaRepository<Contents, Long> {
 
     List<Contents> findByStatusAndTitleContaining(ContentsStatus status, String title);
 
+    List<Contents> findByTitleContainsAndStatus(String title, ContentsStatus status);
+
     List<Contents> findByIdIn(List<Long> contentsIdList);
 
     @EntityGraph(attributePaths = {"contentsMbti"})

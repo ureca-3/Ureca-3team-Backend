@@ -165,7 +165,7 @@ public class ContentsService {
     }
 
     public ContentsDto.Response readContents(Long contentsId) {
-        Contents findContents = contentsRepository.findById(contentsId).orElseThrow(()
+        Contents findContents = contentsRepository.findWithContentsScoreById(contentsId).orElseThrow(()
                 -> new BusinessException(CommonErrorCode.CONTENTS_NOT_FOUND));
 
         return ContentsDto.Response.contentsData(findContents, findContents.getContentsMbti());
@@ -173,16 +173,15 @@ public class ContentsService {
 
     @Transactional
     public ContentsDto.Response updateContents(Long contentsId, ContentsDto.Request request) { // 수정된 데이터가 존재하면 반영
-        Contents findContents = contentsRepository.findById(contentsId).orElseThrow(()
+        Contents findContents = contentsRepository.findWithContentsScoreById(contentsId).orElseThrow(()
                 -> new BusinessException(CommonErrorCode.CONTENTS_NOT_FOUND));
 
-        findContents.updateContents(request);
         return ContentsDto.Response.contentsData(findContents, findContents.getContentsMbti());
     }
 
     @Transactional
     public ContentsDto.Response deleteContents(Long contentsId) {
-        Contents findContents = contentsRepository.findById(contentsId).orElseThrow(()
+        Contents findContents = contentsRepository.findWithContentsScoreById(contentsId).orElseThrow(()
                 -> new BusinessException(CommonErrorCode.CONTENTS_NOT_FOUND));
 
         findContents.updateStatus(ContentsStatus.NONACTIVE);
@@ -190,17 +189,16 @@ public class ContentsService {
     }
 
     // 컨텐츠 검색 - active인 상태만
-    @Transactional
     public List<ContentsDto.Response> searchContents(String keyword) {
-        List<Contents> searchContents = contentsRepository.findByStatusAndTitleContaining(ContentsStatus.ACTIVE, keyword);
-        if (searchContents.isEmpty() || keyword.equals("")) {
+        List<Contents> searchContents = contentsRepository.findByTitleContainsAndStatus(keyword, ContentsStatus.ACTIVE);
+        if (keyword.equals("")) {
             throw new BusinessException(CommonErrorCode.CONTENTS_NOT_FOUND);
         }
-
-        // Contents 리스트를 ContentsDto.Response 리스트로 변환
-        return searchContents.stream()
-                .map(ContentsDto.Response::contentsSingleData) // Contents를 ContentsDto.Response로 매핑
+        List<ContentsDto.Response> result = searchContents.stream()
+                .map(ContentsDto.Response::contentsSingleData)
                 .collect(Collectors.toList());
+
+        return result;
     }
 
 
@@ -268,7 +266,6 @@ public class ContentsService {
 
         ContentsVector contentsVector = ContentsVector.createContentsVector(contentsEmbedding,contents);
         contentsVectorRepository.save(contentsVector);
-
     }
 
 
