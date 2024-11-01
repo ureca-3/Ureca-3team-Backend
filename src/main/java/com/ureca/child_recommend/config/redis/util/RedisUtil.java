@@ -23,7 +23,7 @@ public class RedisUtil {
         return (String) redisTemplate.opsForValue().get(key);
     }
 
-    public void deleteDate(String key) {
+    public void deleteData(String key) {
         redisTemplate.delete(key);
     }
 

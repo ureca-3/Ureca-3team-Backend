@@ -96,7 +96,7 @@ public class UserService {
 
         if (refreshTokenInRedis == null) throw new BusinessException(REFRESH_TOKEN_NOT_FOUND);
 
-        redisUtil.deleteDate(RT+ userIdInToken);
+        redisUtil.deleteData(RT+ userIdInToken);
         redisUtil.setData(LOGOUT+resolveToken, LOGOUT, jwtUtil.getExpiration(resolveToken));// 블랙리스트 처리
     }
 
