@@ -9,6 +9,8 @@ import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
+import org.springframework.web.multipart.MultipartFile;
+
 import java.time.LocalDate;
 
 @Entity
@@ -54,10 +56,11 @@ public class Contents extends BaseTimeEntity {
     @OneToOne(mappedBy = "contents", fetch = FetchType.LAZY)
     private ContentsVector contentsVector;
 
-    public static Contents saveContents(ContentsDto.Request request, ContentsMbtiScore mbtiScore, String mbtiResult) {
+    public static Contents saveContents(ContentsDto.Request request, ContentsMbtiScore mbtiScore,
+                                        String mbtiResult, String profileUrl) {
         return Contents.builder()
                 .title(request.getTitle())
-                .posterUrl(request.getPosterUrl())
+                .posterUrl(profileUrl)
                 .description(request.getDescription())
                 .author(request.getAuthor())
                 .publisher(request.getPublisher())
@@ -71,9 +74,6 @@ public class Contents extends BaseTimeEntity {
     public void  updateContents(ContentsDto.Request request) {
         if (request.getTitle() != null) {
             this.title = request.getTitle();
-        }
-        if (request.getPosterUrl() != null) {
-            this.posterUrl = request.getPosterUrl();
         }
         if (request.getDescription() != null) {
             this.description = request.getDescription();
@@ -94,5 +94,9 @@ public class Contents extends BaseTimeEntity {
 
     public void updateStatus(ContentsStatus status) {
         this.status = status;
+    }
+
+    public void updatePoster(String posterUrl) {
+        this.posterUrl = posterUrl;
     }
 }
