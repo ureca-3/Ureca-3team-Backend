@@ -5,6 +5,7 @@ import com.ureca.child_recommend.event.domain.ApplyLog;
 import com.ureca.child_recommend.event.domain.Enum.ApplyLogStatus;
 import com.ureca.child_recommend.event.infrastructure.ApplyLogRepository;
 import com.ureca.child_recommend.event.infrastructure.EventRepository;
+import com.ureca.child_recommend.event.presentation.dto.ApplyLogDto;
 import com.ureca.child_recommend.global.response.SuccessResponse;
 import com.ureca.child_recommend.user.infrastructure.UserRepository;
 import lombok.RequiredArgsConstructor;
@@ -28,31 +29,25 @@ public class ApplyLogController {
     private final ApplyLogRepository applyLogRepository;
 
     @PostMapping("/event/apply") // 응모 api
-    public SuccessResponse<ApplyLog> createApplyLog(@RequestParam String name, @RequestParam String phone, @RequestParam Long userId) {
+    public SuccessResponse<ApplyLogDto.Response> createApplyLog(@RequestBody ApplyLogDto.Request requestDto,
+            @AuthenticationPrincipal Long userId) {
+        LocalDateTime now = LocalDateTime.now();
+        ApplyLogDto.Response responseDto = applyLogService.checkAndRegisterUserId(userId, requestDto, now);
 
-
-        ApplyLog applyLog = ApplyLog.builder()
-                .name(name)
-                .phone(phone)
-                .log(LocalDateTime.now())
-                .status(ApplyLogStatus.DEFAULT)
-                .user(userRepository.findById(userId).get()) // userId로 User 객체 생성 (User 엔티티가 필요함)
-                .event(eventRepository.findEventByDate(LocalDate.now()).get())
-                .build();
-        applyLogService.checkAndRegisterUserId(userId, applyLog);
-        return SuccessResponse.success(applyLog);
+        return SuccessResponse.success(responseDto);
     }
 
-//    @Scheduled(cron = "0 0 17 * * ?") // 합격자 선별,테이블 이동 / 매일 17시에 실행
+
+    //    @Scheduled(cron = "0 0 17 * * ?") // 합격자 선별,테이블 이동 / 매일 17시에 실행
     public SuccessResponse<String> findWinner(){
         List<ApplyLog> winnerLog = applyLogService.setLogStatus();
         applyLogService.moveWinnerLog(winnerLog);
+        applyLogService.moveLogHistory();
         return SuccessResponse.successWithoutResult(null);
     }
 
 //    @Scheduled(cron = "0 0 12 * * ?") // 응모로그 삭제
     public SuccessResponse<String> deleteApplyLog() {
-        applyLogService.deleteAllLog();
         applyLogService.removeAllUserIds();
         return SuccessResponse.successWithoutResult(null);
     }

@@ -32,28 +32,4 @@ public class WinnerLogService {
     public void deleteAllLog() {
         winnerLogRepository.deleteAll();
     }
-
-    @Transactional
-    public void moveToHistory() {
-        List<WinnerLog> winnerLogs = winnerLogRepository.findAll();
-
-        if (winnerLogs.isEmpty()) {
-            throw new BusinessException(LOG_NOT_FOUND);
-        }
-
-        List<LogHistory> logHistories = new ArrayList<>();
-        for(WinnerLog winnerlog : winnerLogs) {
-            LogHistory logHistory = LogHistory.builder()
-                    .name(winnerlog.getName())
-                    .phone(winnerlog.getPhone())
-                    .log(winnerlog.getLog())
-                    .user(userRepository.findById(winnerlog.getUser().getId()).get())
-                    .event(eventRepository.findEventById(winnerlog.getEvent().getId()).get())
-                    .build();
-
-            logHistories.add(logHistory);
-        }
-
-        logHistoryRepository.saveAll(logHistories);
-    }
 }

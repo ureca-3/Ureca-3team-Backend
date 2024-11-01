@@ -43,5 +43,15 @@ public class ApplyLog {
     private Event event;
 
 
+    public static ApplyLog create(String name, String phone,LocalDateTime now,ApplyLogStatus status,  Users user, Event event) {
+        return ApplyLog.builder()
+                .name(name)
+                .phone(phone)
+                .log(LocalDateTime.now())
+                .status(status)
+                .user(user)
+                .event(event)
+                .build();
+    }
 
 }

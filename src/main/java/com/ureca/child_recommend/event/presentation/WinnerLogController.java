@@ -18,7 +18,6 @@ public class WinnerLogController {
 
 //    @Scheduled(cron = "0 50 16 * * ?") // 응모로그 삭제
     public SuccessResponse<String> deleteWinnerLog() {
-        winnerLogService.moveToHistory();
         winnerLogService.deleteAllLog();
         return SuccessResponse.successWithoutResult(null);
     }

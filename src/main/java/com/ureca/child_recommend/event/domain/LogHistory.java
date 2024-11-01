@@ -1,6 +1,6 @@
 package com.ureca.child_recommend.event.domain;
 
-import com.ureca.child_recommend.event.domain.Enum.LogHistoryStatus;
+import com.ureca.child_recommend.event.domain.Enum.ApplyLogStatus;
 import com.ureca.child_recommend.global.entity.BaseTimeEntity;
 import com.ureca.child_recommend.user.domain.Users;
 import jakarta.persistence.*;
@@ -33,7 +33,7 @@ public class LogHistory extends BaseTimeEntity {
     private LocalDateTime log;
 
     @Column
-    private LogHistoryStatus status; // ACTIVE , NONACTIVE
+    private ApplyLogStatus status;
 
 
     @ManyToOne(fetch = FetchType.LAZY)
@@ -44,7 +44,7 @@ public class LogHistory extends BaseTimeEntity {
     @JoinColumn(name = "event_id")
     private Event event;
 
-    public void updateStatus(LogHistoryStatus newStatus) {
+    public void updateStatus(ApplyLogStatus newStatus) {
         this.status = newStatus;
     }
 

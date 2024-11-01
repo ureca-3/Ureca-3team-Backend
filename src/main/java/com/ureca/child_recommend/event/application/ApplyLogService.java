@@ -2,11 +2,16 @@ package com.ureca.child_recommend.event.application;
 
 import com.ureca.child_recommend.event.domain.ApplyLog;
 import com.ureca.child_recommend.event.domain.Enum.ApplyLogStatus;
+import com.ureca.child_recommend.event.domain.Event;
+import com.ureca.child_recommend.event.domain.LogHistory;
 import com.ureca.child_recommend.event.domain.WinnerLog;
 import com.ureca.child_recommend.event.infrastructure.ApplyLogRepository;
 import com.ureca.child_recommend.event.infrastructure.EventRepository;
+import com.ureca.child_recommend.event.infrastructure.LogHistoryRepository;
 import com.ureca.child_recommend.event.infrastructure.WinnerLogRepository;
+import com.ureca.child_recommend.event.presentation.dto.ApplyLogDto;
 import com.ureca.child_recommend.global.exception.BusinessException;
+import com.ureca.child_recommend.user.domain.Users;
 import com.ureca.child_recommend.user.infrastructure.UserRepository;
 import lombok.RequiredArgsConstructor;
 import org.redisson.api.RLock;
@@ -17,6 +22,8 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.data.redis.core.RedisTemplate;
 
+import java.time.LocalDate;
+import java.time.LocalDateTime;
 import java.time.LocalTime;
 import java.util.ArrayList;
 import java.util.List;
@@ -38,6 +45,7 @@ public class ApplyLogService {
     private final EventRepository eventRepository;
     private static final String TOPIC_NAME = "apply-log-topic";
     private static final String USER_ID_LIST_KEY = "registered_userId"; // Redis 리스트 키
+    private final LogHistoryRepository logHistoryRepository;
 
     public ApplyLog createAndSendApplyLog(ApplyLog applyLog) {
         kafkaTemplate.send(TOPIC_NAME, applyLog);
@@ -88,13 +96,13 @@ public class ApplyLogService {
 //    }
 
 
-    public void checkAndRegisterUserId(Long userId, ApplyLog applyLog) {
-        // 현재 시간을 가져옵니다
-        LocalTime now = LocalTime.now();
+    public ApplyLogDto.Response checkAndRegisterUserId(Long userId, ApplyLogDto.Request requestDto, LocalDateTime now) {
 
         // 실행 조건: 13시에서 13시 10분 사이
-        LocalTime startTime = LocalTime.of(13, 0);
-        LocalTime endTime = LocalTime.of(13, 10);
+        LocalDateTime startTime = LocalDateTime.of(LocalDate.now(), LocalTime.of(13, 0));
+        LocalDateTime endTime = LocalDateTime.of(LocalDate.now(), LocalTime.of(13, 10));
+
+
 
         // 시간대 확인
         if (now.isAfter(startTime) && now.isBefore(endTime)) {
@@ -105,10 +113,29 @@ public class ApplyLogService {
 
             if (!userExists) {
                 // 사용자 ID가 없다면 등록
+                Users user = userRepository.findById(userId)
+                        .orElseThrow(() -> new BusinessException(USER_NOT_FOUND));
+
+                Event event = eventRepository.findEventByDate(LocalDate.now())
+                        .orElseThrow(() -> new BusinessException(EVENT_NOT_FOUND));
+
+                ApplyLog applyLog = ApplyLog.create(requestDto.getName(), requestDto.getPhone(),now,ApplyLogStatus.DEFAULT, user,event);
                 redisTemplate.opsForList().rightPush(USER_ID_LIST_KEY, userId);
                 System.out.println("User ID " + userId + " has been registered.");
                 createAndSendApplyLog(applyLog);
+                ApplyLogDto.Response responseDto = ApplyLogDto.Response.from(applyLog);
+
+                return responseDto;
             } else {
+                Users user = userRepository.findById(userId)
+                        .orElseThrow(() -> new BusinessException(USER_NOT_FOUND));
+
+                Event event = eventRepository.findEventByDate(LocalDate.now())
+                        .orElseThrow(() -> new BusinessException(EVENT_NOT_FOUND));
+
+                ApplyLog failedApplyLog = ApplyLog.create(requestDto.getName(), requestDto.getPhone(),now,ApplyLogStatus.ERROR, user,event);
+
+                createAndSendApplyLog(failedApplyLog);
                 throw new BusinessException(APPLY_EXISTS);
             }
         } else {
@@ -122,7 +149,7 @@ public class ApplyLogService {
         int cnt = 0;
         List<ApplyLog> winnerLogs = new ArrayList<>();
         for(ApplyLog applylog : applyLogs) {
-            if(applylog.getLog().getHour() >= 13 && cnt < 100) {
+            if(applylog.getLog().getHour() >= 13 && cnt < 100 && applylog.getStatus() != ApplyLogStatus.ERROR) {
                 cnt+=1;
                 winnerLogs.add(applylog);
             } else if(cnt == 100) {break;}
@@ -142,6 +169,23 @@ public class ApplyLogService {
                     .build();
 
             winnerLogRepository.save(winnerLog);
+        }
+    }
+
+    @Transactional
+    public void moveLogHistory() {
+        List<ApplyLog> applyLogs = applyLogRepository.findAll();
+        for(ApplyLog applylog : applyLogs) {
+            LogHistory logHistory = LogHistory.builder()
+                    .name(applylog.getName())
+                    .phone(applylog.getPhone())
+                    .log(applylog.getLog())
+                    .status(applylog.getStatus())
+                    .user(userRepository.findById(applylog.getUser().getId()).get())
+                    .event(eventRepository.findEventById(applylog.getEvent().getId()).get())
+                    .build();
+
+            logHistoryRepository.save(logHistory);
         }
     }
 

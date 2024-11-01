@@ -1,7 +1,6 @@
 package com.ureca.child_recommend.event.application;
 
 
-import com.ureca.child_recommend.event.domain.Enum.LogHistoryStatus;
 import com.ureca.child_recommend.event.domain.LogHistory;
 import com.ureca.child_recommend.event.infrastructure.LogHistoryRepository;
 import com.ureca.child_recommend.event.presentation.dto.LogHistoryDto;
