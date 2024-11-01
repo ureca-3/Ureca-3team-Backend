@@ -18,10 +18,13 @@ import com.ureca.child_recommend.global.exception.BusinessException;
 import com.ureca.child_recommend.global.exception.errorcode.CommonErrorCode;
 import com.ureca.child_recommend.relation.infrastructure.FeedBackRepository;
 import lombok.RequiredArgsConstructor;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.data.redis.listener.ChannelTopic;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -170,7 +173,7 @@ public class ContentsService {
     }
 
     public ContentsDto.Response readContents(Long contentsId) {
-        Contents findContents = contentsRepository.findById(contentsId).orElseThrow(()
+        Contents findContents = contentsRepository.findWithContentsScoreById(contentsId).orElseThrow(()
                 -> new BusinessException(CommonErrorCode.CONTENTS_NOT_FOUND));
 
         return ContentsDto.Response.contentsData(findContents, findContents.getContentsMbti());
@@ -178,16 +181,17 @@ public class ContentsService {
 
     @Transactional
     public ContentsDto.Response updateContents(Long contentsId, ContentsDto.Request request) { // 수정된 데이터가 존재하면 반영
-        Contents findContents = contentsRepository.findById(contentsId).orElseThrow(()
+        Contents findContents = contentsRepository.findWithContentsScoreById(contentsId).orElseThrow(()
                 -> new BusinessException(CommonErrorCode.CONTENTS_NOT_FOUND));
 
         findContents.updateContents(request);
+
         return ContentsDto.Response.contentsData(findContents, findContents.getContentsMbti());
     }
 
     @Transactional
     public ContentsDto.Response deleteContents(Long contentsId) {
-        Contents findContents = contentsRepository.findById(contentsId).orElseThrow(()
+        Contents findContents = contentsRepository.findWithContentsScoreById(contentsId).orElseThrow(()
                 -> new BusinessException(CommonErrorCode.CONTENTS_NOT_FOUND));
 
         findContents.updateStatus(ContentsStatus.NONACTIVE);
@@ -195,16 +199,23 @@ public class ContentsService {
     }
 
     // 컨텐츠 검색 - active인 상태만
-    public List<Contents> searchContents(String keyword) {
-        List<Contents> searchContents = contentsRepository.findByStatusAndTitleContaining(ContentsStatus.ACTIVE, keyword);
-        if (searchContents.isEmpty() || keyword.equals("")) throw new BusinessException(CommonErrorCode.CONTENTS_NOT_FOUND);
+    public List<ContentsDto.Response> searchContents(String keyword) {
+        List<Contents> searchContents = contentsRepository.findByTitleAndStatus(keyword, ContentsStatus.ACTIVE);
+        if (keyword.equals("")) {
+            throw new BusinessException(CommonErrorCode.CONTENTS_NOT_FOUND);
+        }
+        List<ContentsDto.Response> result = searchContents.stream()
+                .map(ContentsDto.Response::contentsSingleData)
+                .collect(Collectors.toList());
 
-        return searchContents;
+        return result;
     }
 
+
     // 컨텐츠 리스트 페이지 처리 - 5개씩 (최신 데이터)
-    public List<Contents> getAllContents() {
-        return contentsRepository.findAll();
+    public Page<ContentsDto.Response> getAllContents(Pageable pageable) {
+        return contentsRepository.findAll(pageable)
+                .map(ContentsDto.Response::contentsSingleData);
     }
 
 
@@ -265,7 +276,6 @@ public class ContentsService {
 
         ContentsVector contentsVector = ContentsVector.createContentsVector(contentsEmbedding,contents);
         contentsVectorRepository.save(contentsVector);
-
     }
 
 

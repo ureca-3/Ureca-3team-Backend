@@ -38,6 +38,20 @@ public class ContentsDto {
                     .contentsMbti(mbtiScore)
                     .build();
         }
+
+        public static Response contentsSingleData(Contents contents) {
+            return Response.builder()
+                    .id(contents.getId())
+                    .title(contents.getTitle())
+                    .posterUrl(contents.getPosterUrl())
+                    .description(contents.getDescription())
+                    .author(contents.getAuthor())
+                    .publisher(contents.getPublisher())
+                    .publicationYear(contents.getPublicationYear())
+                    .contentsMbtiResult(contents.getContentsMbtiResult())
+                    .status(contents.getStatus())
+                    .build();
+        }
     }
 
     @Getter @NoArgsConstructor

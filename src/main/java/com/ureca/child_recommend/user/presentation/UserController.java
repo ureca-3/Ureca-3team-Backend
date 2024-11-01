@@ -37,9 +37,9 @@ public class UserController {
         String jwtToken = response.getAccessToken();
 
         // 프론트에서 데이터 받기 위함 - 서버에서 테스트시 아래 두 줄 주석 처리
-//        String redirectUrl = "http://localhost:3000/?token="+jwtToken; //주석
+        String redirectUrl = "http://localhost:3000/?token="+jwtToken; //주석
 //
-        String redirectUrl = "https://mbtiny.netlify.app/?token="+jwtToken;
+//        String redirectUrl = "https://mbtiny.netlify.app/?token="+jwtToken;
         servletResponse.sendRedirect(redirectUrl);
         return SuccessResponse.success(response);
     }
