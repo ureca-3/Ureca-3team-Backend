@@ -16,11 +16,14 @@ public interface ContentsRepository extends JpaRepository<Contents, Long> {
 
     List<Contents> findByStatusAndTitleContaining(ContentsStatus status, String title);
 
+    List<Contents> findByIdIn(List<Long> contentsIdList);
+
+    Optional<Contents> findByIdAndStatus(Long contentsId , ContentsStatus contentsStatus);
+
+
     @Query("SELECT c FROM Contents c WHERE c.title LIKE %:keyword% AND c.status = :status")
     List<Contents> findByTitleAndStatus(@Param("keyword") String keyword, @Param("status") ContentsStatus status);
 
-
-    List<Contents> findByIdIn(List<Long> contentsIdList);
 
     @EntityGraph(attributePaths = {"contentsMbti"})
     Optional<Contents> findWithContentsScoreById(Long contentId);

@@ -3,6 +3,7 @@ package com.ureca.child_recommend.contents.presentation.dto;
 import com.ureca.child_recommend.contents.domain.Contents;
 import com.ureca.child_recommend.contents.domain.ContentsMbtiScore;
 import com.ureca.child_recommend.contents.domain.Enum.ContentsStatus;
+import com.ureca.child_recommend.relation.domain.Enum.FeedBackType;
 import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
@@ -23,8 +24,9 @@ public class ContentsDto {
         private String contentsMbtiResult;
         private ContentsStatus status;
         private ContentsMbtiScore contentsMbti;
+        private FeedBackType feedBackType;
 
-        public static Response contentsData(Contents contents, ContentsMbtiScore mbtiScore) {
+        public static Response contentsData(Contents contents, ContentsMbtiScore mbtiScore,FeedBackType feedBackType) {
             return Response.builder()
                     .id(contents.getId())
                     .title(contents.getTitle())
@@ -36,6 +38,7 @@ public class ContentsDto {
                     .contentsMbtiResult(contents.getContentsMbtiResult())
                     .status(contents.getStatus())
                     .contentsMbti(mbtiScore)
+                    .feedBackType(feedBackType)
                     .build();
         }
 
