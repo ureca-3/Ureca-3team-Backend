@@ -14,7 +14,7 @@ import com.ureca.child_recommend.config.embedding.EmbeddingUtil;
 import com.ureca.child_recommend.global.application.S3Service;
 import com.ureca.child_recommend.global.exception.BusinessException;
 import com.ureca.child_recommend.global.exception.errorcode.CommonErrorCode;
-import com.ureca.child_recommend.relation.FeedBack;
+import com.ureca.child_recommend.relation.domain.FeedBack;
 import com.ureca.child_recommend.relation.infrastructure.FeedBackRepository;
 import com.ureca.child_recommend.user.domain.Users;
 import com.ureca.child_recommend.user.infrastructure.UserRepository;
