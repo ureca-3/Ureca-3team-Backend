@@ -11,6 +11,7 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.multipart.MultipartFile;
 
 import java.io.IOException;
 
@@ -37,9 +38,9 @@ public class UserController {
         String jwtToken = response.getAccessToken();
 
         // 프론트에서 데이터 받기 위함 - 서버에서 테스트시 아래 두 줄 주석 처리
-        String redirectUrl = "http://localhost:3000/?token="+jwtToken; //주석
-//
-//        String redirectUrl = "https://mbtiny.netlify.app/?token="+jwtToken;
+//        String redirectUrl = "http://localhost:3000/?token="+jwtToken; //주석
+
+        String redirectUrl = "https://mbtiny.netlify.app/?token="+jwtToken;
         servletResponse.sendRedirect(redirectUrl);
         return SuccessResponse.success(response);
     }
@@ -71,7 +72,8 @@ public class UserController {
     }
 
     @PatchMapping("/user/picture")
-    public SuccessResponse<String> updateUserProfile(@AuthenticationPrincipal Long userId,@RequestBody String profileUrl) throws IOException {
+    public SuccessResponse<String> updateUserProfile(@AuthenticationPrincipal Long userId,
+                                                     @RequestPart MultipartFile profileUrl) throws IOException {
         userService.updateUserProfile(userId, profileUrl);
         return SuccessResponse.successWithoutResult(null); // 수정 완료 후 204 No Content 응답
     }
