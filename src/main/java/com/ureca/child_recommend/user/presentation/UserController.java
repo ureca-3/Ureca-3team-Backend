@@ -11,6 +11,7 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.multipart.MultipartFile;
 
 import java.io.IOException;
 
@@ -74,7 +75,8 @@ public class UserController {
     }
 
     @PatchMapping("/user/picture")
-    public SuccessResponse<String> updateUserProfile(@AuthenticationPrincipal Long userId,@RequestBody String profileUrl) throws IOException {
+    public SuccessResponse<String> updateUserProfile(@AuthenticationPrincipal Long userId,
+                                                     @RequestPart MultipartFile profileUrl) throws IOException {
         userService.updateUserProfile(userId, profileUrl);
         return SuccessResponse.successWithoutResult(null); // 수정 완료 후 204 No Content 응답
     }

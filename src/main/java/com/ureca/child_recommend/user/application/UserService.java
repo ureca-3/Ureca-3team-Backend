@@ -1,10 +1,10 @@
 package com.ureca.child_recommend.user.application;
 
-import com.ureca.child_recommend.child.application.FileService;
 import com.ureca.child_recommend.config.jwt.util.JwtUtil;
 import com.ureca.child_recommend.config.oauth.dto.OauthInfo;
 import com.ureca.child_recommend.config.oauth.client.Helper.KakaoOauthHelper;
 import com.ureca.child_recommend.config.redis.util.RedisUtil;
+import com.ureca.child_recommend.global.application.S3Service;
 import com.ureca.child_recommend.global.exception.BusinessException;
 import com.ureca.child_recommend.global.exception.errorcode.CommonErrorCode;
 import com.ureca.child_recommend.user.domain.Users;
@@ -12,9 +12,9 @@ import com.ureca.child_recommend.user.dto.UserDto;
 import com.ureca.child_recommend.user.infrastructure.UserRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.redis.core.RedisTemplate;
-import org.springframework.security.core.userdetails.User;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.web.multipart.MultipartFile;
 
 import java.io.IOException;
 import java.util.List;
@@ -32,7 +32,7 @@ public class UserService {
     private final KakaoOauthHelper kakaoOauthHelper;
     private final JwtUtil jwtUtil;
     private final RedisUtil redisUtil;
-    private final FileService fileService;
+    private final S3Service s3Service;
     private static final String RT = "RT:";
     private static final String LOGOUT = "LOGOUT:";
     private static final String ROLE_USER = "ROLE_USER";
@@ -96,7 +96,7 @@ public class UserService {
 
         if (refreshTokenInRedis == null) throw new BusinessException(REFRESH_TOKEN_NOT_FOUND);
 
-        redisUtil.deleteDate(RT+ userIdInToken);
+        redisUtil.deleteData(RT+ userIdInToken);
         redisUtil.setData(LOGOUT+resolveToken, LOGOUT, jwtUtil.getExpiration(resolveToken));// 블랙리스트 처리
     }
 
@@ -142,10 +142,13 @@ public class UserService {
         return 1L; // 예시 값
     }
 
-    public void updateUserProfile(Long userId, String profileUrl) throws IOException{
+    @Transactional
+    public void updateUserProfile(Long userId, MultipartFile image) throws IOException{
         Users user = userRepository.findById(userId)
                 .orElseThrow(() -> new BusinessException(CommonErrorCode.USER_NOT_FOUND));
-        user.setProfileUrl(profileUrl); // 유저 사진 업데이트
+         // 유저 사진 업데이트
+        String profileUrl = s3Service.uploadFileImage(image, "-user");
+        user.setProfileUrl(profileUrl);
     }
 
     public Users getUserData(Long userId) {
