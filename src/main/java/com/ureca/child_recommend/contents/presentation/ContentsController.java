@@ -6,6 +6,7 @@ import com.ureca.child_recommend.contents.domain.Contents;
 import com.ureca.child_recommend.contents.presentation.dto.ContentsDto;
 import com.ureca.child_recommend.global.exception.BusinessException;
 import com.ureca.child_recommend.global.response.SuccessResponse;
+import io.swagger.v3.oas.annotations.Parameter;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
@@ -30,8 +31,8 @@ public class ContentsController {
     }
 
     // 특정 contents 읽기
-    @GetMapping("/child/{childId}/content/{contentsId}/read")
-    public SuccessResponse<ContentsDto.Response> readContent(@AuthenticationPrincipal Long userId,@PathVariable("childId")Long childId, @PathVariable("contentsId") Long contentsId) {
+    @GetMapping("/read/{contentsId}")
+    public SuccessResponse<ContentsDto.Response> readContent(@AuthenticationPrincipal Long userId, @PathVariable("contentsId") Long contentsId, @Parameter Long childId) {
         ContentsDto.Response content = contentsService.readContents(userId,childId,contentsId);
         return SuccessResponse.success(content);
     }
