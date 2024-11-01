@@ -125,7 +125,7 @@ public class MbtiService {
         String input = String.format("나이: %d, 성별: %s, MBTI: %s-%s, %s-%s, %s-%s, %s-%s",
                 child.getAge(),
                 child.getGender(),
-                childMbtiScore.getSnType(), childMbtiScore.getEiScore()+"%",
+                childMbtiScore.getEiType(), childMbtiScore.getEiScore()+"%",
                 childMbtiScore.getSnType(), childMbtiScore.getSnScore()+"%",
                 childMbtiScore.getTfType(), childMbtiScore.getTfScore()+"%",
                 childMbtiScore.getJpType(), childMbtiScore.getJpScore()+"%");
