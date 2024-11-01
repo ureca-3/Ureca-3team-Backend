@@ -26,5 +26,13 @@ public class LogHistoryController {
         return SuccessResponse.successWithoutResult(null);
     }
 
+    @Scheduled(cron = "0 0 12 * * ?") // 매일 12시에 합격자, 알람명단 조회
+    public SuccessResponse<String> GetAllPeopleToday(){
+        List<LogHistory> logHistories = logHistoryService.findTodayApology(); // 전체 명단 찾는 메소드
+        List<LogHistory> WinnerHistories = logHistoryService.findTodayWinner(logHistories); // 합격자 명단 얻어 오는 메소드
+        return SuccessResponse.successWithoutResult(null);
+    }
+    
+
 
 }

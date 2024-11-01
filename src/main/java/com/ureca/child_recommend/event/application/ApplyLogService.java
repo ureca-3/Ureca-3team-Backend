@@ -4,11 +4,9 @@ import com.ureca.child_recommend.event.domain.ApplyLog;
 import com.ureca.child_recommend.event.domain.Enum.ApplyLogStatus;
 import com.ureca.child_recommend.event.domain.Event;
 import com.ureca.child_recommend.event.domain.LogHistory;
-import com.ureca.child_recommend.event.domain.WinnerLog;
 import com.ureca.child_recommend.event.infrastructure.ApplyLogRepository;
 import com.ureca.child_recommend.event.infrastructure.EventRepository;
 import com.ureca.child_recommend.event.infrastructure.LogHistoryRepository;
-import com.ureca.child_recommend.event.infrastructure.WinnerLogRepository;
 import com.ureca.child_recommend.event.presentation.dto.ApplyLogDto;
 import com.ureca.child_recommend.global.exception.BusinessException;
 import com.ureca.child_recommend.user.domain.Users;
@@ -40,13 +38,13 @@ public class ApplyLogService {
     private final RedissonClient redissonClient;
     private final RedisTemplate<String, Object> redisTemplate; // RedisTemplate 추가
     private final ApplyLogRepository applyLogRepository;
-    private final WinnerLogRepository winnerLogRepository;
     private final UserRepository userRepository;
     private final EventRepository eventRepository;
     private static final String TOPIC_NAME = "apply-log-topic";
     private static final String USER_ID_LIST_KEY = "registered_userId"; // Redis 리스트 키
     private final LogHistoryRepository logHistoryRepository;
 
+    //kafka 응모 요청
     public ApplyLog createAndSendApplyLog(ApplyLog applyLog) {
         kafkaTemplate.send(TOPIC_NAME, applyLog);
         return applyLog;
@@ -95,12 +93,12 @@ public class ApplyLogService {
 //        }
 //    }
 
-
+    //중복 처리 및 응모 요청 메소드
     public ApplyLogDto.Response checkAndRegisterUserId(Long userId, ApplyLogDto.Request requestDto, LocalDateTime now) {
 
         // 실행 조건: 13시에서 13시 10분 사이
         LocalDateTime startTime = LocalDateTime.of(LocalDate.now(), LocalTime.of(13, 0));
-        LocalDateTime endTime = LocalDateTime.of(LocalDate.now(), LocalTime.of(13, 10));
+        LocalDateTime endTime = LocalDateTime.of(LocalDate.now(), LocalTime.of(18, 10));
 
 
 
@@ -143,6 +141,7 @@ public class ApplyLogService {
         }
     }
 
+    //합격자 처리 메소드
     @Transactional
     public List<ApplyLog> setLogStatus() {
         List<ApplyLog> applyLogs =  applyLogRepository.findAllByOrderByLogAsc();
@@ -157,21 +156,7 @@ public class ApplyLogService {
         return winnerLogs;
     }
 
-    @Transactional
-    public void moveWinnerLog(List<ApplyLog> applyLogs) {
-        for(ApplyLog applylog : applyLogs) {
-            WinnerLog winnerLog = WinnerLog.builder()
-                    .name(applylog.getName())
-                    .phone(applylog.getPhone())
-                    .log(applylog.getLog())
-                    .user(userRepository.findById(applylog.getUser().getId()).get())
-                    .event(eventRepository.findEventById(applylog.getEvent().getId()).get())
-                    .build();
-
-            winnerLogRepository.save(winnerLog);
-        }
-    }
-
+    // 로그 이동 메소드
     @Transactional
     public void moveLogHistory() {
         List<ApplyLog> applyLogs = applyLogRepository.findAll();
@@ -189,12 +174,15 @@ public class ApplyLogService {
         }
     }
 
+    //db 전체삭제
     @Transactional
     public void deleteAllLog() {
         applyLogRepository.deleteAll();
         System.out.println("응모로그 전체 삭제 완료.");
     }
 
+    //redis삭제 메소드
+    @Transactional
     public void removeAllUserIds() {
         redisTemplate.delete(USER_ID_LIST_KEY);
         System.out.println("All user IDs have been removed.");

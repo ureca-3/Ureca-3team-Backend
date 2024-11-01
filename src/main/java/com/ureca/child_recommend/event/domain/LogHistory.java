@@ -33,7 +33,7 @@ public class LogHistory extends BaseTimeEntity {
     private LocalDateTime log;
 
     @Column
-    private ApplyLogStatus status;
+    private ApplyLogStatus status; //WINNER,DEFAULT,ERROR
 
 
     @ManyToOne(fetch = FetchType.LAZY)

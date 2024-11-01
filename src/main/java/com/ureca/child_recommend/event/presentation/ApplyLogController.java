@@ -38,18 +38,19 @@ public class ApplyLogController {
     }
 
 
-    //    @Scheduled(cron = "0 0 17 * * ?") // 합격자 선별,테이블 이동 / 매일 17시에 실행
+    //    @Scheduled(cron = "0 0 17 * * ?") // 합격자 선별,테이블 이동, 이후 로그 삭제 / 매일 17시에 실행
     public SuccessResponse<String> findWinner(){
         List<ApplyLog> winnerLog = applyLogService.setLogStatus();
-        applyLogService.moveWinnerLog(winnerLog);
         applyLogService.moveLogHistory();
+        applyLogService.deleteAllLog();
+        applyLogService.removeAllUserIds();
         return SuccessResponse.successWithoutResult(null);
     }
 
 //    @Scheduled(cron = "0 0 12 * * ?") // 응모로그 삭제
-    public SuccessResponse<String> deleteApplyLog() {
-        applyLogService.removeAllUserIds();
-        return SuccessResponse.successWithoutResult(null);
-    }
+//    public SuccessResponse<String> deleteApplyLog() {
+//        applyLogService.removeAllUserIds();
+//        return SuccessResponse.successWithoutResult(null);
+//    }
 }
 

@@ -1,7 +1,6 @@
 package com.ureca.child_recommend.event.application;
 
 import com.ureca.child_recommend.event.domain.Event;
-import com.ureca.child_recommend.event.domain.WinnerLog;
 import com.ureca.child_recommend.event.infrastructure.EventRepository;
 import com.ureca.child_recommend.event.presentation.dto.EventDto;
 import com.ureca.child_recommend.global.exception.BusinessException;
@@ -12,6 +11,8 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDate;
 import java.time.format.DateTimeFormatter;
+import java.util.ArrayList;
+import java.util.List;
 
 @Service
 @Transactional(readOnly = true)
@@ -20,6 +21,7 @@ public class EventService {
 
     private final EventRepository eventRepository;
 
+    @Transactional
     public void makeNewEvent(EventDto.Request eventRequest) {
         Event event = Event.builder()
                 .name(eventRequest.getName())
@@ -41,5 +43,20 @@ public class EventService {
                 .date(event.getDate())
                 .description(event.getDescription())
                 .build();
+    }
+
+    public List<Event> getAllEvent() {
+          List<Event> events = eventRepository.findAll();
+          return events;
+//          List<EventDto.Response> responses = new ArrayList<>();
+//          for(Event event : events) {
+//              EventDto.Response responselist = EventDto.Response.builder()
+//                      .name(event.getName())
+//                      .date(event.getDate())
+//                      .description(event.getDescription())
+//                      .build();
+//              responses.add(responselist);
+//          }
+//          return responses;
     }
 }
