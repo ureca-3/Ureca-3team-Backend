@@ -63,6 +63,12 @@ public class MbtiService {
         // ChildMbti 저장
         childMbtiRepository.save(ChildMbti.enrollToMbti(result, child,newChildMbtiScore));
 
+        // ChildVector 삭제 후 즉시 반영
+        childVectorRepository.findByChild(child).ifPresent(childVector -> {
+            childVectorRepository.delete(childVector);
+            childVectorRepository.flush();
+        });
+
         inputEmbedding(child,newChildMbtiScore);
 
         return MbtiDto.Response.assessmentMbtiDto.of(result);
