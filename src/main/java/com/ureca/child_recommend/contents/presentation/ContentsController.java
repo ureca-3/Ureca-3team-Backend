@@ -30,9 +30,9 @@ public class ContentsController {
     }
 
     // 특정 contents 읽기
-    @GetMapping("/read/{contentsId}")
-    public SuccessResponse<ContentsDto.Response> readContent(@AuthenticationPrincipal Long userId, @PathVariable("contentsId") Long contentsId) {
-        ContentsDto.Response content = contentsService.readContents(contentsId);
+    @GetMapping("/child/{childId}/content/{contentsId}/read")
+    public SuccessResponse<ContentsDto.Response> readContent(@AuthenticationPrincipal Long userId,@PathVariable("childId")Long childId, @PathVariable("contentsId") Long contentsId) {
+        ContentsDto.Response content = contentsService.readContents(userId,childId,contentsId);
         return SuccessResponse.success(content);
     }
 

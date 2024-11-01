@@ -17,6 +17,7 @@ import com.ureca.child_recommend.contents.presentation.dto.GptDto;
 import com.ureca.child_recommend.global.application.S3Service;
 import com.ureca.child_recommend.global.exception.BusinessException;
 import com.ureca.child_recommend.global.exception.errorcode.CommonErrorCode;
+import com.ureca.child_recommend.relation.domain.FeedBack;
 import com.ureca.child_recommend.relation.infrastructure.FeedBackRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
@@ -177,11 +178,20 @@ public class ContentsService {
         return savedContent;
     }
 
-    public ContentsDto.Response readContents(Long contentsId) {
+    public ContentsDto.Response readContents(Long userId,Long childId,Long contentsId) {
+        childRepository.findByIdAndUserId(childId,userId);
+
         Contents findContents = contentsRepository.findWithContentsScoreById(contentsId).orElseThrow(()
                 -> new BusinessException(CommonErrorCode.CONTENTS_NOT_FOUND));
 
-        return ContentsDto.Response.contentsData(findContents, findContents.getContentsMbti());
+        FeedBack feedBack = feedBackRepository.findByChildIdAndContentsId(childId,contentsId).orElse(null);
+
+        if(feedBack !=null){
+            return ContentsDto.Response.contentsData(findContents, findContents.getContentsMbti(),feedBack.getType());
+        }
+        return ContentsDto.Response.contentsData(findContents, findContents.getContentsMbti(),null);
+
+
     }
 
     @Transactional
@@ -197,7 +207,7 @@ public class ContentsService {
             findContents.updatePoster(posterUrl);
         }
 
-        return ContentsDto.Response.contentsData(findContents, findContents.getContentsMbti());
+        return ContentsDto.Response.contentsData(findContents, findContents.getContentsMbti(),null);
     }
 
     @Transactional
@@ -206,7 +216,7 @@ public class ContentsService {
                 -> new BusinessException(CommonErrorCode.CONTENTS_NOT_FOUND));
 
         findContents.updateStatus(ContentsStatus.NONACTIVE);
-        return ContentsDto.Response.contentsData(findContents, findContents.getContentsMbti());
+        return ContentsDto.Response.contentsData(findContents, findContents.getContentsMbti(),null);
     }
 
     // 컨텐츠 검색 - active인 상태만
