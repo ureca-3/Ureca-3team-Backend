@@ -1,10 +1,12 @@
 package com.ureca.child_recommend.child.infrastructure;
 
+import com.ureca.child_recommend.child.domain.Child;
 import com.ureca.child_recommend.child.domain.ChildVector;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 
 import java.util.List;
+import java.util.Optional;
 
 public interface ChildVectorRepository extends JpaRepository<ChildVector,Long> {
     @Query(nativeQuery = true,
@@ -24,6 +26,8 @@ public interface ChildVectorRepository extends JpaRepository<ChildVector,Long> {
                     "ORDER BY cv2.embedding <-> cv1.embedding " +
                     "LIMIT 15")
     List<Long> findSimilarChildId(Long childId);
+
+    Optional<ChildVector> findByChild(Child child);
 }
 
 
