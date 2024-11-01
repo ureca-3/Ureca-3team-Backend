@@ -65,5 +65,4 @@ public class Users extends BaseTimeEntity {
 
     public void setProfileUrl(String profileUrl) {
             this.oauthInfo.setProfileUrl(profileUrl);}
-
     }
