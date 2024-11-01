@@ -14,8 +14,10 @@ import com.ureca.child_recommend.contents.infrastructure.ContentsRepository;
 import com.ureca.child_recommend.contents.infrastructure.ContentsVectorRepository;
 import com.ureca.child_recommend.contents.presentation.dto.ContentsDto;
 import com.ureca.child_recommend.contents.presentation.dto.GptDto;
+import com.ureca.child_recommend.global.application.S3Service;
 import com.ureca.child_recommend.global.exception.BusinessException;
 import com.ureca.child_recommend.global.exception.errorcode.CommonErrorCode;
+import com.ureca.child_recommend.relation.domain.FeedBack;
 import com.ureca.child_recommend.relation.infrastructure.FeedBackRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
@@ -23,6 +25,7 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.data.redis.listener.ChannelTopic;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.web.multipart.MultipartFile;
 
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -43,6 +46,7 @@ public class ContentsService {
     private final RedisUtil redisUtil;
     private final ContentsVectorRepository contentsVectorRepository;
     private final FeedBackRepository feedBackRepository;
+    private final S3Service s3Service;
 
     private static final String USER = "user";
     private static final String ASSISTNAT = "assistant";
@@ -65,8 +69,10 @@ public class ContentsService {
         request.addMessage(role, message);
     }
 
-    public Contents saveContent(Long userId, ContentsDto.Request contentsRequest, ContentsMbtiScore mbtiScore, String mbtiResult) {
-        Contents content = Contents.saveContents(contentsRequest, mbtiScore, mbtiResult);
+    public Contents saveContent(Long userId, ContentsDto.Request contentsRequest, ContentsMbtiScore mbtiScore, String mbtiResult, MultipartFile image) {
+        String profleUrl = s3Service.uploadFileImage(image, "-contents");
+
+        Contents content = Contents.saveContents(contentsRequest, mbtiScore, mbtiResult, profleUrl);
         mbtiRepository.save(mbtiScore);
         contentsRepository.save(content);
         removeChat(userId);
@@ -75,7 +81,7 @@ public class ContentsService {
 
     // 저장, 기본 데이터 입력 후 GPT 활용하여 mbti 데이터 저장
     @Transactional
-    public Contents saveContents(Long userId, ContentsDto.Request request) {
+    public Contents saveContents(Long userId, ContentsDto.Request request, MultipartFile image) {
         GptDto.Request gptRequest;
         if (memberChatMap.get(userId) == null) {
             gptRequest = gptWebClient.of(500);
@@ -152,7 +158,7 @@ public class ContentsService {
 
         // 제목과 작가 확인 시 없으면 생성
         Contents savedContent = contentsRepository.findByTitleAndAuthor(request.getTitle(), request.getAuthor()).orElseGet(()
-                -> saveContent(userId, request, mbtiScore, mbtiRes.toString()));
+                -> saveContent(userId, request, mbtiScore, mbtiRes.toString(), image));
 
         //임베딩벡터 생성
         inputEmbedding(savedContent.getId());
@@ -172,21 +178,36 @@ public class ContentsService {
         return savedContent;
     }
 
-    public ContentsDto.Response readContents(Long contentsId) {
+    public ContentsDto.Response readContents(Long userId,Long childId,Long contentsId) {
+        childRepository.findByIdAndUserId(childId,userId);
+
         Contents findContents = contentsRepository.findWithContentsScoreById(contentsId).orElseThrow(()
                 -> new BusinessException(CommonErrorCode.CONTENTS_NOT_FOUND));
 
-        return ContentsDto.Response.contentsData(findContents, findContents.getContentsMbti());
+        FeedBack feedBack = feedBackRepository.findByChildIdAndContentsId(childId,contentsId).orElse(null);
+
+        if(feedBack !=null){
+            return ContentsDto.Response.contentsData(findContents, findContents.getContentsMbti(),feedBack.getType());
+        }
+        return ContentsDto.Response.contentsData(findContents, findContents.getContentsMbti(),null);
+
+
     }
 
     @Transactional
-    public ContentsDto.Response updateContents(Long contentsId, ContentsDto.Request request) { // 수정된 데이터가 존재하면 반영
+    public ContentsDto.Response updateContents(Long contentsId, ContentsDto.Request request, MultipartFile newImage) { // 수정된 데이터가 존재하면 반영
         Contents findContents = contentsRepository.findWithContentsScoreById(contentsId).orElseThrow(()
                 -> new BusinessException(CommonErrorCode.CONTENTS_NOT_FOUND));
 
         findContents.updateContents(request);
 
-        return ContentsDto.Response.contentsData(findContents, findContents.getContentsMbti());
+        // 이미지 변경일 경우
+        if (newImage != null && !newImage.isEmpty()) {
+            String posterUrl = s3Service.updateFileImage(findContents.getPosterUrl(), newImage);
+            findContents.updatePoster(posterUrl);
+        }
+
+        return ContentsDto.Response.contentsData(findContents, findContents.getContentsMbti(),null);
     }
 
     @Transactional
@@ -195,7 +216,7 @@ public class ContentsService {
                 -> new BusinessException(CommonErrorCode.CONTENTS_NOT_FOUND));
 
         findContents.updateStatus(ContentsStatus.NONACTIVE);
-        return ContentsDto.Response.contentsData(findContents, findContents.getContentsMbti());
+        return ContentsDto.Response.contentsData(findContents, findContents.getContentsMbti(),null);
     }
 
     // 컨텐츠 검색 - active인 상태만

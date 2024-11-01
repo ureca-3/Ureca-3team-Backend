@@ -11,6 +11,7 @@ import com.ureca.child_recommend.relation.application.FeedBackService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.multipart.MultipartFile;
 
 import java.io.IOException;
 import java.util.List;
@@ -27,9 +28,10 @@ public class ChildController {
     // 자녀 프로필 생성 API
     @PostMapping("/child")
     public SuccessResponse<Long> createChildProfile(@AuthenticationPrincipal Long userId,
-                                                      @RequestBody ChildDto.Request childRequest) {
+                                                    @RequestPart ChildDto.Request childRequest,
+                                                    @RequestPart MultipartFile image) {
 
-            Long child_id = childService.createChildProfile(userId, childRequest); // 자녀 프로필 생성
+            Long child_id = childService.createChildProfile(userId, childRequest, image); // 자녀 프로필 생성
             return SuccessResponse.success(child_id); // 성공 메시지 반환
     }
 
@@ -51,7 +53,7 @@ public class ChildController {
 
     // 자녀 프로필 수정
     @PatchMapping("/child/{child_id}")
-    public SuccessResponse<ChildDto.Response> updateChild( @PathVariable("child_id") Long childId,
+    public SuccessResponse<ChildDto.Response> updateChild(@PathVariable("child_id") Long childId,
                                                          @RequestBody ChildDto.Request childRequest) {
 
         ChildDto.Response updatedChild = childService.updateChild(childId, childRequest);
@@ -67,7 +69,7 @@ public class ChildController {
 
     //  프로필 사진 수정 처리
     @PatchMapping("/child/picture/{child_id}")
-    public SuccessResponse<String> deleteChild(@PathVariable("child_id") Long childId, @RequestBody String profileUrl) throws IOException {
+    public SuccessResponse<String> updateChildProfileUrl(@PathVariable("child_id") Long childId, @RequestPart MultipartFile profileUrl) throws IOException {
         childService.updateChildProfile(childId, profileUrl);
         return SuccessResponse.successWithoutResult(null);
     }

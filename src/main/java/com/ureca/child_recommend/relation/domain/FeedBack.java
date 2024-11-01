@@ -1,9 +1,9 @@
-package com.ureca.child_recommend.relation;
+package com.ureca.child_recommend.relation.domain;
 
 import com.ureca.child_recommend.child.domain.Child;
 import com.ureca.child_recommend.contents.domain.Contents;
 import com.ureca.child_recommend.global.entity.BaseTimeEntity;
-import com.ureca.child_recommend.relation.Enum.FeedBackType;
+import com.ureca.child_recommend.relation.domain.Enum.FeedBackType;
 import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
@@ -31,5 +31,16 @@ public class FeedBack extends BaseTimeEntity {
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "contents_id")
     private Contents contents;
+
+
+    public static FeedBack createFeedBack(FeedBackType feedBackType,Child child,Contents contents){
+        return new FeedBack(feedBackType,child,contents);
+    }
+
+    private FeedBack(FeedBackType feedBackType,Child child,Contents contents){
+        this.type = feedBackType;
+        this.child =child;
+        this.contents =contents;
+    }
 
 }
