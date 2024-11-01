@@ -46,6 +46,10 @@ public enum CommonErrorCode implements ErrorCode{
     // history error (4601 ~
     HISTORY_NOT_FOUND(HttpStatus.BAD_REQUEST, "4601", "히스토리 내역이 없습니다."),
 
+    //FeedBack error(4701~
+    FEEDBACK_ALREADY_DISLIKE(HttpStatus.BAD_REQUEST, "4701", "이미 이 콘텐츠에 싫어요를 누르셨습니다. 중복 피드백은 허용되지 않습니다."),
+    FEEDBACK_ALREADY_LIKED(HttpStatus.BAD_REQUEST, "4702", "이미 이 콘텐츠에 좋아요를 누르셨습니다. 중복 피드백은 허용되지 않습니다.")
+
     ;
 
     private final HttpStatus httpStatus;

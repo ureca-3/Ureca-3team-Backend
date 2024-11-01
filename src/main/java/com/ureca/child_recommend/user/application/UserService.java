@@ -146,7 +146,7 @@ public class UserService {
     public void updateUserProfile(Long userId, MultipartFile image) throws IOException{
         Users user = userRepository.findById(userId)
                 .orElseThrow(() -> new BusinessException(CommonErrorCode.USER_NOT_FOUND));
-         // 유저 사진 업데이트
+        // 유저 사진 업데이트
         String profileUrl = s3Service.uploadFileImage(image, "-user");
         user.setProfileUrl(profileUrl);
     }

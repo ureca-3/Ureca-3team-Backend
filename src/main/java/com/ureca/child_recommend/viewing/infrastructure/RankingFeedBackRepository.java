@@ -1,7 +1,7 @@
 package com.ureca.child_recommend.viewing.infrastructure;
 
-import com.ureca.child_recommend.relation.Enum.FeedBackType;
-import com.ureca.child_recommend.relation.FeedBack;
+import com.ureca.child_recommend.relation.domain.Enum.FeedBackType;
+import com.ureca.child_recommend.relation.domain.FeedBack;
 import org.springframework.data.jpa.repository.JpaRepository;
 
 public interface RankingFeedBackRepository extends JpaRepository<FeedBack, Long> {
