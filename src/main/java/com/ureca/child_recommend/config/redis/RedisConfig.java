@@ -48,6 +48,7 @@ public class RedisConfig {
         System.out.println("Redis Address: " + config.useSingleServer().getAddress()); // 설정된 주소 확인
         return Redisson.create(config);
     }
+
     public RedisTemplate<String, Object> redisTemplate() {
         RedisTemplate<String, Object> template = new RedisTemplate<>();
         template.setConnectionFactory(redisConnectionFactory());
