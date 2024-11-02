@@ -6,12 +6,14 @@ import com.ureca.child_recommend.contents.domain.Contents;
 import com.ureca.child_recommend.contents.presentation.dto.ContentsDto;
 import com.ureca.child_recommend.global.exception.BusinessException;
 import com.ureca.child_recommend.global.response.SuccessResponse;
+import io.swagger.v3.oas.annotations.Parameter;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.multipart.MultipartFile;
 
 import java.util.List;
 
@@ -23,23 +25,23 @@ public class ContentsController {
 
     // contents 저장
     @PostMapping("/admin/save")
-    public SuccessResponse<Long> saveContents(@AuthenticationPrincipal Long userId, @RequestBody ContentsDto.Request request) {
-        Contents content = contentsService.saveContents(userId, request);
+    public SuccessResponse<Long> saveContents(@AuthenticationPrincipal Long userId, @RequestPart ContentsDto.Request request, @RequestPart MultipartFile imageFile) {
+        Contents content = contentsService.saveContents(userId, request, imageFile);
         return SuccessResponse.success(content.getId());
     }
 
     // 특정 contents 읽기
     @GetMapping("/read/{contentsId}")
-    public SuccessResponse<ContentsDto.Response> readContent(@AuthenticationPrincipal Long userId, @PathVariable("contentsId") Long contentsId) {
-        ContentsDto.Response content = contentsService.readContents(contentsId);
+    public SuccessResponse<ContentsDto.Response> readContent(@AuthenticationPrincipal Long userId, @PathVariable("contentsId") Long contentsId, @Parameter Long childId) {
+        ContentsDto.Response content = contentsService.readContents(userId,childId,contentsId);
         return SuccessResponse.success(content);
     }
 
     // 특정 contents 수정 -> 수정 시 active status로
     @PatchMapping("/admin/update/{contentsId}")
     public SuccessResponse<ContentsDto.Response> updatecontent(@AuthenticationPrincipal Long userId, @PathVariable("contentsId") Long contentsId,
-                                                               @RequestBody ContentsDto.Request request) {
-        ContentsDto.Response content = contentsService.updateContents(contentsId, request);
+                                                               @RequestPart ContentsDto.Request request, MultipartFile newImage) {
+        ContentsDto.Response content = contentsService.updateContents(contentsId, request, newImage);
         return SuccessResponse.success(content);
     }
 

@@ -13,12 +13,16 @@ public interface ContentsVectorRepository extends JpaRepository<ContentsVector,L
     @Query(nativeQuery = true,
             value = "SELECT cv2.contents_id " +
                     "FROM contents_vector cv2 " +
-                    "WHERE cv2.contents_id NOT IN (:contentIds) " +
+                    "WHERE cv2.contents_id NOT IN ( " +
+                    "SELECT f.contents_id " +
+                    "FROM feed_back f " +
+                    "WHERE f.type = 'DISLIKE' ) AND " +
+                    "cv2.contents_id NOT IN (:contentIds) " +
                     "ORDER BY cv2.embedding <-> " +
                     "(SELECT AVG(cv.embedding) " +
                     "FROM contents_vector cv " +
                     "WHERE cv.contents_id IN (:contentIds)) " +
-                    "LIMIT 10")
+                    "LIMIT 15")
     List<Long> findSimilarContentsByAverageEmbedding(@Param("contentIds") List<Long> contentIds);
 
 }

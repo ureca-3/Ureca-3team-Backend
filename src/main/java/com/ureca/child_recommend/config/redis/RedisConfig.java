@@ -1,5 +1,7 @@
 package com.ureca.child_recommend.config.redis;
 
+import com.fasterxml.jackson.databind.ObjectMapper;
+import com.ureca.child_recommend.child.presentation.dto.ContentsRecommendDto;
 import com.ureca.child_recommend.notice.application.UserSubscriber;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
@@ -10,9 +12,12 @@ import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.data.redis.core.ZSetOperations;
 import org.springframework.data.redis.listener.ChannelTopic;
 import org.springframework.data.redis.listener.RedisMessageListenerContainer;
+import org.springframework.data.redis.serializer.Jackson2JsonRedisSerializer;
 import org.springframework.data.redis.serializer.StringRedisSerializer;
-import org.springframework.data.redis.connection.RedisPassword;
 import org.springframework.data.redis.connection.RedisStandaloneConfiguration;
+
+
+import java.util.List;
 
 @Configuration
 public class RedisConfig {
@@ -44,14 +49,26 @@ public class RedisConfig {
 
     @Bean
     public RedisTemplate<String, Object> redisTemplate() {
-        RedisTemplate<String, Object> redisTemplate = new RedisTemplate<>();
-        redisTemplate.setConnectionFactory(redisConnectionFactory());
+        RedisTemplate<String, Object> template = new RedisTemplate<>();
+        template.setConnectionFactory(redisConnectionFactory());
+        template.setKeySerializer(new StringRedisSerializer());
+        template.setValueSerializer(new StringRedisSerializer());
+        return template;
+    }
 
-        // 일반적인 key:value 의 경우 시리얼라이저
-        redisTemplate.setKeySerializer(new StringRedisSerializer());
-        redisTemplate.setValueSerializer(new StringRedisSerializer());
+    @Bean
+    public RedisTemplate<String, List<ContentsRecommendDto.Response.SimilarBookDto>> jsonRedisTemplate() {
+        RedisTemplate<String, List<ContentsRecommendDto.Response.SimilarBookDto>> template = new RedisTemplate<>();
+        template.setConnectionFactory(redisConnectionFactory());
+        template.setKeySerializer(new StringRedisSerializer());
 
-        return redisTemplate;
+        // ObjectMapper를 통해 TypeReference로 리스트 타입 지원
+        ObjectMapper objectMapper = new ObjectMapper();
+        Jackson2JsonRedisSerializer<List<ContentsRecommendDto.Response.SimilarBookDto>> serializer =
+                new Jackson2JsonRedisSerializer<>(objectMapper.getTypeFactory().constructCollectionType(List.class, ContentsRecommendDto.Response.SimilarBookDto.class));
+
+        template.setValueSerializer(serializer);
+        return template;
     }
 
     @Bean

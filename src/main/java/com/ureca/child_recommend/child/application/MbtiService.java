@@ -63,6 +63,12 @@ public class MbtiService {
         // ChildMbti 저장
         childMbtiRepository.save(ChildMbti.enrollToMbti(result, child,newChildMbtiScore));
 
+        // ChildVector 삭제 후 즉시 반영
+        childVectorRepository.findByChild(child).ifPresent(childVector -> {
+            childVectorRepository.delete(childVector);
+            childVectorRepository.flush();
+        });
+
         inputEmbedding(child,newChildMbtiScore);
 
         return MbtiDto.Response.assessmentMbtiDto.of(result);
@@ -125,7 +131,7 @@ public class MbtiService {
         String input = String.format("나이: %d, 성별: %s, MBTI: %s-%s, %s-%s, %s-%s, %s-%s",
                 child.getAge(),
                 child.getGender(),
-                childMbtiScore.getSnType(), childMbtiScore.getEiScore()+"%",
+                childMbtiScore.getEiType(), childMbtiScore.getEiScore()+"%",
                 childMbtiScore.getSnType(), childMbtiScore.getSnScore()+"%",
                 childMbtiScore.getTfType(), childMbtiScore.getTfScore()+"%",
                 childMbtiScore.getJpType(), childMbtiScore.getJpScore()+"%");
