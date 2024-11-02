@@ -8,10 +8,8 @@ import org.springframework.data.redis.core.ZSetOperations;
 import org.springframework.stereotype.Service;
 
 import java.time.Duration;
-import java.util.Collections;
 import java.util.List;
 import java.util.concurrent.TimeUnit;
-import java.util.stream.Collectors;
 
 @Service
 @RequiredArgsConstructor
@@ -19,6 +17,7 @@ import java.util.stream.Collectors;
 public class RedisUtil {
     private final RedisTemplate<String, Object> redisTemplate;
     private final ZSetOperations<String, Object> zSetOperations;
+    private final RedisTemplate<String, List<ContentsRecommendDto.Response.SimilarBookDto>> jsonRedisTemplate;
 
     public void setData(String key, String value, Long exprTime) {
         redisTemplate.opsForValue().set(key, value, exprTime, TimeUnit.MILLISECONDS);
@@ -49,17 +48,12 @@ public class RedisUtil {
 
     public void saveBooks(String key, List<ContentsRecommendDto.Response.SimilarBookDto> books) {
         // JSON 배열 형태로 Redis에 저장
-        redisTemplate.opsForValue().set(key, books);
+        jsonRedisTemplate.opsForValue().set(key, books);
     }
 
     public List<ContentsRecommendDto.Response.SimilarBookDto> getBooks(String key) {
-        List<Object> objects = redisTemplate.opsForList().range(key, 0, -1);
-        if (objects == null) {
-            return Collections.emptyList(); // 없으면 빈 리스트 반환
-        }
-        return objects.stream()
-                .map(obj -> (ContentsRecommendDto.Response.SimilarBookDto) obj)
-                .collect(Collectors.toList());
+        // Redis에서 저장된 책 목록 가져오기
+        return jsonRedisTemplate.opsForValue().get(key);
     }
 
     public void upDownScore(String key, String contentId, int count) {
