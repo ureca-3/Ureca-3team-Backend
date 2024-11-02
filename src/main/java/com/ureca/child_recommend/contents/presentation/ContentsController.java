@@ -77,6 +77,16 @@ public class ContentsController {
 
     }
 
+    /**
+     * 24.11.02 작성자 : 정주현
+     * 오늘 하루 좋아요 가장 많이 받은 도서 조회
+     */
+    @GetMapping("/most-liked-today")
+    public SuccessResponse<List<ContentsRecommendDto.Response.SimilarBookDto>> getMostLikedBooksToday(){
+        List<ContentsRecommendDto.Response.SimilarBookDto> response = contentsService.getMostLikedBooksToday();
+        return SuccessResponse.success(response);
+    }
+
     //    /**
 //     * 24.10.24 작성자 : 정주현
 //     * 도서 임베딩 값 삽입

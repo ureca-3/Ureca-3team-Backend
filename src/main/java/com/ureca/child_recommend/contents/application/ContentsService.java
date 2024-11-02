@@ -36,6 +36,7 @@ import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 
+import static com.ureca.child_recommend.relation.application.FeedBackSchedulerService.TODAY_LIKE_CONTENTS;
 import static com.ureca.child_recommend.relation.application.FeedBackService.CHILD_LIKED_BOOK_SIMILARITY_RECOMMENDATIONS;
 
 @Service
@@ -348,5 +349,10 @@ public class ContentsService {
         return similarBookDtoList;
 
 
+    }
+
+    public List<ContentsRecommendDto.Response.SimilarBookDto> getMostLikedBooksToday() {
+
+        return redisUtil.getBooks(TODAY_LIKE_CONTENTS);
     }
 }

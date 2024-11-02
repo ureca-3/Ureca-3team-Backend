@@ -42,7 +42,7 @@ public class FeedBackService {
     private final RedisUtil redisUtil;
 
     public final static String CHILD_LIKED_BOOK_SIMILARITY_RECOMMENDATIONS = "Child_Like_RecommendBook_ChildId : ";
-    private static final String REDIS_KEY = "content:likes";
+    public static final String REDIS_KEY = "content:likes";
 
     public List<String> getLikedContents(Long childId) {
         // 좋아요한 피드백 목록을 가져옴
