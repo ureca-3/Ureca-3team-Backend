@@ -41,7 +41,7 @@ public class FeedBackService {
 
     private final RedisUtil redisUtil;
 
-    private final static String CHILD_LIKED_BOOK_SIMILARITY_RECOMMENDATIONS = "Child_Like_RecommendBook_ChildId : ";
+    public final static String CHILD_LIKED_BOOK_SIMILARITY_RECOMMENDATIONS = "Child_Like_RecommendBook_ChildId : ";
     private static final String REDIS_KEY = "content:likes";
 
     public List<String> getLikedContents(Long childId) {
