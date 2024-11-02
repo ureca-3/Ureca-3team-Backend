@@ -23,7 +23,8 @@ public interface FeedBackRepository extends JpaRepository<FeedBack, Long> {
     @Query("SELECT c.id FROM FeedBack f " +
             "LEFT JOIN f.contents c " +
             "WHERE f.child.id = :childId AND f.type = 'LIKE' " +
-            "ORDER BY f.createAt DESC ")
+            "ORDER BY f.createAt DESC " +
+            "LIMIT 5")
     List<Long> findTop5LikesByChildId(@Param("childId") Long childId);
 
 
