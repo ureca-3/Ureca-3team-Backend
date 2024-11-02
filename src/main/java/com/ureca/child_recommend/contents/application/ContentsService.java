@@ -21,17 +21,12 @@ import com.ureca.child_recommend.relation.domain.FeedBack;
 import com.ureca.child_recommend.relation.infrastructure.FeedBackRepository;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.data.domain.Page;
-import org.springframework.data.domain.Pageable;
 import org.springframework.data.redis.listener.ChannelTopic;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.multipart.MultipartFile;
 
-import java.util.Collections;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import java.util.stream.Collectors;
@@ -240,10 +235,26 @@ public class ContentsService {
     }
 
 
-    // 컨텐츠 리스트 페이지 처리 - 5개씩 (최신 데이터)
-    public Page<ContentsDto.Response> getAllContents(Pageable pageable) {
-        return contentsRepository.findAll(pageable)
-                .map(ContentsDto.Response::contentsSingleData);
+    // 타입별 콘텐츠 추천
+    public List<ContentsRecommendDto.Response.SimilarBookDto> searchContentsByTypeRecommendation(String type) {
+        List<Contents> contentsList;
+        // 타입이 주어지지 않은 경우
+        // type이 존재하면 해당 type에 따라 검색, 그렇지 않으면 전체에서 랜덤으로 가져옴
+        if (type.equals("all")) {
+            contentsList = contentsRepository.findRandomContents();
+        } else if (isValidMbtiType(type)) {
+            contentsList = contentsRepository.findRandomByContentsMbtiResult(type);
+        } else {
+            throw new BusinessException(CommonErrorCode.CONTENTS_NOT_FOUND);
+        }
+        return contentsList.stream()
+                .map(o->ContentsRecommendDto.Response.SimilarBookDto.of(o.getId(),o.getTitle(),o.getPosterUrl()))
+                .collect(Collectors.toList());
+    }
+    private boolean isValidMbtiType(String type) {
+        List<String> validTypes = Arrays.asList("ISTJ", "ISFJ", "INFJ", "INTJ", "ISTP", "ISFP", "INFP", "INTP",
+                "ESTP", "ESFP", "ENFP", "ENTP", "ESTJ", "ESFJ", "ENFJ", "ENTJ");
+        return validTypes.contains(type);
     }
 
 

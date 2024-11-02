@@ -5,7 +5,7 @@ import com.ureca.child_recommend.contents.domain.Enum.ContentsStatus;
 import org.springframework.data.jpa.repository.EntityGraph;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
-import feign.Param;
+import org.springframework.data.repository.query.Param;
 
 import java.util.List;
 import java.util.Optional;
@@ -28,4 +28,12 @@ public interface ContentsRepository extends JpaRepository<Contents, Long> {
     @EntityGraph(attributePaths = {"contentsMbti"})
     Optional<Contents> findWithContentsScoreById(Long contentId);
 
+
+    // 특정 type에 따라 랜덤으로 15개 가져오기
+    @Query(value = "SELECT * FROM contents WHERE contents_mbti_result = :type ORDER BY RANDOM() LIMIT 15", nativeQuery = true)
+    List<Contents> findRandomByContentsMbtiResult(@Param("type") String type);
+
+    // 전체 콘텐츠에서 랜덤으로 15개 가져오기
+    @Query(value = "SELECT * FROM contents ORDER BY RANDOM() LIMIT 3", nativeQuery = true)
+    List<Contents> findRandomContents();
 }
