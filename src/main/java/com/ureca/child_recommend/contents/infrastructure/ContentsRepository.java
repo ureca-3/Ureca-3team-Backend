@@ -34,6 +34,6 @@ public interface ContentsRepository extends JpaRepository<Contents, Long> {
     List<Contents> findRandomByContentsMbtiResult(@Param("type") String type);
 
     // 전체 콘텐츠에서 랜덤으로 15개 가져오기
-    @Query(value = "SELECT * FROM contents ORDER BY RANDOM() LIMIT 3", nativeQuery = true)
+    @Query(value = "SELECT * FROM contents ORDER BY RANDOM() LIMIT 15", nativeQuery = true)
     List<Contents> findRandomContents();
 }
