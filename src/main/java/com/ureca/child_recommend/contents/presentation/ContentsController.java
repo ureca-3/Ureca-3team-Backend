@@ -57,11 +57,9 @@ public class ContentsController {
     }
 
     @GetMapping("/all")
-    public SuccessResponse<Page<ContentsDto.Response>> getAllContents(@AuthenticationPrincipal Long userId,
-                                                                      @RequestParam(defaultValue = "0") int page,
-                                                                      @RequestParam(defaultValue = "5") int size) {
-        Pageable pageable = PageRequest.of(page,size);
-        return SuccessResponse.success(contentsService.getAllContents(pageable));
+    public SuccessResponse<List<ContentsRecommendDto.Response.SimilarBookDto>> searchContentsByTypeRecommendation(@AuthenticationPrincipal Long userId,
+                                                                      @RequestParam(value = "contentsType", defaultValue = "all") String type) {
+        return SuccessResponse.success(contentsService.searchContentsByTypeRecommendation(type));
     }
 
     /**
