@@ -30,7 +30,7 @@ public class UserController {
      * 카카오 로그인
      */
     @GetMapping("/kakao-login")
-    public SuccessResponse<UserDto.Response.SignIn> kakaoLogin(@RequestParam final String code, HttpServletResponse servletResponse) throws IOException {
+    public SuccessResponse<UserDto.Response.SignIn> kakaoLogin(@RequestParam("code") final String code, HttpServletResponse servletResponse) throws IOException {
         // Step 1: code로 idToken 가져오기
         String idToken = userService.kakaoCode(code);
         // Step 2: idToken으로 로그인 처리

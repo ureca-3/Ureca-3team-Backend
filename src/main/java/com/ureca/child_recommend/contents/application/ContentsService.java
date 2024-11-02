@@ -42,19 +42,21 @@ public class ContentsService {
     private final ContentsRepository contentsRepository;
     private final ContentsMbtiRepository mbtiRepository;
     private final ChildRepository childRepository;
-    private final EmbeddingUtil embeddingUtil;
-    private final RedisUtil redisUtil;
     private final ContentsVectorRepository contentsVectorRepository;
     private final FeedBackRepository feedBackRepository;
     private final S3Service s3Service;
 
+    private final EmbeddingUtil embeddingUtil;
+    private final RedisUtil redisUtil;
+
     private static final String USER = "user";
-    private static final String ASSISTNAT = "assistant";
+    private static final String ASSISTANT = "assistant";
     private static final String SYSTEM = "system";
 
     private final GptWebClient gptWebClient;
-    private final Map<Long, GptDto.Request> memberChatMap = new HashMap<>();
     private final ChannelTopic bookChannel;
+
+    private final Map<Long, GptDto.Request> memberChatMap = new HashMap<>();
 
     // 대화내용 삭제
     public void removeChat(Long userId) {
@@ -121,7 +123,7 @@ public class ContentsService {
         GptDto.Response gptResponse = gptWebClient.assistantRes(gptRequest);
 
         String content = gptResponse.getChoices().get(0).getMessage().getContent();
-        addChatMessages(gptRequest, ASSISTNAT, content);
+        addChatMessages(gptRequest, ASSISTANT, content);
         memberChatMap.put(userId, gptRequest);
 
         String mbtiInfo = gptRequest.getMessages().get(2).content; // 질문에 대한 gpt 대답 데이터
