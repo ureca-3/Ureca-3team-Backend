@@ -48,9 +48,15 @@ public enum CommonErrorCode implements ErrorCode{
 
     //FeedBack error(4701~
     FEEDBACK_ALREADY_DISLIKE(HttpStatus.BAD_REQUEST, "4701", "이미 이 콘텐츠에 싫어요를 누르셨습니다. 중복 피드백은 허용되지 않습니다."),
-    FEEDBACK_ALREADY_LIKED(HttpStatus.BAD_REQUEST, "4702", "이미 이 콘텐츠에 좋아요를 누르셨습니다. 중복 피드백은 허용되지 않습니다.")
+    FEEDBACK_ALREADY_LIKED(HttpStatus.BAD_REQUEST, "4702", "이미 이 콘텐츠에 좋아요를 누르셨습니다. 중복 피드백은 허용되지 않습니다."),
 
-    ;
+    // event error(4801 ~
+    LOG_NOT_FOUND(HttpStatus.NOT_FOUND, "4801", "삭제할 로그가 없습니다."),
+    LOG_DELETE_ERROR(HttpStatus.BAD_REQUEST, "4802", "로그 삭제를 할 수 없습니다."),
+    EVENT_NOT_FOUND(HttpStatus.NOT_FOUND, "4803", "해당 이벤트가 존재하지 않습니다."),
+    APPLY_EXISTS(HttpStatus.BAD_REQUEST, "4804", "이미 응모하셨습니다."),
+    NOT_APPLY_TIME(HttpStatus.BAD_REQUEST, "4805", "응모 시간이 아닙니다."),
+            ;
 
     private final HttpStatus httpStatus;
     private final String code;

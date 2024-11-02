@@ -37,6 +37,9 @@ public class UserController {
         UserDto.Response.SignIn response = userService.login(idToken);
         String jwtToken = response.getAccessToken();
 
+        log.info("Kakao 로그인 성공: accessToken={}", jwtToken);
+
+
         // 프론트에서 데이터 받기 위함 - 서버에서 테스트시 아래 두 줄 주석 처리
 //        String redirectUrl = "http://localhost:3000/?token="+jwtToken; //주석
 
@@ -78,9 +81,9 @@ public class UserController {
         return SuccessResponse.successWithoutResult(null); // 수정 완료 후 204 No Content 응답
     }
 
-    @GetMapping("/user")
-    public SuccessResponse<Users> getUserData(@AuthenticationPrincipal Long userId) {
-        Users findUser = userService.getUserData(userId);
-        return SuccessResponse.success(findUser);
-    }
+        @GetMapping("/user")
+        public SuccessResponse<Users> getUserData(@AuthenticationPrincipal Long userId) {
+            Users findUser = userService.getUserData(userId);
+            return SuccessResponse.success(findUser);
+        }
 }
