@@ -1,8 +1,5 @@
 package com.ureca.child_recommend.child.presentation.dto;
-
-import lombok.AllArgsConstructor;
-import lombok.Builder;
-import lombok.Getter;
+import lombok.*;
 
 public class ContentsRecommendDto {
 
@@ -17,6 +14,8 @@ public class ContentsRecommendDto {
         }
         @Getter
         @Builder
+        @NoArgsConstructor
+        @AllArgsConstructor
         public static class SimilarBookDto{
             private Long bookId;
             private String title;
