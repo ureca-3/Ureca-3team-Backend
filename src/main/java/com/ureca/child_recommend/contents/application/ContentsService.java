@@ -20,6 +20,7 @@ import com.ureca.child_recommend.global.exception.errorcode.CommonErrorCode;
 import com.ureca.child_recommend.relation.domain.FeedBack;
 import com.ureca.child_recommend.relation.infrastructure.FeedBackRepository;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.redis.listener.ChannelTopic;
@@ -27,7 +28,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.multipart.MultipartFile;
 
-import java.util.ArrayList;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -35,26 +36,31 @@ import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 
+import static com.ureca.child_recommend.relation.application.FeedBackService.CHILD_LIKED_BOOK_SIMILARITY_RECOMMENDATIONS;
+
 @Service
 @RequiredArgsConstructor
 @Transactional(readOnly = true)
+@Slf4j
 public class ContentsService {
     private final ContentsRepository contentsRepository;
     private final ContentsMbtiRepository mbtiRepository;
     private final ChildRepository childRepository;
-    private final EmbeddingUtil embeddingUtil;
-    private final RedisUtil redisUtil;
     private final ContentsVectorRepository contentsVectorRepository;
     private final FeedBackRepository feedBackRepository;
     private final S3Service s3Service;
 
+    private final EmbeddingUtil embeddingUtil;
+    private final RedisUtil redisUtil;
+
     private static final String USER = "user";
-    private static final String ASSISTNAT = "assistant";
+    private static final String ASSISTANT = "assistant";
     private static final String SYSTEM = "system";
 
     private final GptWebClient gptWebClient;
-    private final Map<Long, GptDto.Request> memberChatMap = new HashMap<>();
     private final ChannelTopic bookChannel;
+
+    private final Map<Long, GptDto.Request> memberChatMap = new HashMap<>();
 
     // 대화내용 삭제
     public void removeChat(Long userId) {
@@ -121,7 +127,7 @@ public class ContentsService {
         GptDto.Response gptResponse = gptWebClient.assistantRes(gptRequest);
 
         String content = gptResponse.getChoices().get(0).getMessage().getContent();
-        addChatMessages(gptRequest, ASSISTNAT, content);
+        addChatMessages(gptRequest, ASSISTANT, content);
         memberChatMap.put(userId, gptRequest);
 
         String mbtiInfo = gptRequest.getMessages().get(2).content; // 질문에 대한 gpt 대답 데이터
@@ -303,14 +309,44 @@ public class ContentsService {
     public List<ContentsRecommendDto.Response.SimilarBookDto> seachUserLikeContentsSim(Long userId, Long childId) {
         childRepository.findByIdAndUserId(childId,userId).orElseThrow(() -> new BusinessException(CommonErrorCode.CHILD_NOT_FOUND));
 
-        List<Long> contentsIdLists = feedBackRepository.findTop5LikesByChildId(childId);
+        List<ContentsRecommendDto.Response.SimilarBookDto> similarBookDtoList = null;
 
-        List<Long> VectorcontentsIdList = contentsVectorRepository.findSimilarContentsByAverageEmbedding(contentsIdLists);
+        try {
+            // Redis에서 데이터를 가져옵니다.
+            similarBookDtoList = redisUtil.getBooks(CHILD_LIKED_BOOK_SIMILARITY_RECOMMENDATIONS + childId);
+        } catch (Exception e) {
+            // Redis가 다운된 경우, 예외를 로깅합니다.
+            log.error("Failed to retrieve data from Redis: {}", e.getMessage());
+        }
 
-        List<Contents> contentsList = contentsRepository.findByIdIn(VectorcontentsIdList);
+        // Redis에서 데이터가 없거나 Redis 조회에 실패한 경우, 데이터베이스에서 조회합니다.
+        if(similarBookDtoList == null ){
+            List<Long> contentsIdLists = feedBackRepository.findTop5LikesByChildId(childId);
 
-        return contentsList.stream()
-                .map(o-> ContentsRecommendDto.Response.SimilarBookDto.of(o.getId(),o.getTitle(),o.getPosterUrl()))
-                .collect(Collectors.toList());
+            // 좋아요 누른 도서가 없다면 null 반환
+            if(contentsIdLists.isEmpty()){
+                return Collections.emptyList();
+            }
+
+            List<Long> VectorcontentsIdList = contentsVectorRepository.findSimilarContentsByAverageEmbedding(contentsIdLists);
+            List<Contents> contentsList = contentsRepository.findByIdIn(VectorcontentsIdList);
+
+            similarBookDtoList = contentsList.stream()
+                    .map(o-> ContentsRecommendDto.Response.SimilarBookDto.of(o.getId(),o.getTitle(),o.getPosterUrl()))
+                    .collect(Collectors.toList());
+
+            // Redis에 저장합니다. (레디스가 다운되지 않았을 때만)
+            try {
+                redisUtil.saveBooks(CHILD_LIKED_BOOK_SIMILARITY_RECOMMENDATIONS + childId, similarBookDtoList);
+            } catch (Exception e) {
+                // Redis 저장 실패 시 로깅합니다.
+                log.error("Failed to save data to Redis: {}", e.getMessage());
+            }
+
+        }
+
+        return similarBookDtoList;
+
+
     }
 }

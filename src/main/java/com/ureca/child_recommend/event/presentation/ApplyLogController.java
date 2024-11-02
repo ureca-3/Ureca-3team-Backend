@@ -32,7 +32,8 @@ public class ApplyLogController {
     public SuccessResponse<ApplyLogDto.Response> createApplyLog(@RequestBody ApplyLogDto.Request requestDto,
             @AuthenticationPrincipal Long userId) {
         LocalDateTime now = LocalDateTime.now();
-        ApplyLogDto.Response responseDto = applyLogService.checkAndRegisterUserId(userId, requestDto, now);
+//        ApplyLogDto.Response responseDto = applyLogService.checkAndRegisterUserId(userId, requestDto, now);
+        ApplyLogDto.Response responseDto = applyLogService.imsi(userId, requestDto, now);
 
         return SuccessResponse.success(responseDto);
     }

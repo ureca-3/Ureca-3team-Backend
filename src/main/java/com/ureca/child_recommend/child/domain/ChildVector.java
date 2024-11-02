@@ -29,14 +29,14 @@ public class ChildVector extends BaseTimeEntity {
 
     @OneToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "child_id")
-    private Child childId;
+    private Child child;
 
 
 
     public static ChildVector createChildVector(float[] childEmbedding,Child child){
         return ChildVector.builder()
                 .embedding(childEmbedding)
-                .childId(child)
+                .child(child)
                 .build();
 
     }

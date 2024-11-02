@@ -141,6 +141,21 @@ public class ApplyLogService {
         }
     }
 
+    public ApplyLogDto.Response imsi(Long userId, ApplyLogDto.Request requestDto, LocalDateTime now){
+        Users user = userRepository.findById(userId)
+                .orElseThrow(() -> new BusinessException(USER_NOT_FOUND));
+
+        Event event = eventRepository.findEventByDate(LocalDate.now())
+                .orElseThrow(() -> new BusinessException(EVENT_NOT_FOUND));
+
+        ApplyLog applyLog = ApplyLog.create(requestDto.getName(), requestDto.getPhone(),now,ApplyLogStatus.DEFAULT, user,event);
+        redisTemplate.opsForList().rightPush(USER_ID_LIST_KEY, userId);
+        System.out.println("User ID " + userId + " has been registered.");
+        createAndSendApplyLog(applyLog);
+        ApplyLogDto.Response responseDto = ApplyLogDto.Response.from(applyLog);
+
+        return responseDto;
+    }
     //합격자 처리 메소드
     @Transactional
     public List<ApplyLog> setLogStatus() {
@@ -187,6 +202,7 @@ public class ApplyLogService {
         redisTemplate.delete(USER_ID_LIST_KEY);
         System.out.println("All user IDs have been removed.");
     }
+
 
 
 }

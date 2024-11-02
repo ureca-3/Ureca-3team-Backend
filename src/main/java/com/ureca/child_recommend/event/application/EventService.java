@@ -1,11 +1,13 @@
 package com.ureca.child_recommend.event.application;
 
+import com.ureca.child_recommend.config.redis.util.RedisUtil;
 import com.ureca.child_recommend.event.domain.Event;
 import com.ureca.child_recommend.event.infrastructure.EventRepository;
 import com.ureca.child_recommend.event.presentation.dto.EventDto;
 import com.ureca.child_recommend.global.exception.BusinessException;
 import com.ureca.child_recommend.global.exception.errorcode.CommonErrorCode;
 import lombok.RequiredArgsConstructor;
+import org.springframework.data.redis.listener.ChannelTopic;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -20,6 +22,9 @@ import java.util.List;
 public class EventService {
 
     private final EventRepository eventRepository;
+    private final RedisUtil redisUtil;
+
+    private final ChannelTopic eventTopic;
 
     @Transactional
     public void makeNewEvent(EventDto.Request eventRequest) {
@@ -29,6 +34,8 @@ public class EventService {
                 .description(eventRequest.getDescription())
                 .build();
 
+        String notificationMessage = "이벤트가 등록되었어요. 서둘러서 참여해주세요."; String message = String.format("{\"message\": \"%s\", \"eventId\": %d}", notificationMessage, event.getId());
+        redisUtil.sendNotified(eventTopic.getTopic(), message);
         // Event 객체를 데이터베이스에 저장
         eventRepository.save(event);
     }
