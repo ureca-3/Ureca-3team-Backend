@@ -118,11 +118,12 @@ public class ChildService {
     }
 
     // 자녀 사진 변경
-    public void updateChildProfile(Long childId, MultipartFile newImage) throws IOException {
+    public ChildDto.Response updateChildProfile(Long childId, MultipartFile newImage) throws IOException {
         Child child = childRepository.findById(childId)
                 .orElseThrow(() -> new BusinessException(CommonErrorCode.USER_NOT_FOUND));
         String profileUrl = s3Service.updateFileImage(child.getProfileUrl(), newImage);
         child.setProfileUrl(profileUrl);
+        return ChildDto.Response.fromEntity(child);
     }
 
     // 자녀 MBTI SCORE 조회

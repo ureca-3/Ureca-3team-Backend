@@ -69,9 +69,9 @@ public class ChildController {
 
     //  프로필 사진 수정 처리
     @PatchMapping("/child/picture/{child_id}")
-    public SuccessResponse<String> updateChildProfileUrl(@PathVariable("child_id") Long childId, @RequestPart MultipartFile profileUrl) throws IOException {
-        childService.updateChildProfile(childId, profileUrl);
-        return SuccessResponse.successWithoutResult(null);
+    public SuccessResponse<ChildDto.Response> updateChildProfileUrl(@PathVariable("child_id") Long childId, @RequestPart MultipartFile profileUrl) throws IOException {
+        ChildDto.Response updateChildProfile = childService.updateChildProfile(childId, profileUrl);
+        return SuccessResponse.success(updateChildProfile);
     }
 
     // 자녀 MBTI 조회 API
