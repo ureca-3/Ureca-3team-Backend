@@ -41,6 +41,7 @@ public class MbtiService {
 
         String result = calculateMbti(dto);
         Child child = childService.getChildById(userId, child_id);
+        child.resetCurrentFeedBackCount(); //피드백 개수 리셋
 
         // 1. 자녀 PK로 ChildMbti 데이터 조회
         Optional<ChildMbti> existingChildMbti = childMbtiRepository.findByChildIdAndStatus(child.getId(), ChildMbtiStatus.ACTIVE);
@@ -68,7 +69,6 @@ public class MbtiService {
             childVectorRepository.delete(childVector);
             childVectorRepository.flush();
         });
-
         inputEmbedding(child,newChildMbtiScore);
 
         return MbtiDto.Response.assessmentMbtiDto.of(result);

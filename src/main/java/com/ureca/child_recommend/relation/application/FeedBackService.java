@@ -1,6 +1,7 @@
 package com.ureca.child_recommend.relation.application;
 
 
+import com.ureca.child_recommend.child.application.ChildService;
 import com.ureca.child_recommend.child.domain.Child;
 import com.ureca.child_recommend.child.infrastructure.ChildRepository;
 import com.ureca.child_recommend.child.presentation.dto.ContentsRecommendDto;
@@ -34,6 +35,8 @@ import java.util.stream.Stream;
 public class FeedBackService {
 
     private final UserService userService;
+    private final ChildService childService;
+
     private final ChildRepository childRepository;
     private final FeedBackRepository feedBackRepository;
     private final ContentsRepository contentsRepository;
@@ -42,7 +45,7 @@ public class FeedBackService {
     private final RedisUtil redisUtil;
 
     public final static String CHILD_LIKED_BOOK_SIMILARITY_RECOMMENDATIONS = "Child_Like_RecommendBook_ChildId : ";
-    private static final String REDIS_KEY = "content:likes";
+    public static final String REDIS_KEY = "content:likes";
 
     public List<String> getLikedContents(Long childId) {
         // 좋아요한 피드백 목록을 가져옴
@@ -74,7 +77,7 @@ public class FeedBackService {
         FeedBack existingFeedback = feedBackRepository.findByChildIdAndContentsId(childId, contentsId).orElse(null);
 
         // 기존 피드백 존재 여부 및 상태 처리
-        checkAndHandleExistingFeedback(existingFeedback, FeedBackType.DISLIKE, CommonErrorCode.FEEDBACK_ALREADY_LIKED,FeedBackType.LIKE,child,contents);
+        checkAndHandleExistingFeedback(existingFeedback, FeedBackType.DISLIKE, CommonErrorCode.FEEDBACK_ALREADY_LIKED,FeedBackType.LIKE,child,contents,userId);
 
         // 유사한 컨텐츠 추천 처리
         updateSimilarContentRecommendations(child);
@@ -87,7 +90,7 @@ public class FeedBackService {
         FeedBack existingFeedback = feedBackRepository.findByChildIdAndContentsId(childId, contentsId).orElse(null);
 
         // 기존 피드백 존재 여부 및 상태 처리
-        checkAndHandleExistingFeedback(existingFeedback, FeedBackType.LIKE, CommonErrorCode.FEEDBACK_ALREADY_DISLIKE,FeedBackType.DISLIKE,child,contents);
+        checkAndHandleExistingFeedback(existingFeedback, FeedBackType.LIKE, CommonErrorCode.FEEDBACK_ALREADY_DISLIKE,FeedBackType.DISLIKE,child,contents,userId);
 
         // 유사한 컨텐츠 추천 처리
         updateSimilarContentRecommendations(child);
@@ -111,7 +114,7 @@ public class FeedBackService {
                 .orElseThrow(() -> new BusinessException(CommonErrorCode.CONTENTS_NOT_FOUND));
     }
 
-    private void checkAndHandleExistingFeedback(FeedBack existingFeedback, FeedBackType oppositeType, CommonErrorCode errorCode, FeedBackType currentType, Child child, Contents contents) {
+    private void checkAndHandleExistingFeedback(FeedBack existingFeedback, FeedBackType oppositeType, CommonErrorCode errorCode, FeedBackType currentType, Child child, Contents contents,Long userId) {
         if (existingFeedback != null) {
             // 기존 피드백이 있고, 반대 타입인 경우 예외 발생
             if (existingFeedback.getType().equals(oppositeType)) {
@@ -120,9 +123,18 @@ public class FeedBackService {
             // 피드백이 존재하지만 같은 타입일 경우, 삭제 및 Redis 점수 감소
             feedBackRepository.delete(existingFeedback);
             redisUtil.upDownScore(REDIS_KEY, existingFeedback.getContents().getId().toString(), -1);
+            //좋아요에 따른 유저 mbti 변화(취소)
+            childService.processFeedback(child,userId,contents.getContentsMbti(),oppositeType);
+            // 피드백 카운트를 업데이트하여 다음 피드백에 대한 변화량을 감소시킵니다.
+            child.downCurrentFeedBackCount();
+
         } else {
             // 기존 피드백이 없다면 새로운 피드백 저장
             saveNewFeedbackAndIncreaseScore(currentType, child, contents);
+            //좋아요에 따른 유저 mbti 변화
+            childService.processFeedback(child,userId,contents.getContentsMbti(),currentType);
+            // 피드백 카운트를 업데이트하여 다음 피드백에 대한 변화량을 감소시킵니다.
+            child.upCurrentFeedBackCount();
         }
     }
 

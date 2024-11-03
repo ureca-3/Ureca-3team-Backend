@@ -56,12 +56,15 @@ public class ContentsController {
         return SuccessResponse.success(contentsService.searchContents(keyword));
     }
 
+    @GetMapping("/adminAll")
+    public SuccessResponse<List<ContentsDto.Response>> getContentsByallStatus(@AuthenticationPrincipal Long userId)  {
+        return SuccessResponse.success(contentsService.getAllContentsByAllStatus());
+    }
+
     @GetMapping("/all")
-    public SuccessResponse<Page<ContentsDto.Response>> getAllContents(@AuthenticationPrincipal Long userId,
-                                                                      @RequestParam(defaultValue = "0") int page,
-                                                                      @RequestParam(defaultValue = "5") int size) {
-        Pageable pageable = PageRequest.of(page,size);
-        return SuccessResponse.success(contentsService.getAllContents(pageable));
+    public SuccessResponse<List<ContentsRecommendDto.Response.SimilarBookDto>> searchContentsByTypeRecommendation(@AuthenticationPrincipal Long userId,
+                                                                      @RequestParam(value = "contentsType", defaultValue = "all") String type) {
+        return SuccessResponse.success(contentsService.searchContentsByTypeRecommendation(type));
     }
 
     /**
@@ -75,6 +78,16 @@ public class ContentsController {
         List<ContentsRecommendDto.Response.SimilarBookDto> response = contentsService.seachUserLikeContentsSim(userId,childId);
         return SuccessResponse.success(response);
 
+    }
+
+    /**
+     * 24.11.02 작성자 : 정주현
+     * 오늘 하루 좋아요 가장 많이 받은 도서 조회
+     */
+    @GetMapping("/most-liked-today")
+    public SuccessResponse<List<ContentsRecommendDto.Response.SimilarBookDto>> getMostLikedBooksToday(){
+        List<ContentsRecommendDto.Response.SimilarBookDto> response = contentsService.getMostLikedBooksToday();
+        return SuccessResponse.success(response);
     }
 
     //    /**

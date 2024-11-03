@@ -75,4 +75,17 @@ public class ChildMbtiScore extends BaseTimeEntity {
     public String getJpType() {
         return jpScore > 50 ? "J" : "P";
     }
+
+    public String getCurrentMbti() {
+        return getEiType() + getSnType() + getTfType() + getJpType();
+    }
+
+    public void changeScore(Integer score,String type){
+        switch (type) {
+            case "eiScore" -> eiScore = score;
+            case "snScore" -> snScore = score;
+            case "tfScore" -> tfScore = score;
+            case "jpScore" -> jpScore = score;
+        }
+    }
 }
