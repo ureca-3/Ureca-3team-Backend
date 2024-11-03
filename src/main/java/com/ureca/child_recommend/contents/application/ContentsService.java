@@ -234,6 +234,12 @@ public class ContentsService {
         return result;
     }
 
+    // 관리자 - Active + nonActive인 상태 데이터 가져오기
+    public List<ContentsDto.Response> getAllContentsByAllStatus() {
+        return contentsRepository.findAll().stream()
+                .map(ContentsDto.Response::contentsSingleData)
+                .collect(Collectors.toList());    }
+
 
     // 타입별 콘텐츠 추천
     public List<ContentsRecommendDto.Response.SimilarBookDto> searchContentsByTypeRecommendation(String type) {

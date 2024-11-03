@@ -29,11 +29,12 @@ public interface ContentsRepository extends JpaRepository<Contents, Long> {
     Optional<Contents> findWithContentsScoreById(Long contentId);
 
 
-    // 특정 type에 따라 랜덤으로 15개 가져오기
-    @Query(value = "SELECT * FROM contents WHERE contents_mbti_result = :type ORDER BY RANDOM() LIMIT 15", nativeQuery = true)
+    // 특정 type에 따라 랜덤으로 15개 가져오기 - ACTIVE인 상태
+    @Query(value = "SELECT * FROM contents WHERE contents_mbti_result = :type AND status = 'ACTIVE' ORDER BY RANDOM() LIMIT 15", nativeQuery = true)
     List<Contents> findRandomByContentsMbtiResult(@Param("type") String type);
 
-    // 전체 콘텐츠에서 랜덤으로 15개 가져오기
-    @Query(value = "SELECT * FROM contents ORDER BY RANDOM() LIMIT 15", nativeQuery = true)
+    // 전체 콘텐츠에서 랜덤으로 15개 가져오기 - ACTIVE인 상태
+    @Query(value = "SELECT * FROM contents WHERE status = 'ACTIVE' ORDER BY RANDOM() LIMIT 15", nativeQuery = true)
     List<Contents> findRandomContents();
+
 }

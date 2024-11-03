@@ -56,6 +56,11 @@ public class ContentsController {
         return SuccessResponse.success(contentsService.searchContents(keyword));
     }
 
+    @GetMapping("/adminAll")
+    public SuccessResponse<List<ContentsDto.Response>> getContentsByallStatus(@AuthenticationPrincipal Long userId)  {
+        return SuccessResponse.success(contentsService.getAllContentsByAllStatus());
+    }
+
     @GetMapping("/all")
     public SuccessResponse<List<ContentsRecommendDto.Response.SimilarBookDto>> searchContentsByTypeRecommendation(@AuthenticationPrincipal Long userId,
                                                                       @RequestParam(value = "contentsType", defaultValue = "all") String type) {
