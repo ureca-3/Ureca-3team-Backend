@@ -1,24 +1,30 @@
 package com.ureca.child_recommend.child.application;
 
 import com.ureca.child_recommend.child.domain.Child;
+import com.ureca.child_recommend.child.domain.ChildMbti;
 import com.ureca.child_recommend.child.domain.ChildMbtiScore;
 import com.ureca.child_recommend.child.domain.ChildVector;
 import com.ureca.child_recommend.child.domain.Enum.ChildMbtiScoreStatus;
+import com.ureca.child_recommend.child.domain.Enum.ChildMbtiStatus;
 import com.ureca.child_recommend.child.domain.Enum.ChildStatus;
+import com.ureca.child_recommend.child.infrastructure.ChildMbtiRepository;
 import com.ureca.child_recommend.child.infrastructure.ChildMbtiScoreRepository;
 import com.ureca.child_recommend.child.infrastructure.ChildRepository;
 import com.ureca.child_recommend.child.infrastructure.ChildVectorRepository;
 import com.ureca.child_recommend.child.presentation.dto.ChildDto;
 import com.ureca.child_recommend.child.presentation.dto.ContentsRecommendDto;
 import com.ureca.child_recommend.config.embedding.EmbeddingUtil;
+import com.ureca.child_recommend.contents.domain.ContentsMbtiScore;
 import com.ureca.child_recommend.global.application.S3Service;
 import com.ureca.child_recommend.global.exception.BusinessException;
 import com.ureca.child_recommend.global.exception.errorcode.CommonErrorCode;
+import com.ureca.child_recommend.relation.domain.Enum.FeedBackType;
 import com.ureca.child_recommend.relation.domain.FeedBack;
 import com.ureca.child_recommend.relation.infrastructure.FeedBackRepository;
 import com.ureca.child_recommend.user.domain.Users;
 import com.ureca.child_recommend.user.infrastructure.UserRepository;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.multipart.MultipartFile;
@@ -30,12 +36,15 @@ import java.util.stream.Collectors;
 @Service
 @Transactional(readOnly = true)
 @RequiredArgsConstructor
+@Slf4j
+
 public class ChildService {
 
     private final ChildRepository childRepository;
     private final ChildMbtiScoreRepository childMbtiScoreRepository;
-    private final UserRepository userRepository;
     private final ChildVectorRepository childVectorRepository;
+    private final ChildMbtiRepository childMbtiRepository;
+    private final UserRepository userRepository;
     private final EmbeddingUtil embeddingUtil;
     private final FeedBackRepository feedBackRepository;
     private final S3Service s3Service;
@@ -222,4 +231,71 @@ public class ChildService {
                 .collect(Collectors.toList());
     }
 
+    @Transactional
+//    @Async()
+    public void processFeedback(Child child,Long userId, ContentsMbtiScore contentsMbtiScore, FeedBackType type) {
+        int feedbackCount = child.getCurrentFeedBackCount();
+        boolean isLiked = type.equals(FeedBackType.LIKE);
+
+
+        // 좋아요일 경우 성향 차이를 줄이고, 싫어요일 경우 차이를 늘립니다.
+        int adjustmentBase = isLiked ? 5 : -5;
+        double adjustmentFactor = 1 / Math.sqrt(feedbackCount + 1);
+        int adjustment = (int) Math.round(adjustmentBase * adjustmentFactor); // 반올림 처리
+
+        if (Math.abs(adjustment) < 1) {
+            adjustment = adjustmentBase > 0 ? 1 : -1;
+        }
+
+        ChildMbtiScore childMbtiScore = childMbtiScoreRepository.findByChildIdAndStatus(child.getId(), ChildMbtiScoreStatus.ACTIVE)
+                .orElseThrow(() -> new BusinessException(CommonErrorCode.CHILDMBTI_NOT_FOUND));
+
+        childMbtiScore.changeScore(adjustValue(childMbtiScore.getEiScore(),contentsMbtiScore.getEiScore(),adjustment,isLiked),"eiScore");
+        childMbtiScore.changeScore(adjustValue(childMbtiScore.getSnScore(),contentsMbtiScore.getSnScore(),adjustment,isLiked),"snScore");
+        childMbtiScore.changeScore(adjustValue(childMbtiScore.getTfScore(),contentsMbtiScore.getTfScore(),adjustment,isLiked),"tfScore");
+        childMbtiScore.changeScore(adjustValue(childMbtiScore.getJpScore(),contentsMbtiScore.getJpScore(),adjustment,isLiked),"jpScore");
+
+        ChildMbti childMbti = childMbtiRepository.findByChildIdAndStatus(child.getId(), ChildMbtiStatus.ACTIVE)
+                .orElseThrow(() -> new BusinessException(CommonErrorCode.CHILDMBTI_NOT_FOUND));
+
+        childMbti.changeMbtiResult(childMbtiScore.getCurrentMbti());
+
+        // ChildVector 삭제 후 즉시 반영
+        childVectorRepository.findByChild(child).ifPresent(childVector -> {
+            childVectorRepository.delete(childVector);
+            childVectorRepository.flush();
+        });
+
+        inputEmbedding(userId,child.getId());
+
+
+        log.info("::::::Thread Name : " + Thread.currentThread().getName());
+
+    }
+
+    private int adjustValue(int userValue, int contentValue, int baseAdjustment, boolean isLiked) {
+        int difference = Math.abs(contentValue - userValue); // 간격 계산
+
+        // 간격에 비례한 조정값 설정 (간격이 클수록 adjustment가 커짐)
+        int adjustment = Math.abs((int) Math.round(baseAdjustment * (difference / 10.0))); // 예: 간격을 10으로 나누어 비율 적용
+        adjustment = Math.max(1, adjustment); // 최소 조정량 1로 제한
+
+        // 좋아요 또는 싫어요에 따라 userValue 변경 방향 설정
+        if (isLiked) {
+            if (contentValue > userValue) {
+                userValue += adjustment;
+            } else if (contentValue < userValue) {
+                userValue -= adjustment;
+            }
+        } else {
+            if (contentValue > userValue) {
+                userValue -= adjustment;
+            } else if (contentValue < userValue) {
+                userValue += adjustment;
+            }
+        }
+
+        // 0 ~ 100 범위 내로 값 제한
+        return Math.max(0, Math.min(100, userValue));
+    }
 }

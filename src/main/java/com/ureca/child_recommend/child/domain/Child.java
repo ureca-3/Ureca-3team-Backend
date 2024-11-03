@@ -39,6 +39,9 @@ public class Child extends BaseTimeEntity {
     @Column(nullable = false)
     private String profileUrl;
 
+    private Integer currentFeedBackCount;
+
+
     @Enumerated(EnumType.STRING)
     private ChildStatus status;
 
@@ -54,6 +57,7 @@ public class Child extends BaseTimeEntity {
                 .profileUrl(profileUrl)
                 .age(age)
                 .user(user)
+                .currentFeedBackCount(0)
                 .status(ChildStatus.ACTIVE)
                 .build();
     }
@@ -81,5 +85,17 @@ public class Child extends BaseTimeEntity {
     }
 
     public void setProfileUrl(String profileUrl) {this.profileUrl = profileUrl; }
+
+    public void upCurrentFeedBackCount(){
+        currentFeedBackCount +=1;
+    }
+    public void downCurrentFeedBackCount(){
+        currentFeedBackCount -=1;
+    }
+
+    public void resetCurrentFeedBackCount(){
+        currentFeedBackCount -=1;
+    }
+
 
 }
