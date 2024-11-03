@@ -48,5 +48,9 @@ public class ChildMbti extends BaseTimeEntity {
                 .childMbtiScore(newChildMbtiScore)
                 .build();
     }
+    public void changeMbtiResult(String mbtiResult){
+        this.mbtiResult = mbtiResult;
+    }
+
 
 }
