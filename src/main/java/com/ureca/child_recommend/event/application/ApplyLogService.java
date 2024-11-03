@@ -97,7 +97,7 @@ public class ApplyLogService {
     public ApplyLogDto.Response checkAndRegisterUserId(Long userId, ApplyLogDto.Request requestDto, LocalDateTime now) {
 
         // 실행 조건: 13시에서 13시 10분 사이
-        LocalDateTime startTime = LocalDateTime.of(LocalDate.now(), LocalTime.of(13, 0));
+        LocalDateTime startTime = LocalDateTime.of(LocalDate.now(), LocalTime.of(9, 0));
         LocalDateTime endTime = LocalDateTime.of(LocalDate.now(), LocalTime.of(18, 10));
 
 
@@ -149,7 +149,7 @@ public class ApplyLogService {
                 .orElseThrow(() -> new BusinessException(EVENT_NOT_FOUND));
 
         ApplyLog applyLog = ApplyLog.create(requestDto.getName(), requestDto.getPhone(),now,ApplyLogStatus.DEFAULT, user,event);
-        redisTemplate.opsForList().rightPush(USER_ID_LIST_KEY, userId);
+        redisTemplate.opsForList().rightPush(USER_ID_LIST_KEY, String.valueOf(userId));
         System.out.println("User ID " + userId + " has been registered.");
         createAndSendApplyLog(applyLog);
         ApplyLogDto.Response responseDto = ApplyLogDto.Response.from(applyLog);

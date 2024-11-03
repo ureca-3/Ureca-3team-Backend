@@ -1,5 +1,6 @@
 package com.ureca.child_recommend.event.domain;
 
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.ureca.child_recommend.event.domain.Enum.ApplyLogStatus;
 import com.ureca.child_recommend.user.domain.Users;
 import jakarta.persistence.*;
@@ -15,6 +16,7 @@ import java.time.LocalDateTime;
 @NoArgsConstructor
 @Builder
 @Getter
+@JsonIgnoreProperties(ignoreUnknown = true)
 public class ApplyLog {
 
     @Id
@@ -31,7 +33,7 @@ public class ApplyLog {
     @Column
     private LocalDateTime log;
 
-    @Column
+    @Enumerated(EnumType.STRING)
     private ApplyLogStatus status;
 
     @ManyToOne(fetch = FetchType.LAZY)

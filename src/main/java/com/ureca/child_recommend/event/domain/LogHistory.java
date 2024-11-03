@@ -32,7 +32,7 @@ public class LogHistory extends BaseTimeEntity {
     @Column
     private LocalDateTime log;
 
-    @Column
+    @Enumerated(EnumType.STRING)
     private ApplyLogStatus status; //WINNER,DEFAULT,ERROR
 
 

@@ -28,7 +28,7 @@ public class ApplyLogDto {
 
         public static Response from(ApplyLog applyLog) {
             return new Response(
-                    applyLog.getId(),
+                    applyLog.getUser().getId(),
                     applyLog.getName(),
                     applyLog.getPhone(),
                     applyLog.getLog(),

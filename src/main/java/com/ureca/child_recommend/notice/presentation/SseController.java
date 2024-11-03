@@ -3,7 +3,6 @@ package com.ureca.child_recommend.notice.presentation;
 import com.ureca.child_recommend.config.redis.util.RedisUtil;
 import com.ureca.child_recommend.notice.application.SseEmitterManager;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
@@ -44,7 +43,7 @@ public SseController(SseEmitterManager sseEmitterManager, RedisUtil redisUtil) {
     this.redisUtil = redisUtil;
 }
 
-@GetMapping("/newbook")
+@GetMapping("/all")
 public SseEmitter subscribe(@RequestParam("token") String token){
     return sseEmitterManager.createEmitter();
 }

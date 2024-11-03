@@ -34,7 +34,7 @@ public class EventService {
                 .description(eventRequest.getDescription())
                 .build();
 
-        String notificationMessage = "이벤트가 등록되었어요. 서둘러서 참여해주세요."; String message = String.format("{\"message\": \"%s\", \"eventId\": %d}", notificationMessage, event.getId());
+        String notificationMessage = "이벤트가 등록되었어요. 서둘러서 참여해주세요."; String message = String.format("{\"message\": \"%s\"}", notificationMessage );
         redisUtil.sendNotified(eventTopic.getTopic(), message);
         // Event 객체를 데이터베이스에 저장
         eventRepository.save(event);
