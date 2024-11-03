@@ -8,8 +8,11 @@ import org.springframework.data.redis.core.ZSetOperations;
 import org.springframework.stereotype.Service;
 
 import java.time.Duration;
+import java.util.Collections;
 import java.util.List;
+import java.util.Set;
 import java.util.concurrent.TimeUnit;
+import java.util.stream.Collectors;
 
 @Service
 @RequiredArgsConstructor
@@ -59,11 +62,29 @@ public class RedisUtil {
     public void upDownScore(String key, String contentId, int count) {
         zSetOperations.incrementScore(key,contentId,count);
     }
+    public void deleteScoreData(String pattern) {
+        Set<String> keys = redisTemplate.keys(pattern);
+        if (keys != null && !keys.isEmpty()) {
+            redisTemplate.delete(keys);
+        }
+    }
 
     public void expireTodayLikeNum(String key, Duration min){
         redisTemplate.expire(key, min);
-
     }
+
+    public List<Long> getTop10LikedContentsToday(String key) {
+        Set<ZSetOperations.TypedTuple<Object>> topLikedSet = zSetOperations.reverseRangeByScoreWithScores(key, 0,  9);
+
+        if (topLikedSet == null || topLikedSet.isEmpty()) {
+            return Collections.emptyList();
+        }
+        return topLikedSet.stream()
+                .map(tuple-> Long.valueOf(tuple.getValue().toString()))
+                .collect(Collectors.toList());
+    }
+
+
 
 
 }
