@@ -30,7 +30,7 @@ public class SseEmitterManager {
         return emitter;
     }
 
-    // 새 콘텐츠 등록 시 알림 전송
+    // 컨텐츠, 이벤트 등록 시 알림 전송
     public void sendContentNotification(String notification){
         for(SseEmitter emitter : emitters){
             try{
