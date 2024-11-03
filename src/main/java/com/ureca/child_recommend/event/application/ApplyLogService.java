@@ -111,7 +111,7 @@ public class ApplyLogService {
 
         // 실행 조건: 13시에서 13시 10분 사이
         LocalDateTime startTime = LocalDateTime.of(LocalDate.now(), LocalTime.of(13, 0));
-        LocalDateTime endTime = LocalDateTime.of(LocalDate.now(), LocalTime.of(18, 10));
+        LocalDateTime endTime = LocalDateTime.of(LocalDate.now(), LocalTime.of(13, 10));
 
 
 
