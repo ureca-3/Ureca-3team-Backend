@@ -86,4 +86,6 @@ public class UserController {
             Users findUser = userService.getUserData(userId);
             return SuccessResponse.success(findUser);
         }
+
+
 }

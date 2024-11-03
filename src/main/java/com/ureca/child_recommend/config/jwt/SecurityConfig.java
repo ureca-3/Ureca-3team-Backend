@@ -36,6 +36,7 @@ public class SecurityConfig{
                 .cors(Customizer.withDefaults()) // CORS
                 .formLogin(AbstractHttpConfigurer::disable)
                 .authorizeHttpRequests(authorize -> authorize
+                        .requestMatchers("/api/v1/health").permitAll() // health 체크를 위한 엔드포인트 허용
                         .requestMatchers("/api/v1/auth/kakao").permitAll()
                         .requestMatchers("/api/v1/auth/kakao-login").permitAll()
                         .requestMatchers("/api/v1/contents/admin/**").hasRole("ADMIN")

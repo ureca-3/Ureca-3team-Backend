@@ -1,5 +1,6 @@
 package com.ureca.child_recommend.event.application;
 
+import com.fasterxml.jackson.databind.ObjectMapper;
 import com.ureca.child_recommend.event.domain.ApplyLog;
 import com.ureca.child_recommend.event.domain.Enum.ApplyLogStatus;
 import com.ureca.child_recommend.event.domain.Event;
@@ -12,6 +13,7 @@ import com.ureca.child_recommend.global.exception.BusinessException;
 import com.ureca.child_recommend.user.domain.Users;
 import com.ureca.child_recommend.user.infrastructure.UserRepository;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.redisson.api.RLock;
 import org.redisson.api.RedissonClient;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -31,10 +33,12 @@ import static com.ureca.child_recommend.global.exception.errorcode.CommonErrorCo
 
 @Service
 @Transactional(readOnly = true)
+@Slf4j
 @RequiredArgsConstructor
 public class ApplyLogService {
 
-    private final KafkaTemplate<String, ApplyLog> kafkaTemplate;
+    private final KafkaTemplate<String, String> kafkaTemplate;
+    private final ObjectMapper objectMapper;
     private final RedissonClient redissonClient;
     private final RedisTemplate<String, Object> redisTemplate; // RedisTemplate 추가
     private final ApplyLogRepository applyLogRepository;
@@ -46,9 +50,18 @@ public class ApplyLogService {
 
     //kafka 응모 요청
     public ApplyLog createAndSendApplyLog(ApplyLog applyLog) {
-        kafkaTemplate.send(TOPIC_NAME, applyLog);
+        try {
+            String jsonMessage = objectMapper.writeValueAsString(applyLog);
+            kafkaTemplate.send(TOPIC_NAME, jsonMessage).get(); // 전송 결과 확인
+            log.info("Sent ApplyLog to Kafka: {}", jsonMessage);
+        } catch (Exception e) {
+            log.error("Failed to send ApplyLog message to Kafka", e);
+        }
         return applyLog;
     }
+
+
+
 
 //    public void executeWithLock(Long userId, ApplyLog applyLog) {
 //        // 현재 시간을 가져옵니다
@@ -120,7 +133,8 @@ public class ApplyLogService {
                 ApplyLog applyLog = ApplyLog.create(requestDto.getName(), requestDto.getPhone(),now,ApplyLogStatus.DEFAULT, user,event);
                 redisTemplate.opsForList().rightPush(USER_ID_LIST_KEY, userId);
                 System.out.println("User ID " + userId + " has been registered.");
-                createAndSendApplyLog(applyLog);
+//                createAndSendApplyLog(applyLog);
+                applyLogRepository.save(applyLog); // 실험용 저장
                 ApplyLogDto.Response responseDto = ApplyLogDto.Response.from(applyLog);
 
                 return responseDto;
@@ -141,21 +155,6 @@ public class ApplyLogService {
         }
     }
 
-    public ApplyLogDto.Response imsi(Long userId, ApplyLogDto.Request requestDto, LocalDateTime now){
-        Users user = userRepository.findById(userId)
-                .orElseThrow(() -> new BusinessException(USER_NOT_FOUND));
-
-        Event event = eventRepository.findEventByDate(LocalDate.now())
-                .orElseThrow(() -> new BusinessException(EVENT_NOT_FOUND));
-
-        ApplyLog applyLog = ApplyLog.create(requestDto.getName(), requestDto.getPhone(),now,ApplyLogStatus.DEFAULT, user,event);
-        redisTemplate.opsForList().rightPush(USER_ID_LIST_KEY, userId);
-        System.out.println("User ID " + userId + " has been registered.");
-        createAndSendApplyLog(applyLog);
-        ApplyLogDto.Response responseDto = ApplyLogDto.Response.from(applyLog);
-
-        return responseDto;
-    }
     //합격자 처리 메소드
     @Transactional
     public List<ApplyLog> setLogStatus() {

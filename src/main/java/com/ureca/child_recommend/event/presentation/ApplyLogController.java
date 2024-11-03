@@ -9,9 +9,12 @@ import com.ureca.child_recommend.event.presentation.dto.ApplyLogDto;
 import com.ureca.child_recommend.global.response.SuccessResponse;
 import com.ureca.child_recommend.user.infrastructure.UserRepository;
 import lombok.RequiredArgsConstructor;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.scheduling.annotation.Scheduled;
+import org.springframework.security.core.Authentication;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.web.bind.annotation.*;
 
 import java.time.LocalDate;
@@ -30,13 +33,14 @@ public class ApplyLogController {
 
     @PostMapping("/event/apply") // 응모 api
     public SuccessResponse<ApplyLogDto.Response> createApplyLog(@RequestBody ApplyLogDto.Request requestDto,
-            @AuthenticationPrincipal Long userId) {
+                                                                @AuthenticationPrincipal Long userId) {
+
         LocalDateTime now = LocalDateTime.now();
-//        ApplyLogDto.Response responseDto = applyLogService.checkAndRegisterUserId(userId, requestDto, now);
-        ApplyLogDto.Response responseDto = applyLogService.imsi(userId, requestDto, now);
+        ApplyLogDto.Response responseDto = applyLogService.checkAndRegisterUserId(userId, requestDto, now);
 
         return SuccessResponse.success(responseDto);
     }
+
 
 
     //    @Scheduled(cron = "0 0 17 * * ?") // 합격자 선별,테이블 이동, 이후 로그 삭제 / 매일 17시에 실행
@@ -53,5 +57,10 @@ public class ApplyLogController {
 //        applyLogService.removeAllUserIds();
 //        return SuccessResponse.successWithoutResult(null);
 //    }
+
+    @GetMapping("/health")
+    public ResponseEntity<String> healthCheck() {
+        return ResponseEntity.status(HttpStatus.OK).body("Health check passed");
+    }
 }
 
